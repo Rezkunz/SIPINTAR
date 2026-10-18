@@ -1,0 +1,325 @@
+/* ==========================================================================
+   SIPINTAR Role Stylesheet: Nasabah (Siswa, Guru & Karyawan)
+   Design: Swiss Modernism & Premium Digital Banking Passbook
+   Colors: Deep Obsidian Slate (#0A1628), Gold Accent (#F59E0B), Emerald Accents
+   ========================================================================== */
+
+/* ── Symmetrical 50:50 Top Showcase Grid ── */
+.nasabah-showcase-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+    align-items: stretch;
+}
+
+@media (max-width: 900px) {
+    .nasabah-showcase-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Premium Obsidian & Gold Virtual Debit Card ── */
+.passbook-card {
+    background: linear-gradient(135deg, #0A1628 0%, #1E293B 60%, #064E3B 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    padding: 24px 28px;
+    color: #FFFFFF;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 28px -6px rgba(10, 22, 40, 0.35), 0 4px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 220px;
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.passbook-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px -6px rgba(10, 22, 40, 0.45);
+}
+
+.passbook-card::before {
+    content: '';
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.12) 0%, transparent 70%);
+    top: -60px;
+    right: -40px;
+    pointer-events: none;
+}
+
+.passbook-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.03) 50%, transparent 100%);
+    pointer-events: none;
+}
+
+.passbook-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.passbook-brand-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.passbook-bank-name {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #FFFFFF;
+    text-transform: uppercase;
+}
+
+.passbook-chip-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Realistic Gold Foil EMV Chip */
+.passbook-chip {
+    width: 40px;
+    height: 30px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #FDE68A 0%, #D97706 70%, #B45309 100%);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 2px 4px rgba(0, 0, 0, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.passbook-chip::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.contactless-waves {
+    width: 18px;
+    height: 18px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.passbook-mid {
+    position: relative;
+    z-index: 1;
+    margin: 12px 0;
+}
+
+.passbook-rek-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.65);
+    margin-bottom: 2px;
+    font-weight: 600;
+}
+
+.passbook-rek-number {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #F8FAFC;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.passbook-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    position: relative;
+    z-index: 1;
+}
+
+.passbook-holder-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #FFFFFF;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1.2;
+}
+
+.passbook-holder-sub {
+    font-size: 11px;
+    color: #94A3B8;
+    margin-top: 2px;
+}
+
+.passbook-balance-wrap {
+    text-align: right;
+}
+
+.passbook-balance-amount {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: #FCD34D;
+    letter-spacing: -0.02em;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── 2x2 Symmetrical Metric Grid ── */
+.nasabah-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-content: space-between;
+}
+
+@media (max-width: 500px) {
+    .nasabah-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.nasabah-stat-box {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform var(--transition), box-shadow var(--transition);
+    position: relative;
+    overflow: hidden;
+    min-height: 110px;
+}
+
+.nasabah-stat-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.nasabah-stat-box.stat-emerald::before { background: radial-gradient(circle at 100% 0%, rgba(13, 92, 70, 0.1) 0%, transparent 70%); }
+.nasabah-stat-box.stat-blue::before    { background: radial-gradient(circle at 100% 0%, rgba(2, 132, 199, 0.1) 0%, transparent 70%); }
+.nasabah-stat-box.stat-amber::before   { background: radial-gradient(circle at 100% 0%, rgba(217, 119, 6, 0.1) 0%, transparent 70%); }
+.nasabah-stat-box.stat-indigo::before  { background: radial-gradient(circle at 100% 0%, rgba(79, 70, 229, 0.1) 0%, transparent 70%); }
+
+.nasabah-stat-box::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3.5px;
+}
+
+.nasabah-stat-box.stat-emerald::after { background: linear-gradient(90deg, #0D5C46 0%, #10B981 100%); }
+.nasabah-stat-box.stat-blue::after    { background: linear-gradient(90deg, #0284C7 0%, #38BDF8 100%); }
+.nasabah-stat-box.stat-amber::after   { background: linear-gradient(90deg, #D97706 0%, #FBBF24 100%); }
+.nasabah-stat-box.stat-indigo::after  { background: linear-gradient(90deg, #4F46E5 0%, #818CF8 100%); }
+
+.nasabah-stat-box:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
+}
+
+.nasabah-stat-box.stat-emerald:hover { border-color: rgba(13, 92, 70, 0.35); }
+.nasabah-stat-box.stat-blue:hover    { border-color: rgba(2, 132, 199, 0.35); }
+.nasabah-stat-box.stat-amber:hover   { border-color: rgba(217, 119, 6, 0.35); }
+.nasabah-stat-box.stat-indigo:hover  { border-color: rgba(79, 70, 229, 0.35); }
+
+.nasabah-stat-box:hover::before {
+    opacity: 0.9;
+}
+
+.nasabah-stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+.nasabah-stat-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.nasabah-stat-val {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--text-heading);
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+    line-height: 1.2;
+    position: relative;
+    z-index: 1;
+}
+
+.nasabah-stat-desc {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Copy Account Number Tooltip / Button ── */
+.btn-copy-rek {
+    background: none;
+    border: none;
+    padding: 4px 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    transition: all var(--transition);
+}
+
+.btn-copy-rek:hover {
+    background-color: var(--surface-subtle);
+    color: var(--brand-primary);
+}
+
+/* ── Balanced Two-Column Section (65% : 35%) ── */
+.nasabah-activity-grid {
+    display: grid;
+    grid-template-columns: 1.55fr 1fr;
+    gap: 24px;
+    align-items: stretch;
+}
+
+@media (max-width: 960px) {
+    .nasabah-activity-grid {
+        grid-template-columns: 1fr;
+    }
+}

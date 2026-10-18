@@ -22,3 +22,23 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Database files & SQL dumps (Prevent database leak to git)
+*.sql
+*.sql.gz
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.db
+*.bak
+*.dump
+/database/*.sqlite
+
+# Environment & credentials
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.cert
+

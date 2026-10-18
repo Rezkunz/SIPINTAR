@@ -1,0 +1,83 @@
+/* ==========================================================================
+   SIPINTAR Role Stylesheet: Teller & Kasir Loket
+   Components: Slip Transaksi, Cetak Struk Thermal, Indikator Antrean
+   ========================================================================== */
+
+/* ── Teller Transaction Counter Banner ── */
+.teller-counter-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    color: #065F46;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    font-size: 12.5px;
+    font-weight: 700;
+}
+
+/* ── Thermal Receipt Box Preview (58mm / 80mm POS Slip) ── */
+.receipt-preview-box {
+    background: #FFFFFF;
+    border: 1px dashed var(--border-medium);
+    border-radius: var(--radius-md);
+    padding: 24px 20px;
+    max-width: 380px;
+    margin: 0 auto 20px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #1E293B;
+    box-shadow: var(--shadow-card);
+}
+
+.receipt-header {
+    text-align: center;
+    border-bottom: 1px dashed #CBD5E1;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.receipt-title {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.receipt-item-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.receipt-total-row {
+    border-top: 1px dashed #CBD5E1;
+    padding-top: 8px;
+    margin-top: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* ── Print Optimization for Thermal POS Printer ── */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .receipt-preview-box,
+    .receipt-preview-box * {
+        visibility: visible;
+    }
+    .receipt-preview-box {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        max-width: none;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+    }
+}

@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Google Gemini AI (untuk SIPINTAR AI Chatbot)
+    |--------------------------------------------------------------------------
+    | Dapatkan API Key gratis di: https://aistudio.google.com/apikey
+    | Tambahkan GEMINI_API_KEY=your_api_key di file .env
+    */
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+    ],
+
 ];
