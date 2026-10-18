@@ -1,0 +1,510 @@
+/* ==========================================================================
+   SIPINTAR Components Stylesheet — UI/UX Pro Max Edition
+   Swiss Precision Metric Cards, Financial Tables, Badges, Banners
+   ========================================================================== */
+
+/* ── Hero Welcome Banner ── */
+.dashboard-welcome-banner {
+    background: linear-gradient(135deg, var(--brand-primary) 0%, #064030 100%);
+    border-radius: var(--radius-xl);
+    padding: 24px 28px;
+    color: #FFFFFF;
+    margin-bottom: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow: 0 4px 14px rgba(13, 92, 70, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-welcome-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.welcome-content {
+    position: relative;
+    z-index: 1;
+}
+
+.welcome-badge-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: var(--radius-pill);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #FEF08A;
+    margin-bottom: 8px;
+}
+
+.welcome-content h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+    color: #FFFFFF;
+}
+
+.welcome-content p {
+    font-size: 13.5px;
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 560px;
+    line-height: 1.5;
+}
+
+.welcome-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.btn-banner-white {
+    background-color: #FFFFFF;
+    color: var(--brand-primary);
+    font-weight: 700;
+    border: none;
+    padding: 9px 18px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform var(--transition), box-shadow var(--transition);
+    cursor: pointer;
+}
+
+.btn-banner-white:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-banner-trans {
+    background: rgba(255, 255, 255, 0.15);
+    color: #FFFFFF;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 9px 18px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+    transition: background var(--transition);
+    cursor: pointer;
+}
+
+.btn-banner-trans:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Metric Cards Grid (Swiss Precision Scorecards) ── */
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.metric-card {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 22px 24px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+    position: relative;
+    overflow: hidden;
+    min-height: 140px;
+}
+
+/* Subtle corner accent tint for financial depth (Anti-Slop compliant) */
+.metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0.6;
+    transition: opacity var(--transition);
+}
+
+.metric-card.card-emerald::before { background: radial-gradient(circle at 100% 0%, rgba(13, 92, 70, 0.12) 0%, transparent 70%); }
+.metric-card.card-blue::before    { background: radial-gradient(circle at 100% 0%, rgba(2, 132, 199, 0.12) 0%, transparent 70%); }
+.metric-card.card-amber::before   { background: radial-gradient(circle at 100% 0%, rgba(217, 119, 6, 0.12) 0%, transparent 70%); }
+.metric-card.card-indigo::before  { background: radial-gradient(circle at 100% 0%, rgba(79, 70, 229, 0.12) 0%, transparent 70%); }
+.metric-card.card-red::before     { background: radial-gradient(circle at 100% 0%, rgba(220, 38, 38, 0.12) 0%, transparent 70%); }
+
+/* Precise top accent indicator line */
+.metric-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3.5px;
+    background: var(--brand-primary);
+}
+
+.metric-card.card-emerald::after { background: linear-gradient(90deg, #0D5C46 0%, #10B981 100%); }
+.metric-card.card-blue::after    { background: linear-gradient(90deg, #0284C7 0%, #38BDF8 100%); }
+.metric-card.card-amber::after   { background: linear-gradient(90deg, #D97706 0%, #FBBF24 100%); }
+.metric-card.card-indigo::after  { background: linear-gradient(90deg, #4F46E5 0%, #818CF8 100%); }
+.metric-card.card-red::after     { background: linear-gradient(90deg, #DC2626 0%, #F87171 100%); }
+
+.metric-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
+}
+
+.metric-card.card-emerald:hover { border-color: rgba(13, 92, 70, 0.35); }
+.metric-card.card-blue:hover    { border-color: rgba(2, 132, 199, 0.35); }
+.metric-card.card-amber:hover   { border-color: rgba(217, 119, 6, 0.35); }
+.metric-card.card-indigo:hover  { border-color: rgba(79, 70, 229, 0.35); }
+.metric-card.card-red:hover     { border-color: rgba(220, 38, 38, 0.35); }
+
+.metric-card:hover::before {
+    opacity: 1;
+}
+
+/* ── Large Background Watermark Icon (AdminLTE / Enterprise Cards Style) ── */
+.metric-watermark {
+    position: absolute;
+    right: 14px;
+    bottom: 8px;
+    width: 78px;
+    height: 78px;
+    pointer-events: none;
+    opacity: 0.09;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+    z-index: 0;
+}
+
+.metric-watermark svg {
+    width: 100%;
+    height: 100%;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    fill: none;
+}
+
+.metric-card:hover .metric-watermark,
+.nasabah-stat-box:hover .metric-watermark {
+    opacity: 0.20;
+    transform: scale(1.12) rotate(-5deg);
+}
+
+.metric-card.card-emerald .metric-watermark,
+.nasabah-stat-box.stat-emerald .metric-watermark { color: #0D5C46; }
+
+.metric-card.card-blue .metric-watermark,
+.nasabah-stat-box.stat-blue .metric-watermark { color: #0284C7; }
+
+.metric-card.card-amber .metric-watermark,
+.nasabah-stat-box.stat-amber .metric-watermark { color: #D97706; }
+
+.metric-card.card-indigo .metric-watermark,
+.nasabah-stat-box.stat-indigo .metric-watermark { color: #4F46E5; }
+
+.metric-card.card-red .metric-watermark { color: #DC2626; }
+
+.metric-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+}
+
+.metric-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.metric-icon-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform var(--transition);
+}
+
+.metric-card:hover .metric-icon-wrap {
+    transform: scale(1.05);
+}
+
+.metric-icon-wrap.emerald {
+    background-color: #ECFDF5;
+    color: #047857;
+    border: 1px solid #A7F3D0;
+    box-shadow: 0 2px 4px rgba(4, 120, 87, 0.08);
+}
+
+.metric-icon-wrap.blue {
+    background-color: #F0F9FF;
+    color: #0284C7;
+    border: 1px solid #BAE6FD;
+    box-shadow: 0 2px 4px rgba(2, 132, 199, 0.08);
+}
+
+.metric-icon-wrap.amber {
+    background-color: #FFFBEB;
+    color: #D97706;
+    border: 1px solid #FDE68A;
+    box-shadow: 0 2px 4px rgba(217, 119, 6, 0.08);
+}
+
+.metric-icon-wrap.indigo {
+    background-color: #EEF2FF;
+    color: #4F46E5;
+    border: 1px solid #C7D2FE;
+    box-shadow: 0 2px 4px rgba(79, 70, 229, 0.08);
+}
+
+.metric-icon-wrap.red {
+    background-color: #FEF2F2;
+    color: #DC2626;
+    border: 1px solid #FECACA;
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.08);
+}
+
+.metric-value {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: var(--text-heading);
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    margin-bottom: 6px;
+    line-height: 1.15;
+    position: relative;
+    z-index: 1;
+}
+
+.metric-value .curr-prefix {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-right: 3px;
+}
+
+.metric-footer {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-subtle);
+    position: relative;
+    z-index: 1;
+}
+
+/* ── Content Cards ── */
+.content-card {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+.card-header-bar {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #FAFAFA;
+}
+
+.card-heading {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-heading);
+    letter-spacing: -0.01em;
+}
+
+.card-body-content {
+    padding: 20px;
+}
+
+/* ── Financial Tables ── */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.financial-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    text-align: left;
+}
+
+.financial-table th {
+    background-color: #F8FAFC;
+    color: #475569;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border-subtle);
+    white-space: nowrap;
+}
+
+.financial-table td {
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-body);
+}
+
+.financial-table tbody tr {
+    transition: background-color var(--transition);
+}
+
+.financial-table tbody tr:hover {
+    background-color: #F8FAFC;
+}
+
+/* ── Shortcut Quick Action Tiles ── */
+.shortcut-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+    gap: 14px;
+}
+
+.shortcut-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 18px 14px;
+    background-color: #FFFFFF;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--text-body);
+    font-size: 13px;
+    font-weight: 600;
+    transition: all var(--transition);
+    box-shadow: var(--shadow-card);
+    cursor: pointer;
+}
+
+.shortcut-tile .tile-icon {
+    width: 26px;
+    height: 26px;
+    stroke: var(--brand-primary);
+    margin-bottom: 8px;
+    stroke-width: 1.8;
+}
+
+.shortcut-tile:hover {
+    background-color: #F8FAFC;
+    border-color: var(--brand-primary);
+    color: var(--brand-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+/* ── Badges ── */
+.badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.badge-pill.green  { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
+.badge-pill.blue   { background: #F0F9FF; color: #0369A1; border: 1px solid #BAE6FD; }
+.badge-pill.amber  { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
+.badge-pill.red    { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
+
+/* ── Buttons ── */
+.btn-ui {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition);
+    border: 1px solid transparent;
+}
+
+.btn-ui-primary {
+    background-color: var(--brand-primary);
+    color: #FFFFFF;
+    box-shadow: 0 1px 3px rgba(13, 92, 70, 0.2);
+}
+
+.btn-ui-primary:hover {
+    background-color: var(--brand-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(13, 92, 70, 0.25);
+}
+
+.btn-ui-outline {
+    background-color: #FFFFFF;
+    border-color: var(--border-medium);
+    color: var(--text-body);
+}
+
+.btn-ui-outline:hover {
+    background-color: var(--surface-subtle);
+    color: var(--text-heading);
+    border-color: var(--border-strong);
+}
+
+.btn-ui-sm {
+    padding: 5px 12px;
+    font-size: 12px;
+}
+
+.empty-placeholder {
+    padding: 40px 16px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13.5px;
+}

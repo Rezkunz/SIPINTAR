@@ -1,0 +1,58 @@
+/* ==========================================================================
+   SIPINTAR Role Stylesheet: Manager & Pimpinan Sekolah
+   Components: CAMEL Financial Ratios, Executive Summary Badges, Balance Grid
+   ========================================================================== */
+
+/* ── CAMEL Ratio Meter Box ── */
+.ratio-meter-card {
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-card);
+}
+
+.ratio-label-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.ratio-progress-track {
+    height: 8px;
+    background-color: #E2E8F0;
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.ratio-progress-fill {
+    height: 100%;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(90deg, #0D7A5F 0%, #10B981 100%);
+    transition: width 300ms ease;
+}
+
+.ratio-progress-fill.warning {
+    background: linear-gradient(90deg, #D97706 0%, #F59E0B 100%);
+}
+
+.ratio-progress-fill.danger {
+    background: linear-gradient(90deg, #DC2626 0%, #EF4444 100%);
+}
+
+/* ── Executive Balance Sheet Highlight ── */
+.balance-highlight-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 640px) {
+    .balance-highlight-grid {
+        grid-template-columns: 1fr;
+    }
+}

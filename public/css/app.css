@@ -1,0 +1,8 @@
+/* ==========================================================================
+   SIPINTAR Unified Main Stylesheet
+   Architecture: Core Design System + Role Extensions
+   ========================================================================== */
+
+@import url('core/variables.css');
+@import url('core/layout.css');
+@import url('core/components.css');
