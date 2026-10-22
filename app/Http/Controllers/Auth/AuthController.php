@@ -240,7 +240,7 @@ class AuthController extends Controller
                     'nasabah_id'      => $nasabah->nasabah_id,
                     'tgl_buka'        => now()->toDateString(),
                     'saldo'           => 0.00,
-                    'status_rekening' => 'aktif',
+                    'status_rekening' => 'pending', // Menunggu aktivasi & setoran awal di loket teller
                 ]);
 
                 // Buat Akun Pengguna (Role: Nasabah = role_id 6)
@@ -265,20 +265,20 @@ class AuthController extends Controller
 
             Log::info("Registrasi Berhasil: Nasabah ID {$user->nasabah_id}, User ID {$user->user_id} ({$user->nama_user}) dari IP {$request->ip()}");
 
-            return redirect()->route('dashboard')->with('success', 'Pendaftaran rekening nasabah berhasil! Selamat datang di portal SIPINTAR.');
+            return redirect()->route('dashboard')->with('success', 'Pendaftaran akun berhasil! Rekening tabungan Anda saat ini berstatus Menunggu Aktivasi Loket Teller. Silakan bawa Kartu Pelajar/KTP dan setoran awal minimum Rp 10.000 ke Bank Mini Sekolah.');
 
         } catch (ValidationException $e) {
             throw $e;
         } catch (QueryException $e) {
             Log::error('QueryException on register: ' . $e->getMessage());
-            throw ValidationException::withMessages([
-                'nama_lengkap' => 'Pendaftaran rekening gagal disimpan karena terjadi kendala pangkalan data. Silakan coba lagi beberapa saat.',
-            ]);
+            return redirect()->back()
+                ->withInput($request->except(['password', 'password_confirmation']))
+                ->with('error', 'Pendaftaran rekening gagal disimpan karena kendala pangkalan data: ' . ($e->getCode() == '23000' ? 'Data identitas/rekening sudah pernah terdaftar.' : 'Silakan coba lagi beberapa saat.'));
         } catch (\Throwable $e) {
             Log::error('Throwable on register: ' . $e->getMessage());
-            throw ValidationException::withMessages([
-                'nama_lengkap' => 'Terjadi kesalahan sistem yang tidak terduga saat memproses pembukaan rekening nasabah.',
-            ]);
+            return redirect()->back()
+                ->withInput($request->except(['password', 'password_confirmation']))
+                ->with('error', 'Terjadi kesalahan sistem yang tidak terduga saat memproses pembukaan rekening nasabah.');
         }
     }
 

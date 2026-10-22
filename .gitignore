@@ -42,3 +42,6 @@ Thumbs.db
 *.pfx
 *.cert
 
+# Figma Mockups (Local export only, not for GitHub)
+/mockups_export_figma/
+

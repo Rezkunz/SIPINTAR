@@ -50,14 +50,13 @@ Route::middleware('auth')->group(function () {
             Route::get('/draft', function () {
                 return view('placeholder', ['title' => 'Input Draft Transaksi', 'subtitle' => 'Form pencatatan draft setoran / penarikan tabungan']);
             })->name('draft');
-
-            Route::get('/buka-rekening', function () {
-                return view('placeholder', ['title' => 'Buka Rekening Baru', 'subtitle' => 'Pendaftaran nasabah dan pembukaan rekening tabungan']);
-            })->name('buka-rekening');
         });
 
-        // Akses bersama: Siswa Praktik & Teller
+        // Akses bersama: Siswa Praktik & Teller (Otoritas Teller Sebagai Pusat Approval)
         Route::middleware('role:siswa_praktik,teller')->group(function () {
+            Route::get('/buka-rekening', [\App\Http\Controllers\Teller\TellerDashboardController::class, 'bukaRekening'])->name('buka-rekening');
+            Route::post('/buka-rekening/aktivasi/{id}', [\App\Http\Controllers\Teller\TellerDashboardController::class, 'aktivasiRekening'])->name('buka-rekening.aktivasi');
+
             Route::get('/setoran', function () {
                 return view('placeholder', ['title' => 'Catat Setoran Tabungan', 'subtitle' => 'Form setoran tabungan nasabah']);
             })->name('setoran');
