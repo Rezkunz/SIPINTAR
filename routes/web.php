@@ -3,6 +3,8 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SiswaPraktik\BukaRekeningController;
+use App\Http\Controllers\SiswaPraktik\DraftTransaksiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -47,24 +49,20 @@ Route::middleware('auth')->group(function () {
     Route::prefix('tabungan')->name('tabungan.')->group(function () {
         // Akses khusus Siswa Praktik
         Route::middleware('role:siswa_praktik')->group(function () {
-            Route::get('/draft', function () {
-                return view('placeholder', ['title' => 'Input Draft Transaksi', 'subtitle' => 'Form pencatatan draft setoran / penarikan tabungan']);
-            })->name('draft');
+            Route::get('/draft', [DraftTransaksiController::class, 'create'])->name('draft');
+            Route::post('/draft', [DraftTransaksiController::class, 'store'])->name('draft.store');
+            Route::get('/draft/riwayat', [DraftTransaksiController::class, 'index'])->name('draft.riwayat');
+            Route::get('/draft/cari-rekening', [DraftTransaksiController::class, 'searchRekening'])->name('draft.cari-rekening');
+            Route::get('/draft/{draft}', [DraftTransaksiController::class, 'show'])->name('draft.show');
 
-            Route::get('/buka-rekening', function () {
-                return view('placeholder', ['title' => 'Buka Rekening Baru', 'subtitle' => 'Pendaftaran nasabah dan pembukaan rekening tabungan']);
-            })->name('buka-rekening');
+            Route::get('/buka-rekening', [BukaRekeningController::class, 'create'])->name('buka-rekening');
+            Route::post('/buka-rekening', [BukaRekeningController::class, 'store'])->name('buka-rekening.store');
         });
 
         // Akses bersama: Siswa Praktik & Teller
         Route::middleware('role:siswa_praktik,teller')->group(function () {
-            Route::get('/setoran', function () {
-                return view('placeholder', ['title' => 'Catat Setoran Tabungan', 'subtitle' => 'Form setoran tabungan nasabah']);
-            })->name('setoran');
-
-            Route::get('/penarikan', function () {
-                return view('placeholder', ['title' => 'Catat Penarikan Tabungan', 'subtitle' => 'Form penarikan saldo tabungan']);
-            })->name('penarikan');
+            Route::get('/setoran', [DraftTransaksiController::class, 'handleSetoran'])->name('setoran');
+            Route::get('/penarikan', [DraftTransaksiController::class, 'handlePenarikan'])->name('penarikan');
         });
 
         // Akses khusus Teller
