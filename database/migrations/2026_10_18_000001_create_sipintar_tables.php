@@ -66,7 +66,7 @@ return new class extends Migration
             $table->unsignedInteger('nasabah_id')->unique();
             $table->date('tgl_buka');
             $table->decimal('saldo', 15, 2)->default(0);
-            $table->enum('status_rekening', ['aktif', 'blokir', 'tutup'])->default('aktif');
+            $table->enum('status_rekening', ['pending', 'aktif', 'blokir', 'tutup'])->default('pending');
 
             $table->foreign('nasabah_id')->references('nasabah_id')->on('tblNASABAH')->onDelete('cascade');
         });

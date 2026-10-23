@@ -101,6 +101,10 @@
                     <svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
                     <span>Dashboard Loket</span>
                 </a>
+                <a href="{{ route('tabungan.buka-rekening') }}" class="nav-link {{ request()->routeIs('tabungan.buka-rekening*') ? 'active' : '' }}">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v4M12 14v4M16 14v4"/></svg>
+                    <span>Buka Rekening</span>
+                </a>
                 <a href="{{ route('tabungan.verifikasi') }}" class="nav-link {{ request()->routeIs('tabungan.verifikasi') ? 'active' : '' }}">
                     <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                     <span>Verifikasi Draft</span>

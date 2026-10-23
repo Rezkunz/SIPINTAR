@@ -59,10 +59,14 @@ Route::middleware('auth')->group(function () {
             Route::post('/buka-rekening', [BukaRekeningController::class, 'store'])->name('buka-rekening.store');
         });
 
-        // Akses bersama: Siswa Praktik & Teller
+        // Akses bersama: Siswa Praktik & Teller (Otoritas Teller Sebagai Pusat Approval)
         Route::middleware('role:siswa_praktik,teller')->group(function () {
             Route::get('/setoran', [DraftTransaksiController::class, 'handleSetoran'])->name('setoran');
             Route::get('/penarikan', [DraftTransaksiController::class, 'handlePenarikan'])->name('penarikan');
+            Route::get('/buka-rekening', [\App\Http\Controllers\Teller\TellerDashboardController::class, 'bukaRekening'])->name('buka-rekening');
+            Route::post('/buka-rekening/aktivasi/{id}', [\App\Http\Controllers\Teller\TellerDashboardController::class, 'aktivasiRekening'])->name('buka-rekening.aktivasi');
+
+          
         });
 
         // Akses khusus Teller

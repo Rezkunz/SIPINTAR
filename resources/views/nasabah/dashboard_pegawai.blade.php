@@ -27,6 +27,28 @@
     </div>
 </div>
 
+{{-- ── PENDING STATUS BANNER (JIKA BELUM DIAKTIVASI OLEH TELLER) ── --}}
+@if (($rekening?->status_rekening ?? 'pending') === 'pending')
+    <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1.5px solid #f59e0b; border-radius: 14px; padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 16px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.08);">
+        <div style="width: 44px; height: 44px; border-radius: 10px; background: #f59e0b; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #92400e; margin: 0;">Status Rekening: Menunggu Aktivasi di Loket Teller</h3>
+                <span class="badge-pill amber" style="font-size: 11px;">Pending Otorisasi</span>
+            </div>
+            <p style="font-size: 13.5px; color: #78350f; margin: 0 0 10px 0; line-height: 1.5;">
+                Pendaftaran akun Anda telah berhasil. Namun sesuai standar perbankan sekolah & Use Case Sistem, rekening Anda harus <strong>dibuka dan diaktivasi secara fisik oleh Teller</strong> di ruang Bank Mini Sekolah.
+            </p>
+            <div style="background: rgba(255,255,255,0.7); border: 1px dashed #d97706; border-radius: 8px; padding: 10px 14px; font-size: 12.5px; color: #92400e; display: inline-flex; align-items: center; gap: 8px;">
+                <strong>Syarat Aktivasi di Teller:</strong> 
+                <span>1. Tunjukkan Kartu Identitas Pegawai (NIP: {{ $user->no_induk ?? '-' }}) &bull; 2. Bawa Uang Setoran Awal Tunai (Min. Rp 10.000) &bull; 3. Ambil Buku Tabungan Fisik</span>
+            </div>
+        </div>
+    </div>
+@endif
+
 {{-- ── SHOWCASE ROW ── --}}
 <div class="nasabah-showcase-grid">
 
