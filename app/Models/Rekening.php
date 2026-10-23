@@ -22,4 +22,9 @@ class Rekening extends Model
     {
         return $this->belongsTo(Nasabah::class, 'nasabah_id', 'nasabah_id');
     }
+
+    public function drafts()
+    {
+        return $this->hasMany(Draft::class, 'rekening_id', 'rekening_id');
+    }
 }

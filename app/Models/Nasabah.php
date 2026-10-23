@@ -27,4 +27,9 @@ class Nasabah extends Model
     {
         return $this->hasOne(Rekening::class, 'nasabah_id', 'nasabah_id');
     }
+
+    public function drafts()
+    {
+        return $this->hasManyThrough(Draft::class, Rekening::class, 'nasabah_id', 'rekening_id', 'nasabah_id', 'rekening_id');
+    }
 }
