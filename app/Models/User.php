@@ -91,4 +91,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Nasabah::class, 'nasabah_id', 'nasabah_id');
     }
+
+    public function drafts()
+    {
+        return $this->hasMany(Draft::class, 'siswa_id', 'user_id');
+    }
 }
