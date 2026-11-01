@@ -60,7 +60,7 @@
 .welcome-content p {
     font-size: 13.5px;
     color: rgba(255, 255, 255, 0.85);
-    max-width: 560px;
+    max-width: 780px;
     line-height: 1.5;
 }
 
@@ -508,3 +508,204 @@
     color: var(--text-muted);
     font-size: 13.5px;
 }
+
+/* ── Standardized Form Controls ── */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 18px;
+    gap: 6px;
+}
+
+.form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin-bottom: 2px;
+}
+
+.form-label .required-mark {
+    color: var(--color-danger);
+    margin-left: 2px;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--text-heading);
+    background-color: #FFFFFF;
+    border: 1.5px solid var(--border-medium);
+    border-radius: var(--radius-md);
+    transition: all var(--transition);
+    box-sizing: border-box;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px rgba(13, 92, 70, 0.12);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+}
+
+.form-hint {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* ── SIPINTAR Pagination Component ── */
+.sipintar-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 0 4px;
+    font-size: 13px;
+    width: 100%;
+}
+
+.sipintar-pagination .pagination-info {
+    color: var(--text-muted, #64748B);
+    font-size: 12.5px;
+}
+
+.sipintar-pagination .pagination-info strong {
+    color: var(--text-heading, #0F172A);
+    font-weight: 700;
+}
+
+.sipintar-pagination .pagination-links {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sipintar-pagination .page-item {
+    display: inline-block;
+}
+
+.sipintar-pagination .page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border-radius: var(--radius-md, 6px);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--text-body, #334155);
+    background-color: #FFFFFF;
+    border: 1px solid var(--border-medium, #E2E8F0);
+    transition: all var(--transition, 0.15s ease);
+    line-height: 1;
+}
+
+.sipintar-pagination .page-link:hover:not(.dots) {
+    background-color: var(--surface-subtle, #F8FAFC);
+    border-color: var(--brand-primary, #0D5C46);
+    color: var(--brand-primary, #0D5C46);
+}
+
+.sipintar-pagination .page-item.active .page-link {
+    background-color: var(--brand-primary, #0D5C46);
+    border-color: var(--brand-primary, #0D5C46);
+    color: #FFFFFF !important;
+    font-weight: 700;
+    box-shadow: 0 1px 3px rgba(13, 92, 70, 0.25);
+}
+
+.sipintar-pagination .page-item.disabled .page-link {
+    background-color: #F8FAFC;
+    border-color: var(--border-subtle, #E2E8F0);
+    color: #94A3B8;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.sipintar-pagination .page-link svg {
+    width: 14px !important;
+    height: 14px !important;
+    max-width: 14px !important;
+    max-height: 14px !important;
+    stroke: currentColor;
+    display: inline-block;
+}
+
+/* Fallback Global Rule for any unstyled Laravel pagination SVG */
+nav[role="navigation"] svg,
+nav svg,
+.pagination svg,
+svg.w-5,
+svg.h-5,
+svg.w-5.h-5 {
+    width: 16px !important;
+    height: 16px !important;
+    max-width: 16px !important;
+    max-height: 16px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+}
+
+/* ── Standard SIPINTAR Floating Modal & Backdrop ── */
+.sipintar-modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.sipintar-modal-backdrop.open {
+    display: flex !important;
+}
+
+.sipintar-modal-card {
+    background: #FFFFFF;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 680px;
+    max-height: calc(90vh);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.15);
+    overflow: hidden;
+    position: relative;
+    animation: modalPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPopIn {
+    from {
+        opacity: 0;
+        transform: scale(0.93) translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+

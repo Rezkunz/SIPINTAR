@@ -8,7 +8,6 @@
 {{-- ── HERO GREETING BANNER ── --}}
 <div class="dashboard-welcome-banner">
     <div class="welcome-content">
-        <div class="welcome-badge-tag">Loket Operasional Kasir 01</div>
         <h1>Selamat Bertugas, {{ auth()->user()->name }}</h1>
         <p>Layanan operasional kasir teller: penerimaan setoran, pembayaran penarikan tabungan, dan otorisasi transaksi siswa.</p>
     </div>

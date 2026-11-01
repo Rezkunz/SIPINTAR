@@ -27,15 +27,8 @@
 {{-- ── HERO GREETING BANNER ── --}}
 <div class="dashboard-welcome-banner">
     <div class="welcome-content">
-        <div class="welcome-badge-tag">Loket Operasional Teller &bull; Pusat Approval</div>
         <h1>Otorisasi Pembukaan Rekening Baru</h1>
         <p>Verifikasi identitas fisik calon nasabah (Kartu Pelajar / KTP Pegawai), terima uang setoran awal tunai di loket, dan aktifkan buku tabungan nasabah.</p>
-    </div>
-    <div class="welcome-actions">
-        <a href="{{ route('dashboard') }}" class="btn-banner-trans">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-            <span>Kembali ke Loket</span>
-        </a>
     </div>
 </div>
 

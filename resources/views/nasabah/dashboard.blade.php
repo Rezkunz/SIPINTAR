@@ -8,7 +8,6 @@
 {{-- ── HERO GREETING BANNER (Refined & Balanced) ── --}}
 <div class="dashboard-welcome-banner" style="margin-bottom: 24px;">
     <div class="welcome-content">
-        <div class="welcome-badge-tag">Portal Nasabah Mandiri</div>
         <h1>Selamat Datang, {{ $nasabah->nama_nasabah ?? $user->nama_user ?? $user->name }}</h1>
         <p>Layanan rekening tabungan digital dan fasilitas pembiayaan sekolah terpadu &bull; No. WhatsApp: <strong>{{ $user->no_hp ?? '-' }}</strong></p>
     </div>

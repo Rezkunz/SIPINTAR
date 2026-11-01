@@ -162,95 +162,107 @@
                 </a>
             @endif
 
-            {{-- ── BENDAHARA ── --}}
+            {{-- ── BENDAHARA SEKOLAH ── --}}
             @if ($role === 'bendahara')
-                <div class="nav-section-title">Pinjaman</div>
+                <div class="nav-section-title">Potongan Pegawai</div>
                 <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
                     <span>Dashboard</span>
                 </a>
-                <a href="{{ route('pinjaman.index') }}" class="nav-link {{ request()->routeIs('pinjaman.index') ? 'active' : '' }}">
-                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                    <span>Daftar Pinjaman</span>
-                </a>
-                <a href="{{ route('pinjaman.ajukan') }}" class="nav-link {{ request()->routeIs('pinjaman.ajukan') ? 'active' : '' }}">
-                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-                    <span>Pengajuan Pinjaman</span>
-                </a>
-                <a href="{{ route('pinjaman.kelayakan') }}" class="nav-link {{ request()->routeIs('pinjaman.kelayakan') ? 'active' : '' }}">
-                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
-                    <span>Penilaian Kelayakan</span>
-                </a>
-                <a href="{{ route('pinjaman.cair') }}" class="nav-link {{ request()->routeIs('pinjaman.cair') ? 'active' : '' }}">
-                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
-                    <span>Pencairan Pinjaman</span>
-                </a>
-
-                <div class="nav-section-title">Angsuran</div>
-                <a href="{{ route('angsuran.catat') }}" class="nav-link {{ request()->routeIs('angsuran.catat') ? 'active' : '' }}">
-                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                    <span>Catat Angsuran</span>
-                </a>
-                <a href="{{ route('angsuran.potongan') }}" class="nav-link {{ request()->routeIs('angsuran.potongan') ? 'active' : '' }}">
-                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
-                    <span>Rencana Potongan</span>
-                </a>
-                <a href="{{ route('angsuran.pantau') }}" class="nav-link {{ request()->routeIs('angsuran.pantau') ? 'active' : '' }}">
-                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    <span>Pantau Potongan</span>
+                <a href="{{ route('bendahara.potongan.index') }}" class="nav-link {{ request()->routeIs('bendahara.potongan.*') ? 'active' : '' }}">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    <span>Rencana & Hasil Potongan</span>
                 </a>
             @endif
 
             {{-- ── BENDAHARA BANK MINI ── --}}
             @if ($role === 'bendahara_mini')
-                <div class="nav-section-title">Buku Kas</div>
+                <div class="nav-section-title">Pinjaman Pegawai</div>
                 <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-                    <span>Dashboard Kas</span>
+                    <span>Dashboard</span>
                 </a>
-                <a href="{{ route('kas.harian') }}" class="nav-link {{ request()->routeIs('kas.harian') ? 'active' : '' }}">
+                <a href="{{ route('bbm.pinjaman.index') }}" class="nav-link {{ request()->routeIs('bbm.pinjaman.index') ? 'active' : '' }}">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                    <span>Daftar Pinjaman</span>
+                </a>
+                <a href="{{ route('bbm.pinjaman.ajukan') }}" class="nav-link {{ request()->routeIs('bbm.pinjaman.ajukan') ? 'active' : '' }}">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                    <span>Pengajuan Pinjaman</span>
+                </a>
+                <a href="{{ route('bbm.pinjaman.kelayakan') }}" class="nav-link {{ request()->routeIs('bbm.pinjaman.kelayakan*') ? 'active' : '' }}">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/></svg>
+                    <span>Penilaian Kelayakan</span>
+                </a>
+                <a href="{{ route('bbm.pinjaman.cair') }}" class="nav-link {{ request()->routeIs('bbm.pinjaman.cair*') ? 'active' : '' }}">
                     <svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
-                    <span>Buku Kas Harian</span>
-                </a>
-                <a href="{{ route('kas.bank') }}" class="nav-link {{ request()->routeIs('kas.bank') ? 'active' : '' }}">
-                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v4M12 14v4M16 14v4"/></svg>
-                    <span>Kas & Bank</span>
+                    <span>Pencairan Pinjaman</span>
                 </a>
 
-                <div class="nav-section-title">Piutang</div>
-                <a href="{{ route('bbm.kartu') }}" class="nav-link {{ request()->routeIs('bbm.kartu') ? 'active' : '' }}">
+                <div class="nav-section-title">Angsuran & Potongan</div>
+                <a href="{{ route('bbm.angsuran.langsung') }}" class="nav-link {{ request()->routeIs('bbm.angsuran.langsung*') ? 'active' : '' }}">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <span>Angsuran Langsung</span>
+                </a>
+                <a href="{{ route('bbm.angsuran.potongan') }}" class="nav-link {{ request()->routeIs('bbm.angsuran.potongan*') ? 'active' : '' }}">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/></svg>
+                    <span>Rencana Potongan</span>
+                </a>
+                <a href="{{ route('bbm.angsuran.koreksi') }}" class="nav-link {{ request()->routeIs('bbm.angsuran.koreksi*') ? 'active' : '' }}">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                    <span>Koreksi Angsuran</span>
+                </a>
+
+                <div class="nav-section-title">Piutang & Kas</div>
+                <a href="{{ route('bbm.kartu.index') }}" class="nav-link {{ request()->routeIs('bbm.kartu.*') ? 'active' : '' }}">
                     <svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><line x1="15" y1="8" x2="17" y2="8"/><line x1="15" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="17" y2="16"/></svg>
                     <span>Kartu Piutang</span>
                 </a>
-                <a href="{{ route('bbm.koreksi') }}" class="nav-link {{ request()->routeIs('bbm.koreksi') ? 'active' : '' }}">
-                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-                    <span>Koreksi Angsuran</span>
+                <a href="{{ route('kas.harian') }}" class="nav-link {{ request()->routeIs('kas.harian') ? 'active' : '' }}">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+                    <span>Kas Tunai (Cash)</span>
+                </a>
+                <a href="{{ route('kas.bank') }}" class="nav-link {{ request()->routeIs('kas.bank') ? 'active' : '' }}">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v4M12 14v4M16 14v4"/></svg>
+                    <span>Kas Bank Bendahara</span>
                 </a>
             @endif
 
             {{-- ── NASABAH ── --}}
             @if ($role === 'nasabah')
-                @php $jenisNasabah = auth()->user()->nasabah?->jenis_nasabah ?? 'non_pegawai'; @endphp
+                @php
+                    $nasabahUser = auth()->user()->nasabah ?? (\App\Models\Nasabah::where('no_hp', auth()->user()->no_hp)->first());
+                    $jenisNasabah = $nasabahUser?->jenis_nasabah ?? 'non_pegawai';
+                    $rekeningUser = $nasabahUser ? \App\Models\Rekening::where('nasabah_id', $nasabahUser->nasabah_id)->first() : null;
+                    $isRekeningAktif = $rekeningUser && $rekeningUser->status_rekening === 'aktif';
+                @endphp
                 <div class="nav-section-title">Rekening Mandiri</div>
                 <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                     <span>Informasi Rekening</span>
                 </a>
-                <a href="{{ route('nasabah.saldo') }}" class="nav-link {{ request()->routeIs('nasabah.saldo') ? 'active' : '' }}">
-                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
-                    <span>Riwayat Mutasi</span>
-                </a>
-                {{-- Angsuran & Pinjaman: hanya untuk Pegawai --}}
-                @if ($jenisNasabah === 'pegawai')
-                    <div class="nav-section-title">Pinjaman</div>
-                    <a href="{{ route('nasabah.angsuran') }}" class="nav-link {{ request()->routeIs('nasabah.angsuran') ? 'active' : '' }}">
-                        <svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                        <span>Jadwal Angsuran</span>
+
+                @if ($isRekeningAktif)
+                    <a href="{{ route('nasabah.saldo') }}" class="nav-link {{ request()->routeIs('nasabah.saldo') ? 'active' : '' }}">
+                        <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                        <span>Riwayat Mutasi</span>
                     </a>
-                    <a href="{{ route('nasabah.pinjaman') }}" class="nav-link {{ request()->routeIs('nasabah.pinjaman') ? 'active' : '' }}">
-                        <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                        <span>Info Pinjaman</span>
-                    </a>
+                    {{-- Angsuran & Pinjaman: hanya untuk Pegawai --}}
+                    @if ($jenisNasabah === 'pegawai')
+                        <div class="nav-section-title">Pinjaman Pegawai</div>
+                        <a href="{{ route('nasabah.pinjaman.ajukan') }}" class="nav-link {{ request()->routeIs('nasabah.pinjaman.ajukan') ? 'active' : '' }}">
+                            <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                            <span>Ajukan Pinjaman</span>
+                        </a>
+                        <a href="{{ route('nasabah.pinjaman') }}" class="nav-link {{ request()->routeIs('nasabah.pinjaman') && !request()->routeIs('nasabah.pinjaman.ajukan') ? 'active' : '' }}">
+                            <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            <span>Info Pinjaman</span>
+                        </a>
+                        <a href="{{ route('nasabah.angsuran') }}" class="nav-link {{ request()->routeIs('nasabah.angsuran') ? 'active' : '' }}">
+                            <svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span>Jadwal Angsuran</span>
+                        </a>
+                    @endif
                 @endif
             @endif
         </nav>
@@ -324,6 +336,27 @@
                     </div>
 
                     <div class="notif-dropdown-body">
+                        @if (auth()->check() && (auth()->user()->role === 'bendahara_mini' || auth()->user()->role_id == 3))
+                            @php
+                                $notifPaketCount = \Illuminate\Support\Facades\DB::table('tblRENCANA_POTONGAN')->where('status_potongan', 'menunggu_verifikasi')->count();
+                                $notifPaketTotal = \Illuminate\Support\Facades\DB::table('tblRENCANA_POTONGAN')->where('status_potongan', 'menunggu_verifikasi')->sum('total_realisasi');
+                            @endphp
+                            @if ($notifPaketCount > 0)
+                                <a href="{{ route('bbm.angsuran.potongan') }}" class="notif-card-item unread" style="text-decoration:none; background:#FFFBEB; border-left:3px solid #D97706;">
+                                    <div class="notif-card-icon amber">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                    </div>
+                                    <div class="notif-card-content">
+                                        <div class="notif-card-head">
+                                            <span class="notif-source" style="color:#B45309; font-weight:700;">Serah Terima Potongan Payroll</span>
+                                            <span class="notif-time" style="color:#B45309; font-weight:700;">Siap Terima</span>
+                                        </div>
+                                        <p class="notif-msg" style="color:#78350F;">Terdapat <strong>{{ $notifPaketCount }} paket potongan</strong> (Rp {{ number_format($notifPaketTotal, 0, ',', '.') }}) menunggu verifikasi fisik/transfer & pembukuan kas.</p>
+                                    </div>
+                                </a>
+                            @endif
+                        @endif
+
                         <div class="notif-card-item unread">
                             <div class="notif-card-icon emerald">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -1404,6 +1437,139 @@
             toggleChatbot();
         }
     });
+
+    // ── GLOBAL SIPINTAR CONFIRMATION MODAL HELPER ──
+    window.sipintarConfirm = function({ title, message, iconType = 'info', confirmText = 'Ya, Lanjutkan', cancelText = 'Batal', onConfirm, onCancel }) {
+        const modal = document.getElementById('sipintarConfirmModal');
+        const titleEl = document.getElementById('sipintarConfirmTitle');
+        const msgEl = document.getElementById('sipintarConfirmMessage');
+        const iconEl = document.getElementById('sipintarConfirmIcon');
+        const btnOk = document.getElementById('sipintarConfirmBtnOk');
+        const btnCancel = document.getElementById('sipintarConfirmBtnCancel');
+
+        if (!modal) {
+            if (confirm(message ? message.replace(/<[^>]*>?/gm, '') : title)) {
+                if (typeof onConfirm === 'function') onConfirm();
+            } else {
+                if (typeof onCancel === 'function') onCancel();
+            }
+            return;
+        }
+
+        titleEl.innerText = title || 'Konfirmasi Tindakan';
+        msgEl.innerHTML = message || 'Apakah Anda yakin ingin melanjutkan tindakan ini?';
+        btnOk.innerText = confirmText;
+        btnCancel.innerText = cancelText;
+
+        if (iconType === 'danger') {
+            iconEl.style.background = '#FEF2F2';
+            iconEl.style.color = '#DC2626';
+            btnOk.style.background = '#DC2626';
+            btnOk.style.borderColor = '#DC2626';
+            iconEl.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+        } else {
+            iconEl.style.background = '#ECFDF5';
+            iconEl.style.color = '#0D5C46';
+            btnOk.style.background = '#0D5C46';
+            btnOk.style.borderColor = '#0D5C46';
+            iconEl.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+        }
+
+        modal.style.display = 'flex';
+        modal.classList.add('open');
+
+        const cleanup = () => {
+            modal.style.display = 'none';
+            modal.classList.remove('open');
+            btnOk.onclick = null;
+            btnCancel.onclick = null;
+        };
+
+        btnOk.onclick = function() {
+            cleanup();
+            if (typeof onConfirm === 'function') onConfirm();
+        };
+
+        btnCancel.onclick = function() {
+            cleanup();
+            if (typeof onCancel === 'function') onCancel();
+        };
+    };
+
+    // ── GLOBAL TABLE FILTER HELPER ──
+    window.filterTableRows = function(inputEl, tableId) {
+        const filter = inputEl.value.toLowerCase().trim();
+        const table = document.getElementById(tableId);
+        if (!table) return;
+        const rows = table.querySelectorAll('tbody tr');
+        let matched = 0;
+        rows.forEach(row => {
+            if (row.querySelector('.empty-placeholder')) return;
+            const text = row.textContent.toLowerCase();
+            const show = text.includes(filter);
+            row.style.display = show ? '' : 'none';
+            if (show) matched++;
+        });
+    };
+    </script>
+
+    {{-- ── GLOBAL SIPINTAR CONFIRMATION MODAL (MODERN FINTECH STYLE) ── --}}
+    <div id="sipintarConfirmModal" class="sipintar-modal-backdrop" style="display:none; z-index:10000; align-items:center; justify-content:center; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px);">
+        <div class="sipintar-modal-card" style="max-width: 460px; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(15,23,42,0.3); border: 1px solid #E2E8F0; background: #FFFFFF; border-top: 4px solid #0D5C46;" onclick="event.stopPropagation()">
+            <div style="padding: 24px 26px 20px;">
+                <div style="display: flex; gap: 16px; align-items: flex-start;">
+                    <div id="sipintarConfirmIcon" style="width: 46px; height: 46px; border-radius: 12px; background: #ECFDF5; color: #0D5C46; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #A7F3D0;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <h3 id="sipintarConfirmTitle" style="margin: 0 0 6px 0; font-size: 16.5px; font-weight: 800; color: #0F172A; letter-spacing: -0.01em;">Konfirmasi Tindakan</h3>
+                        <div id="sipintarConfirmMessage" style="margin: 0; font-size: 13.5px; color: #475569; line-height: 1.55;">Apakah Anda yakin ingin melanjutkan tindakan ini?</div>
+                    </div>
+                </div>
+            </div>
+            <div style="background: #F8FAFC; border-top: 1px solid #E2E8F0; padding: 14px 24px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" id="sipintarConfirmBtnCancel" class="btn-ui btn-ui-outline" style="padding: 9px 20px; font-size: 13.5px; font-weight: 600; border-radius: 8px;">
+                    Batal
+                </button>
+                <button type="button" id="sipintarConfirmBtnOk" class="btn-ui btn-ui-primary" style="padding: 9px 22px; font-size: 13.5px; font-weight: 800; background: #0D5C46; border-color: #0D5C46; border-radius: 8px;">
+                    Ya, Lanjutkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- ── SMART AUTO-SYNC SAAT BERALIH TAB / JENDELA ── --}}
+    <script>
+    (function() {
+        let lastBlurTime = 0;
+        window.addEventListener('blur', function() {
+            lastBlurTime = Date.now();
+        });
+
+        window.addEventListener('focus', function() {
+            // Jika user beralih ke tab/jendela lain minimal 1.5 detik lalu kembali ke tab ini
+            if (lastBlurTime && (Date.now() - lastBlurTime > 1500)) {
+                // Hindari reload jika sedang mengetik di formulir atau ada modal dialog yang sedang terbuka
+                const activeTag = document.activeElement ? document.activeElement.tagName : '';
+                const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeTag);
+                const isModalOpen = document.querySelector('.sipintar-modal-backdrop[style*="display: flex"]') ||
+                                    document.querySelector('.sipintar-modal-backdrop[style*="display:flex"]') ||
+                                    document.querySelector('.sipintar-modal-backdrop[style*="display: block"]') ||
+                                    document.querySelector('.sipintar-modal-backdrop[style*="display:block"]');
+
+                if (!isTyping && !isModalOpen) {
+                    // Beri indikasi visual singkat bahwa halaman sedang memuat data terbaru
+                    const toast = document.createElement('div');
+                    toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#0D5C46;color:#FFF;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;z-index:99999;box-shadow:0 4px 12px rgba(0,0,0,0.15);display:flex;align-items:center;gap:8px;';
+                    toast.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg> Memperbarui status data...';
+                    document.body.appendChild(toast);
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 200);
+                }
+            }
+        });
+    })();
     </script>
 </body>
 </html>

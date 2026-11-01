@@ -8,7 +8,6 @@
 {{-- ── HERO GREETING BANNER ── --}}
 <div class="dashboard-welcome-banner">
     <div class="welcome-content">
-        <div class="welcome-badge-tag">Portal Pimpinan & Audit Keuangan</div>
         <h1>Selamat Datang, {{ auth()->user()->name }}</h1>
         <p>Ringkasan eksekutif bank mini sekolah: tinjau posisi likuiditas kas, pengawasan dana pihak ketiga, dan kesehatan pembiayaan koperasi.</p>
     </div>

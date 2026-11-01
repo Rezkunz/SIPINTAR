@@ -15,6 +15,8 @@ class Nasabah extends Model
         'nama_nasabah',
         'jenis_nasabah',
         'kelas_unit',
+        'gaji_pokok',
+        'tunjangan',
         'status_nasabah',
     ];
 

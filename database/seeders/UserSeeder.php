@@ -15,48 +15,57 @@ class UserSeeder extends Seeder
     {
         $defaultPassword = Hash::make('sipintar123');
 
+        $roleMap = [
+            'teller'         => 1,
+            'bendahara'      => 2,
+            'bendahara_mini' => 3,
+            'manager'        => 4,
+            'siswa_praktik'  => 5,
+            'nasabah'        => 6,
+        ];
+
         $users = [
             [
-                'name'     => 'Muhammad Reza Pratama',
-                'email'    => 'nasabah@sipintar.sch.id',
-                'no_induk' => '0059876543',
-                'phone'    => '081234567890',
-                'role'     => 'nasabah',
+                'nama_user' => 'Muhammad Reza Pratama',
+                'email'     => 'nasabah@sipintar.sch.id',
+                'no_induk'  => '0059876543',
+                'no_hp'     => '081234567890',
+                'role_id'   => 6,
             ],
             [
-                'name'     => 'Andi Siswa Praktik',
-                'email'    => 'siswa@sipintar.sch.id',
-                'no_induk' => '0061234567',
-                'phone'    => '081234567891',
-                'role'     => 'siswa_praktik',
+                'nama_user' => 'Andi Siswa Praktik',
+                'email'     => 'siswa@sipintar.sch.id',
+                'no_induk'  => '0061234567',
+                'no_hp'     => '081234567891',
+                'role_id'   => 5,
             ],
             [
-                'name'     => 'Siti Rahmawati',
-                'email'    => 'teller@sipintar.sch.id',
-                'no_induk' => 'TLR-001',
-                'phone'    => '081234567892',
-                'role'     => 'teller',
+                'nama_user' => 'Siti Rahmawati',
+                'email'     => 'teller@sipintar.sch.id',
+                'no_induk'  => 'TLR-001',
+                'no_hp'     => '081234567892',
+                'role_id'   => 1,
             ],
             [
-                'name'     => 'Budi Santoso',
-                'email'    => 'bendahara@sipintar.sch.id',
-                'no_induk' => 'BND-001',
-                'phone'    => '081234567893',
-                'role'     => 'bendahara',
+                'nama_user' => 'Budi Santoso',
+                'email'     => 'bendahara@sipintar.sch.id',
+                'no_induk'  => 'BND-001',
+                'no_hp'     => '081234567893',
+                'role_id'   => 2,
             ],
             [
-                'name'     => 'Hendra Wijaya',
-                'email'    => 'bbm@sipintar.sch.id',
-                'no_induk' => 'BBM-001',
-                'phone'    => '081234567894',
-                'role'     => 'bendahara_mini',
+                'nama_user' => 'Hendra Wijaya',
+                'email'     => 'bbm@sipintar.sch.id',
+                'no_induk'  => 'BBM-001',
+                'no_hp'     => '081234567894',
+                'role_id'   => 3,
             ],
             [
-                'name'     => 'Dra. Hj. Nurul Aini',
-                'email'    => 'manager@sipintar.sch.id',
-                'no_induk' => 'MGR-001',
-                'phone'    => '081234567895',
-                'role'     => 'manager',
+                'nama_user' => 'Dra. Hj. Nurul Aini',
+                'email'     => 'manager@sipintar.sch.id',
+                'no_induk'  => 'MGR-001',
+                'no_hp'     => '081234567895',
+                'role_id'   => 4,
             ],
         ];
 
@@ -64,11 +73,12 @@ class UserSeeder extends Seeder
             User::updateOrCreate(
                 ['no_induk' => $userData['no_induk']],
                 [
-                    'name'     => $userData['name'],
-                    'email'    => $userData['email'],
-                    'password' => $defaultPassword,
-                    'phone'    => $userData['phone'],
-                    'role'     => $userData['role'],
+                    'nama_user'   => $userData['nama_user'],
+                    'email'       => $userData['email'],
+                    'password'    => $defaultPassword,
+                    'no_hp'       => $userData['no_hp'],
+                    'role_id'     => $userData['role_id'],
+                    'status_akun' => 'aktif',
                 ]
             );
         }

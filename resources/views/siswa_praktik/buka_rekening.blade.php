@@ -8,19 +8,8 @@
 {{-- ── HERO GREETING BANNER ── --}}
 <div class="dashboard-welcome-banner">
     <div class="welcome-content">
-        <div class="welcome-badge-tag">Simulasi Kasir & Rekening Siswa</div>
         <h1>Pembukaan Rekening Baru</h1>
         <p>Pendaftaran nasabah baru dan penerbitan nomor rekening tabungan sekolah secara instan untuk siswa atau pegawai.</p>
-    </div>
-    <div class="welcome-actions">
-        <a href="{{ route('tabungan.draft') }}" class="btn-banner-white">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            <span>Input Draft Transaksi</span>
-        </a>
-        <a href="{{ route('tabungan.draft.riwayat') }}" class="btn-banner-trans">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            <span>Riwayat Draft Saya</span>
-        </a>
     </div>
 </div>
 

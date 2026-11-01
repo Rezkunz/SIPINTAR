@@ -8,45 +8,34 @@
 {{-- ── HERO GREETING BANNER ── --}}
 <div class="dashboard-welcome-banner" style="margin-bottom: 24px;">
     <div class="welcome-content">
-        <div class="welcome-badge-tag">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Portal Nasabah Pegawai
-        </div>
         <h1>Selamat Datang, {{ $nasabah?->nama_nasabah ?? $user->name }}</h1>
         <p>Layanan rekening & fasilitas pinjaman karyawan &bull; Unit: <strong>{{ $nasabah?->kelas_unit ?? '-' }}</strong></p>
     </div>
-    <div class="welcome-actions">
-        <a href="{{ route('nasabah.saldo') }}" class="btn-banner-white">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
-            <span>Riwayat Mutasi</span>
-        </a>
-        <a href="{{ route('nasabah.angsuran') }}" class="btn-banner-trans">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span>Jadwal Angsuran</span>
-        </a>
-    </div>
+    @if (($rekening?->status_rekening ?? 'pending') === 'aktif')
+        <div class="welcome-actions">
+            <a href="{{ route('nasabah.saldo') }}" class="btn-banner-white">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                <span>Riwayat Mutasi</span>
+            </a>
+            <a href="{{ route('nasabah.angsuran') }}" class="btn-banner-trans">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>Jadwal Angsuran</span>
+            </a>
+        </div>
+    @else
+        <div class="welcome-actions">
+            <button type="button" onclick="openAktivasiModal()" class="btn-banner-trans" style="cursor:pointer; display:inline-flex; align-items:center; gap:8px; background:rgba(254, 243, 199, 0.2); border:1px solid #FDE68A; color:#FEF3C7; font-weight:700;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>Syarat & Aktivasi Rekening</span>
+                <span style="background:#F59E0B; color:#FFFFFF; border-radius:10px; font-size:10.5px; padding:2px 7px; font-weight:800;">Pending</span>
+            </button>
+        </div>
+    @endif
 </div>
 
-{{-- ── PENDING STATUS BANNER (JIKA BELUM DIAKTIVASI OLEH TELLER) ── --}}
+{{-- ── POPUP MODAL PANDUAN AKTIVASI (MENGGANTIKAN BANNER BESAR) ── --}}
 @if (($rekening?->status_rekening ?? 'pending') === 'pending')
-    <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1.5px solid #f59e0b; border-radius: 14px; padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 16px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.08);">
-        <div style="width: 44px; height: 44px; border-radius: 10px; background: #f59e0b; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        </div>
-        <div style="flex: 1;">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-                <h3 style="font-size: 16px; font-weight: 700; color: #92400e; margin: 0;">Status Rekening: Menunggu Aktivasi di Loket Teller</h3>
-                <span class="badge-pill amber" style="font-size: 11px;">Pending Otorisasi</span>
-            </div>
-            <p style="font-size: 13.5px; color: #78350f; margin: 0 0 10px 0; line-height: 1.5;">
-                Pendaftaran akun Anda telah berhasil. Namun sesuai standar perbankan sekolah & Use Case Sistem, rekening Anda harus <strong>dibuka dan diaktivasi secara fisik oleh Teller</strong> di ruang Bank Mini Sekolah.
-            </p>
-            <div style="background: rgba(255,255,255,0.7); border: 1px dashed #d97706; border-radius: 8px; padding: 10px 14px; font-size: 12.5px; color: #92400e; display: inline-flex; align-items: center; gap: 8px;">
-                <strong>Syarat Aktivasi di Teller:</strong> 
-                <span>1. Tunjukkan Kartu Identitas Pegawai (NIP: {{ $user->no_induk ?? '-' }}) &bull; 2. Bawa Uang Setoran Awal Tunai (Min. Rp 10.000) &bull; 3. Ambil Buku Tabungan Fisik</span>
-            </div>
-        </div>
-    </div>
+    @include('nasabah.partials.modal_aktivasi')
 @endif
 
 {{-- ── SHOWCASE ROW ── --}}
@@ -103,10 +92,19 @@
         </div>
 
         {{-- Card 2: Status Rekening --}}
-        <div class="nasabah-stat-box stat-blue">
+        <div class="nasabah-stat-box {{ ($rekening?->status_rekening ?? 'pending') === 'pending' ? 'stat-amber' : 'stat-blue' }}">
             <div class="metric-watermark"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
             <div class="nasabah-stat-header"><span class="nasabah-stat-title">Status Layanan</span></div>
-            <div class="nasabah-stat-val" style="font-size:1.25rem;">{{ ucfirst($rekening?->status_rekening ?? 'Aktif') }}</div>
+            <div class="nasabah-stat-val" style="font-size:1.25rem; {{ ($rekening?->status_rekening ?? 'pending') === 'pending' ? 'color:#D97706;' : '' }}">
+                {{ ucfirst($rekening?->status_rekening ?? 'Aktif') }}
+            </div>
+            @if (($rekening?->status_rekening ?? 'pending') === 'pending')
+                <div style="margin-top:4px;">
+                    <button type="button" onclick="openAktivasiModal()" style="background:none; border:none; padding:0; color:#B45309; font-size:11.5px; font-weight:700; text-decoration:underline; cursor:pointer;">
+                        Lihat Panduan &bull;
+                    </button>
+                </div>
+            @endif
         </div>
 
         {{-- Card 3: Kewajiban Pinjaman --}}
@@ -193,6 +191,23 @@
         @endif
     </div>
 </div>
+@elseif (($rekening?->status_rekening ?? 'pending') === 'aktif')
+<div class="content-card" style="margin-bottom: 24px; background: linear-gradient(135deg, #F0FDF4 0%, #FFFFFF 100%); border: 1.5px dashed #A7F3D0;">
+    <div style="padding: 22px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 46px; height: 46px; border-radius: 12px; background: #ECFDF5; color: #0D5C46; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </div>
+            <div>
+                <h3 style="font-size: 15px; font-weight: 800; color: #065F46; margin: 0 0 4px;">Fasilitas Pinjaman Pegawai Tersedia</h3>
+                <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">Anda belum memiliki pinjaman aktif. Dapatkan fasilitas kredit permodalan/kebutuhan pegawai dengan jasa flat 2% per bulan dan tenor fleksibel.</p>
+            </div>
+        </div>
+        <a href="{{ route('nasabah.pinjaman.ajukan') }}" class="btn-ui btn-ui-primary" style="padding: 10px 20px; font-weight: 700;">
+            Ajukan Pinjaman Sekarang
+        </a>
+    </div>
+</div>
 @endif
 
 {{-- ── TWO-COLUMN ACTIVITY ROW ── --}}
@@ -205,7 +220,9 @@
                 <h2 class="card-heading">Mutasi Tabungan Terakhir</h2>
                 <div style="font-size:11.5px;color:var(--text-muted);">5 transaksi terbaru pada rekening Anda</div>
             </div>
-            <a href="{{ route('nasabah.saldo') }}" class="btn-ui btn-ui-outline btn-ui-sm">Rincian Mutasi</a>
+            @if (($rekening?->status_rekening ?? 'pending') === 'aktif')
+                <a href="{{ route('nasabah.saldo') }}" class="btn-ui btn-ui-outline btn-ui-sm">Rincian Mutasi</a>
+            @endif
         </div>
         <div class="table-responsive">
             <table class="financial-table">
@@ -250,30 +267,36 @@
     <div class="content-card" style="margin-bottom:0;display:flex;flex-direction:column;justify-content:space-between;">
         <div>
             <div class="card-header-bar">
-                <h2 class="card-heading">Layanan Nasabah Pegawai</h2>
+                <h2 class="card-heading">Layanan Pegawai Bank Mini</h2>
             </div>
             <div class="card-body-content" style="padding:18px 20px;">
                 <div style="display:flex;flex-direction:column;gap:14px;">
                     <div style="display:flex;gap:12px;align-items:flex-start;">
                         <div style="width:26px;height:26px;border-radius:6px;background:#ECFDF5;color:#0D5C46;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;">1</div>
-                        <div style="font-size:12.5px;color:var(--text-body);line-height:1.5;"><strong>Setor & Tarik Tunai:</strong> Layanan di loket kasir Bank Mini Sekolah pada jam operasional.</div>
+                        <div style="font-size:12.5px;color:var(--text-body);line-height:1.5;"><strong>Setor & Tarik Tabungan:</strong> Transaksi kas tabungan langsung di loket kasir Bank Mini Sekolah pada jam operasional.</div>
                     </div>
                     <div style="display:flex;gap:12px;align-items:flex-start;">
                         <div style="width:26px;height:26px;border-radius:6px;background:#FEF3C7;color:#92400E;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;">2</div>
-                        <div style="font-size:12.5px;color:var(--text-body);line-height:1.5;"><strong>Pengajuan Pinjaman:</strong> Hubungi Bendahara Sekolah untuk pengajuan kredit pegawai. Syarat: slip gaji 3 bulan.</div>
+                        <div style="font-size:12.5px;color:var(--text-body);line-height:1.5;"><strong>Pengajuan Pinjaman:</strong> Pengajuan kredit pegawai diajukan langsung ke Bank Mini Sekolah (mandiri via SIPINTAR atau via Bendahara Bank Mini).</div>
                     </div>
                     <div style="display:flex;gap:12px;align-items:flex-start;">
                         <div style="width:26px;height:26px;border-radius:6px;background:#EFF6FF;color:#1e40af;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;">3</div>
-                        <div style="font-size:12.5px;color:var(--text-body);line-height:1.5;"><strong>Angsuran Otomatis:</strong> Cicilan dipotong langsung dari gaji setiap tanggal 25.</div>
+                        <div style="font-size:12.5px;color:var(--text-body);line-height:1.5;"><strong>Pengembalian Angsuran:</strong> Fleksibel melalui potong gaji bulanan oleh Bendahara Sekolah atau setor tunai mandiri di kasir Bank Mini.</div>
                     </div>
                 </div>
             </div>
         </div>
         <div style="padding:16px 20px;border-top:1px solid var(--border-subtle);background:#FAFAFA;border-radius:0 0 var(--radius-lg) var(--radius-lg);">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <a href="{{ route('nasabah.saldo') }}" class="btn-ui btn-ui-outline btn-ui-sm" style="width:100%;"><span>Cetak Mutasi</span></a>
-                <a href="{{ route('nasabah.pinjaman') }}" class="btn-ui btn-ui-primary btn-ui-sm" style="width:100%;"><span>Info Pinjaman</span></a>
-            </div>
+            @if (($rekening?->status_rekening ?? 'pending') === 'aktif')
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <a href="{{ route('nasabah.saldo') }}" class="btn-ui btn-ui-outline btn-ui-sm" style="width:100%; justify-content:center;"><span>Mutasi Rekening</span></a>
+                    <a href="{{ route('nasabah.pinjaman') }}" class="btn-ui btn-ui-primary btn-ui-sm" style="width:100%; justify-content:center;"><span>Info Pinjaman</span></a>
+                </div>
+            @else
+                <div style="background:#FEF3C7; border:1px solid #FDE68A; border-radius:8px; padding:10px 14px; text-align:center; color:#92400E; font-size:12px; font-weight:600;">
+                    Layanan Transaksi & Fasilitas Pinjaman Terkunci (Menunggu Aktivasi Loket)
+                </div>
+            @endif
         </div>
     </div>
 </div>
