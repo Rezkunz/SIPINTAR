@@ -183,7 +183,7 @@ return new class extends Migration
             $table->unsignedInteger('periode_id');
             $table->unsignedInteger('user_id');
             $table->decimal('total_potongan', 15, 2)->default(0);
-            $table->enum('status_potongan', ['draft', 'dikirim', 'selesai'])->default('draft');
+            $table->enum('status_potongan', ['draft', 'dikirim', 'menunggu_verifikasi', 'selesai'])->default('draft');
 
             $table->foreign('periode_id')->references('periode_id')->on('tblPERIODE')->onDelete('cascade');
             $table->foreign('user_id')->references('user_id')->on('tblUSER')->onDelete('cascade');
@@ -230,14 +230,16 @@ return new class extends Migration
         // 18. tblANGSURAN
         Schema::create('tblANGSURAN', function (Blueprint $table) {
             $table->increments('angsuran_id');
-            $table->unsignedInteger('jadwal_angsuran_id')->unique();
-            $table->unsignedInteger('detail_potongan_id')->nullable()->unique();
+            $table->unsignedInteger('jadwal_angsuran_id');
+            $table->unsignedInteger('detail_potongan_id')->nullable();
             $table->unsignedInteger('user_id');
             $table->date('tgl_bayar');
             $table->enum('jenis_bayar', ['angsuran', 'pelunasan'])->default('angsuran');
             $table->decimal('bayar_pokok', 15, 2);
             $table->decimal('bayar_bunga', 15, 2)->default(0);
 
+            $table->index('jadwal_angsuran_id');
+            $table->index('detail_potongan_id');
             $table->foreign('jadwal_angsuran_id')->references('jadwal_angsuran_id')->on('tblJADWAL_ANGSURAN')->onDelete('cascade');
             $table->foreign('detail_potongan_id')->references('detail_potongan_id')->on('tblDETAIL_POTONGAN')->onDelete('set null');
             $table->foreign('user_id')->references('user_id')->on('tblUSER')->onDelete('cascade');
@@ -250,8 +252,9 @@ return new class extends Migration
             $table->unsignedInteger('periode_id');
             $table->unsignedInteger('user_id');
             $table->unsignedInteger('transaksi_id')->nullable()->unique();
-            $table->unsignedInteger('angsuran_id')->nullable()->unique();
+            $table->unsignedInteger('angsuran_id')->nullable();
             $table->unsignedInteger('pencairan_id')->nullable()->unique();
+            $table->index('angsuran_id');
             $table->date('tgl_mutasi');
             $table->enum('arah', ['masuk', 'keluar']);
             $table->decimal('nominal', 15, 2);

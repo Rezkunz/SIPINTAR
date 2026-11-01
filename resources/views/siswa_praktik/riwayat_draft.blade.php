@@ -8,15 +8,8 @@
 {{-- ── HERO GREETING BANNER ── --}}
 <div class="dashboard-welcome-banner">
     <div class="welcome-content">
-        <div class="welcome-badge-tag">Monitoring Simulasi Siswa</div>
         <h1>Riwayat Draft Transaksi Saya</h1>
         <p>Pantau seluruh draft setoran dan penarikan yang telah Anda ajukan, serta status verifikasi oleh teller loket.</p>
-    </div>
-    <div class="welcome-actions">
-        <a href="{{ route('tabungan.draft') }}" class="btn-banner-white">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            <span>Entri Draft Baru</span>
-        </a>
     </div>
 </div>
 

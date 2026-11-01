@@ -5,6 +5,12 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SiswaPraktik\BukaRekeningController;
 use App\Http\Controllers\SiswaPraktik\DraftTransaksiController;
+use App\Http\Controllers\BendaharaMini\PinjamanBbmController;
+use App\Http\Controllers\BendaharaMini\AngsuranBbmController;
+use App\Http\Controllers\BendaharaMini\KartuPiutangBbmController;
+use App\Http\Controllers\BendaharaMini\KasController;
+use App\Http\Controllers\Bendahara\PotonganSekolahController;
+use App\Http\Controllers\Nasabah\NasabahDashboardController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -95,71 +101,63 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Hak Akses: BENDAHARA (Pengelolaan Pinjaman & Angsuran)
+    | Hak Akses: BENDAHARA SEKOLAH (Khusus Pemantauan & Pencatatan Hasil Potongan Gaji)
     |--------------------------------------------------------------------------
     */
     Route::middleware('role:bendahara')->group(function () {
-        Route::prefix('pinjaman')->name('pinjaman.')->group(function () {
-            Route::get('/', function () {
-                return view('placeholder', ['title' => 'Kelola Data Pinjaman', 'subtitle' => 'Daftar pinjaman nasabah yang aktif dan selesai']);
-            })->name('index');
-
-            Route::get('/ajukan', function () {
-                return view('placeholder', ['title' => 'Pengajuan Pinjaman Baru', 'subtitle' => 'Form permohonan pinjaman nasabah']);
-            })->name('ajukan');
-
-            Route::get('/kelayakan', function () {
-                return view('placeholder', ['title' => 'Penilaian Kelayakan Pinjaman', 'subtitle' => 'Analisis dan penilaian kelayakan kredit/pinjaman']);
-            })->name('kelayakan');
-
-            Route::get('/cair', function () {
-                return view('placeholder', ['title' => 'Pencairan Pinjaman', 'subtitle' => 'Proses pencairan dana pinjaman ke nasabah']);
-            })->name('cair');
-        });
-
-        Route::prefix('angsuran')->name('angsuran.')->group(function () {
-            Route::get('/catat', function () {
-                return view('placeholder', ['title' => 'Catat Pembayaran Angsuran', 'subtitle' => 'Pencatatan pembayaran angsuran pinjaman']);
-            })->name('catat');
-
-            Route::get('/potongan', function () {
-                return view('placeholder', ['title' => 'Rencana Potongan Gaji', 'subtitle' => 'Daftar rencana pemotongan angsuran via gaji']);
-            })->name('potongan');
-
-            Route::get('/hasil', function () {
-                return view('placeholder', ['title' => 'Catat Hasil Pemotongan', 'subtitle' => 'Konfirmasi eksekusi pemotongan angsuran']);
-            })->name('hasil');
-
-            Route::get('/pantau', function () {
-                return view('placeholder', ['title' => 'Pantau Pemotongan Angsuran', 'subtitle' => 'Monitoring status pemotongan angsuran']);
-            })->name('pantau');
+        Route::prefix('bendahara/potongan')->name('bendahara.potongan.')->group(function () {
+            Route::get('/', [PotonganSekolahController::class, 'index'])->name('index');
+            Route::get('/download/{rencana}', [PotonganSekolahController::class, 'downloadCsv'])->name('download');
+            Route::get('/bast/{rencana}', [PotonganSekolahController::class, 'cetakBast'])->name('bast');
+            Route::get('/hasil/{rencana}', [PotonganSekolahController::class, 'formHasil'])->name('hasil');
+            Route::post('/hasil/{rencana}', [PotonganSekolahController::class, 'simpanHasil'])->name('simpan');
         });
     });
 
     /*
     |--------------------------------------------------------------------------
-    | Hak Akses: BENDAHARA BANK MINI (Kas Harian & Kas Bank)
+    | Hak Akses: BENDAHARA BANK MINI (Pinjaman, Angsuran, Piutang, dan Kas)
     |--------------------------------------------------------------------------
     */
     Route::middleware('role:bendahara_mini')->group(function () {
-        Route::prefix('kas')->name('kas.')->group(function () {
-            Route::get('/harian', function () {
-                return view('placeholder', ['title' => 'Pencatatan Kas Harian', 'subtitle' => 'Buku kas operasional harian bank mini']);
-            })->name('harian');
-
-            Route::get('/bank', function () {
-                return view('placeholder', ['title' => 'Pencatatan Kas & Bank', 'subtitle' => 'Rekonsiliasi rekening dan transaksi bank']);
-            })->name('bank');
+        // 1. Modul Pinjaman
+        Route::prefix('bbm/pinjaman')->name('bbm.pinjaman.')->group(function () {
+            Route::get('/', [PinjamanBbmController::class, 'index'])->name('index');
+            Route::get('/ajukan', [PinjamanBbmController::class, 'create'])->name('ajukan');
+            Route::post('/ajukan', [PinjamanBbmController::class, 'store'])->name('store');
+            Route::get('/kelayakan', [PinjamanBbmController::class, 'kelayakan'])->name('kelayakan');
+            Route::post('/kelayakan/{pinjaman}', [PinjamanBbmController::class, 'simpanKelayakan'])->name('kelayakan.simpan');
+            Route::get('/cair', [PinjamanBbmController::class, 'pencairan'])->name('cair');
+            Route::post('/cair/{pinjaman}', [PinjamanBbmController::class, 'prosesPencairan'])->name('cair.proses');
         });
 
-        Route::prefix('bbm')->name('bbm.')->group(function () {
-            Route::get('/kartu', function () {
-                return view('placeholder', ['title' => 'Kartu Piutang & Status Angsuran', 'subtitle' => 'Kartu kendali piutang per nasabah']);
-            })->name('kartu');
+        // 2. Modul Angsuran
+        Route::prefix('bbm/angsuran')->name('bbm.angsuran.')->group(function () {
+            Route::get('/langsung', [AngsuranBbmController::class, 'catatLangsung'])->name('langsung');
+            Route::post('/langsung', [AngsuranBbmController::class, 'simpanPembayaranLangsung'])->name('langsung.simpan');
+            Route::get('/potongan', [AngsuranBbmController::class, 'rencanaPotongan'])->name('potongan');
+            Route::post('/potongan', [AngsuranBbmController::class, 'simpanRencanaPotongan'])->name('potongan.simpan');
+            Route::get('/potongan/{rencana}', [AngsuranBbmController::class, 'detailRencanaPotongan'])->name('potongan.detail');
+            Route::post('/potongan/{rencana}/konfirmasi', [AngsuranBbmController::class, 'konfirmasiPenerimaanDana'])->name('potongan.konfirmasi');
+            Route::get('/potongan/{rencana}/bast', [AngsuranBbmController::class, 'cetakBast'])->name('potongan.bast');
+            Route::get('/koreksi', [AngsuranBbmController::class, 'koreksi'])->name('koreksi');
+            Route::post('/koreksi/{angsuran}', [AngsuranBbmController::class, 'prosesKoreksi'])->name('koreksi.proses');
+        });
 
-            Route::get('/koreksi', function () {
-                return view('placeholder', ['title' => 'Persetujuan / Koreksi Angsuran', 'subtitle' => 'Verifikasi dan koreksi data angsuran']);
-            })->name('koreksi');
+        // 3. Modul Kartu Piutang
+        Route::prefix('bbm/kartu')->name('bbm.kartu.')->group(function () {
+            Route::get('/', [KartuPiutangBbmController::class, 'kartu'])->name('index');
+            Route::get('/rekap', function () {
+                return redirect()->route('bbm.kartu.index');
+            })->name('rekap');
+        });
+
+        // 4. Modul Kas Harian & Bank
+        Route::prefix('kas')->name('kas.')->group(function () {
+            Route::get('/harian', [KasController::class, 'harian'])->name('harian');
+            Route::post('/harian', [KasController::class, 'simpanHarian'])->name('harian.simpan');
+            Route::get('/bank', [KasController::class, 'bank'])->name('bank');
+            Route::post('/bank', [KasController::class, 'simpanBank'])->name('bank.simpan');
         });
     });
 
@@ -202,21 +200,19 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Hak Akses: NASABAH (Portal Mandiri Nasabah)
+    | Hak Akses: NASABAH (Portal Mandiri Nasabah — Layanan Aktif)
     |--------------------------------------------------------------------------
     */
-    Route::middleware('role:nasabah')->group(function () {
+    Route::middleware(['role:nasabah', 'rekening.aktif'])->group(function () {
         Route::prefix('nasabah')->name('nasabah.')->group(function () {
-            Route::get('/saldo', function () {
-                return view('placeholder', ['title' => 'Informasi Saldo & Riwayat Mutasi', 'subtitle' => 'Rincian saldo simpanan dan riwayat transaksi saya']);
-            })->name('saldo');
+            Route::get('/saldo', [NasabahDashboardController::class, 'mutasi'])->name('saldo');
 
-            Route::get('/angsuran', function () {
-                return view('placeholder', ['title' => 'Informasi Jadwal Angsuran Pinjaman', 'subtitle' => 'Jadwal jatuh tempo dan histori cicilan saya']);
-            })->name('angsuran');
+            Route::get('/angsuran', [NasabahDashboardController::class, 'jadwalAngsuran'])->name('angsuran');
 
-            // Info pinjaman (khusus pegawai — validasi di controller)
-            Route::get('/pinjaman', [\App\Http\Controllers\Nasabah\NasabahDashboardController::class, 'pinjaman'])->name('pinjaman');
+            // Info & Pengajuan Pinjaman (khusus pegawai — validasi di controller)
+            Route::get('/pinjaman', [NasabahDashboardController::class, 'pinjaman'])->name('pinjaman');
+            Route::get('/pinjaman/ajukan', [NasabahDashboardController::class, 'formAjukanPinjaman'])->name('pinjaman.ajukan');
+            Route::post('/pinjaman/ajukan', [NasabahDashboardController::class, 'simpanAjukanPinjaman'])->name('pinjaman.store');
         });
     });
 

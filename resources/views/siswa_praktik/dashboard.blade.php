@@ -8,7 +8,6 @@
 {{-- ── HERO GREETING BANNER ── --}}
 <div class="dashboard-welcome-banner">
     <div class="welcome-content">
-        <div class="welcome-badge-tag">Simulasi Kasir & Perbankan Siswa</div>
         <h1>Selamat Berlatih, {{ auth()->user()->name }}</h1>
         <p>Laboratorium perbankan mini sekolah: lakukan simulasi pembukaan rekening, entri draft setoran/tarikan, dan pelajari alur verifikasi loket.</p>
     </div>

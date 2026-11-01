@@ -38,10 +38,10 @@ class SipintarSeeder extends Seeder
             DB::table('tblJENIS_TRANSAKSI')->updateOrInsert(['jenis_transaksi_id' => $jt['jenis_transaksi_id']], $jt);
         }
 
-        // 3. tblKAS
+        // 3. tblKAS (2 Tempat Penyimpanan: Cash & Bank Milik Bendahara Bank Mini)
         $kasList = [
-            ['kas_id' => 1, 'nama_kas' => 'Kas Tunai Brankas / Teller', 'jenis_kas' => 'kas', 'saldo' => 10000000.00],
-            ['kas_id' => 2, 'nama_kas' => 'Rekening Giro Bank BRI Mitra', 'jenis_kas' => 'bank', 'saldo' => 50000000.00],
+            ['kas_id' => 1, 'nama_kas' => 'Kas Tunai (Cash)', 'jenis_kas' => 'kas', 'saldo' => 50000000.00],
+            ['kas_id' => 2, 'nama_kas' => 'Rekening Bank Bendahara Bank Mini', 'jenis_kas' => 'bank', 'saldo' => 100000000.00],
         ];
         foreach ($kasList as $k) {
             DB::table('tblKAS')->updateOrInsert(['kas_id' => $k['kas_id']], $k);

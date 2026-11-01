@@ -13,7 +13,6 @@
 <div class="content-card">
     <div class="card-header-bar">
         <h2 class="card-heading">{{ $title ?? 'Data' }}</h2>
-        <a href="javascript:history.back()" class="btn-ui btn-ui-outline btn-ui-sm">Kembali</a>
     </div>
     <div class="card-body-content">
         <div class="empty-placeholder" style="padding: 48px 16px;">
