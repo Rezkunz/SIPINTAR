@@ -11,6 +11,7 @@ use App\Http\Controllers\BendaharaMini\KartuPiutangBbmController;
 use App\Http\Controllers\BendaharaMini\KasController;
 use App\Http\Controllers\Bendahara\PotonganSekolahController;
 use App\Http\Controllers\Nasabah\NasabahDashboardController;
+use App\Http\Controllers\Manager\LaporanTabunganController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -168,9 +169,8 @@ Route::middleware('auth')->group(function () {
     */
     Route::middleware('role:manager')->group(function () {
         Route::prefix('laporan')->name('laporan.')->group(function () {
-            Route::get('/tabungan', function () {
-                return view('placeholder', ['title' => 'Laporan Transaksi Tabungan', 'subtitle' => 'Rekapitulasi transaksi tabungan periode tertentu']);
-            })->name('tabungan');
+            Route::get('/tabungan', [LaporanTabunganController::class, 'index'])->name('tabungan');
+            Route::get('/tabungan/csv', [LaporanTabunganController::class, 'exportCsv'])->name('tabungan.csv');
 
             Route::get('/pinjaman', function () {
                 return view('placeholder', ['title' => 'Laporan Pinjaman & Kas', 'subtitle' => 'Rekapitulasi pinjaman dan perputaran kas']);
