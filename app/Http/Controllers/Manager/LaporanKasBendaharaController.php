@@ -172,19 +172,27 @@ class LaporanKasBendaharaController extends Controller
             ->pluck('kas_id')
             ->all();
 
-        // Saldo awal dihitung mundur dari saldo kas saat ini agar saldo akhir bulan berjalan
-        // sama dengan posisi saldo di modul Kas Bendahara Bank Mini
-        $saldoSekarang  = (float) DB::table('tblKAS')->whereIn('kas_id', $kasIds)->sum('saldo');
+        // Saldo awal dihitung mundur dari saldo kas saat ini. Dana tabungan nasabah yang ikut tersimpan
+        // di kas (mutasi bertaut tblTRANSAKSI) bukan bagian Buku Kas Bendahara (acuan data_contoh/KAS
+        // BENDAHARA), jadi dikeluarkan dari saldo maupun baris; dana itu dilaporkan di Laporan Tabungan
+        $netto = DB::raw("CASE WHEN arah = 'masuk' THEN nominal ELSE -nominal END");
+        $danaTabungan = (float) DB::table('tblMUTASI_KAS')
+            ->whereIn('kas_id', $kasIds)
+            ->whereNotNull('transaksi_id')
+            ->sum($netto);
+        $saldoSekarang  = (float) DB::table('tblKAS')->whereIn('kas_id', $kasIds)->sum('saldo') - $danaTabungan;
         $mutasiSesudah  = (float) DB::table('tblMUTASI_KAS')
             ->whereIn('kas_id', $kasIds)
+            ->whereNull('transaksi_id')
             ->whereDate('tgl_mutasi', '>=', $awalBulan)
-            ->sum(DB::raw("CASE WHEN arah = 'masuk' THEN nominal ELSE -nominal END"));
+            ->sum($netto);
         $saldoAwal = $saldoSekarang - $mutasiSesudah;
 
         $mutasi = DB::table('tblMUTASI_KAS as mk')
             ->join('tblKAS as k', 'mk.kas_id', '=', 'k.kas_id')
             ->leftJoin('tblANGSURAN as ang', 'mk.angsuran_id', '=', 'ang.angsuran_id')
             ->whereIn('mk.kas_id', $kasIds)
+            ->whereNull('mk.transaksi_id')
             ->whereBetween('mk.tgl_mutasi', [$awalBulan->toDateString(), $akhirBulan->toDateString()])
             ->orderBy('mk.tgl_mutasi')
             ->orderBy('mk.mutasi_kas_id')

@@ -111,6 +111,7 @@
         <div>
             <h2 class="card-heading">Kas Harian Bendahara Bank Mini</h2>
             <div style="font-size:12px; color:var(--text-muted);">Bulan {{ $awalBulan->translatedFormat('F Y') }} &bull; {{ $labelSumber }} &bull; urut tanggal transaksi</div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">Tidak termasuk dana tabungan nasabah yang disetor lewat Teller; dana tersebut tercatat di Laporan Tabungan.</div>
         </div>
     </div>
 

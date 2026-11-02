@@ -137,7 +137,7 @@ class TellerDashboardController extends Controller
                 ]);
 
                 // 2. Catat transaksi setoran awal di tblTRANSAKSI (jenis_transaksi_id = 1 = setoran)
-                DB::table('tblTRANSAKSI')->insert([
+                $transaksiId = DB::table('tblTRANSAKSI')->insertGetId([
                     'rekening_id'        => $rekeningId,
                     'jenis_transaksi_id' => 1,
                     'periode_id'         => $periodeId,
@@ -149,8 +149,34 @@ class TellerDashboardController extends Controller
                     'tgl_transaksi'      => now(),
                 ]);
 
-                // 3. Masukkan uang fisik ke kas tunai brankas (kas_id = 1)
-                DB::table('tblKAS')->where('kas_id', 1)->increment('saldo', $setoranAwal);
+                // 3. Masukkan uang fisik ke kas tunai brankas dan catat mutasinya, ditautkan ke
+                //    transaksi tabungan agar saldo kas per tanggal (Neraca, Tutup Periode) tepat dan
+                //    laporan pinjaman dapat memisahkannya
+                $kasTunai = DB::table('tblKAS')->where('jenis_kas', 'kas')->orderBy('kas_id')->first();
+                if (!$kasTunai) {
+                    throw new \RuntimeException('Kas tunai Bank Mini belum tersedia. Hubungi Bendahara Bank Mini.');
+                }
+
+                $nasabah = DB::table('tblNASABAH')->where('nasabah_id', $rekening->nasabah_id)->value('nama_nasabah');
+                $mutasiId = DB::table('tblMUTASI_KAS')->insertGetId([
+                    'kas_id'       => $kasTunai->kas_id,
+                    'periode_id'   => $periodeId,
+                    'user_id'      => auth()->id(),
+                    'transaksi_id' => $transaksiId,
+                    'tgl_mutasi'   => now()->toDateString(),
+                    'arah'         => 'masuk',
+                    'nominal'      => $setoranAwal,
+                    'uraian'       => "Setoran awal tabungan {$rekening->no_rek}" . ($nasabah ? " a.n. {$nasabah}" : ''),
+                ]);
+
+                DB::table('tblKAS')->where('kas_id', $kasTunai->kas_id)->increment('saldo', $setoranAwal);
+
+                \App\Services\AuditLogService::log(
+                    aksi: 'INSERT',
+                    entitas: 'tblTRANSAKSI',
+                    entitasId: $transaksiId,
+                    dataBaru: ['rekening_id' => (int) $rekeningId, 'jenis' => 'setoran_awal', 'kredit' => $setoranAwal, 'mutasi_kas_id' => $mutasiId]
+                );
             });
         } catch (\RuntimeException $e) {
             return redirect()->back()->with('error', $e->getMessage());
