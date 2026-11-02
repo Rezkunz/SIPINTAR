@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Manager\Concerns\EksporDokumen;
+use App\Services\EksporLaporanService;
 use App\Services\PinjamanCalculatorService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -13,6 +15,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LaporanPinjamanController extends Controller
 {
+    use EksporDokumen;
+
     /**
      * Kolektibilitas berdasarkan hari keterlambatan (standar OJK), urut dari terbaik.
      * 'maks' = batas atas hari terlambat untuk kategori tersebut.
@@ -98,6 +102,68 @@ class LaporanPinjamanController extends Controller
         }, $filename, [
             'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
+    }
+
+    /**
+     * Dokumen PDF/Excel rekap pinjaman & kolektibilitas beserta sebaran dan rasio NPL.
+     */
+    protected function dokumenEkspor(Request $request): array
+    {
+        $rekap = $this->susunRekap($request);
+        $r     = $rekap['ringkasan'];
+        $filter = array_filter([
+            $rekap['filterKolek'] ? 'kolektibilitas: ' . self::KOLEKTIBILITAS[$rekap['filterKolek']]['label'] : null,
+            $rekap['cari'] !== '' ? "pencarian: {$rekap['cari']}" : null,
+        ]);
+
+        $baris = $rekap['baris']->values()->map(fn ($b, $i) => EksporLaporanService::baris([
+            $i + 1, $b->no_pinjaman, $b->nama_nasabah, $b->kelas_unit, $b->label_metode,
+            Carbon::parse($b->tgl_cair)->format('d/m/Y'), (float) $b->nominal_pinjaman,
+            "{$b->angsuran_dibayar}/{$b->total_angsuran}", $b->pokok_terbayar, $b->sisa_pokok,
+            $b->bulan_tunggakan ?: null, $b->nominal_tunggakan ?: null, $b->hari_terlambat ?: null,
+            self::KOLEKTIBILITAS[$b->kolektibilitas]['label'],
+        ]))->all();
+
+        $sebaran = collect($rekap['sebaran'])->values()->map(fn ($s) => EksporLaporanService::baris([
+            $s['label'], $s['jumlah'], $s['sisa_pokok'], number_format($s['persen'], 2, ',', '.') . '%',
+        ]))->all();
+
+        return [
+            'judul'       => 'Rekap Pinjaman & Kolektibilitas',
+            'subjudul'    => 'Posisi per ' . $rekap['tanggalPosisi']->translatedFormat('d F Y') . ($filter ? ' (' . implode(', ', $filter) . ')' : ''),
+            'nama_file'   => 'REKAP_PINJAMAN_KOLEKTIBILITAS_' . $rekap['tanggalPosisi']->format('Y_m_d'),
+            'orientasi'   => 'landscape',
+            'ukuran_font' => 7.5,
+            'bagian'      => [
+                [
+                    'kolom' => [
+                        ['label' => 'No', 'align' => 'center'], ['label' => 'No Pinjaman'], ['label' => 'Peminjam'], ['label' => 'Unit'],
+                        ['label' => 'Metode'], ['label' => 'Tgl Cair', 'align' => 'center'], ['label' => 'Plafon', 'angka' => true],
+                        ['label' => 'Angsuran', 'align' => 'center'], ['label' => 'Pokok Terbayar', 'angka' => true],
+                        ['label' => 'Sisa Pokok', 'angka' => true], ['label' => 'Tunggakan (bln)', 'angka' => true],
+                        ['label' => 'Nominal Tunggakan', 'angka' => true], ['label' => 'Hari Terlambat', 'angka' => true],
+                        ['label' => 'Kolektibilitas'],
+                    ],
+                    'baris' => $baris,
+                    'kaki'  => $filter ? [] : [EksporLaporanService::baris([
+                        '', '', 'JUMLAH', '', '', '', $r['total_plafon'], '', $r['total_pokok_terbayar'],
+                        $r['total_sisa_pokok'], null, $r['total_tunggakan'], null, '',
+                    ], 'total')],
+                ],
+                [
+                    'judul' => 'Sebaran Kolektibilitas (seluruh pinjaman berjalan)',
+                    'kolom' => [
+                        ['label' => 'Kolektibilitas'], ['label' => 'Jumlah Pinjaman', 'angka' => true],
+                        ['label' => 'Sisa Pokok', 'angka' => true], ['label' => 'Persentase', 'align' => 'right'],
+                    ],
+                    'baris' => $sebaran,
+                    'kaki'  => [EksporLaporanService::baris([
+                        'Rasio NPL (Kurang Lancar + Diragukan + Macet)', null, null, number_format($r['rasio_npl'], 2, ',', '.') . '%',
+                    ], 'total')],
+                    'catatan' => 'Kolektibilitas standar OJK berdasarkan hari keterlambatan sejak jatuh tempo tertua yang belum dibayar: Lancar 0, DPK 1-90, Kurang Lancar 91-120, Diragukan 121-180, Macet > 180 hari.',
+                ],
+            ],
+        ];
     }
 
     /**

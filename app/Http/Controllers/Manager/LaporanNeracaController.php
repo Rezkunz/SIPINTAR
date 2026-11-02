@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Manager\Concerns\EksporDokumen;
+use App\Services\EksporLaporanService;
 use App\Services\JasaTabunganService;
 use App\Services\LabaRugiService;
 use App\Services\PinjamanCalculatorService;
@@ -13,6 +15,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LaporanNeracaController extends Controller
 {
+    use EksporDokumen;
+
     /**
      * Neraca (balance sheet) Bank Mini per akhir bulan terpilih.
      */
@@ -82,6 +86,59 @@ class LaporanNeracaController extends Controller
         }, $filename, [
             'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
+    }
+
+    /**
+     * Dokumen PDF/Excel neraca: tabel aktiva lalu tabel pasiva (kewajiban & ekuitas).
+     */
+    protected function dokumenEkspor(Request $request): array
+    {
+        $n     = $this->susunNeraca($request);
+        $baris = fn (array $sel, ?string $gaya = null) => EksporLaporanService::baris($sel, $gaya);
+        $manual = fn ($kelompok) => $n['posManual'][$kelompok]
+            ->map(fn ($p) => $baris(['   ' . $p->nama_pos . ' (input manual)', (float) $p->nilai]))
+            ->all();
+        $kolom = [['label' => 'Pos'], ['label' => 'Nilai (Rp)', 'angka' => true]];
+
+        return [
+            'judul'     => 'Neraca (Balance Sheet)',
+            'subjudul'  => 'Per ' . $n['tanggalPosisi']->translatedFormat('d F Y'),
+            'nama_file' => 'NERACA_' . $n['tanggalPosisi']->format('Y_m_d'),
+            'bagian'    => [
+                [
+                    'judul' => 'Aktiva',
+                    'kolom' => $kolom,
+                    'baris' => array_merge([
+                        $baris(['   Kas Tunai (Cash On Hand)', $n['aktiva']['kas_tunai']]),
+                        $baris(['   Kas Bank (Cash In Bank)', $n['aktiva']['kas_bank']]),
+                        $baris(['   Piutang Pinjaman Pegawai (Account Receivable)', $n['aktiva']['piutang']]),
+                    ], $manual('aktiva')),
+                    'kaki'  => [$baris(['TOTAL AKTIVA', $n['totalAktiva']], 'total')],
+                ],
+                [
+                    'judul' => 'Kewajiban & Ekuitas',
+                    'kolom' => $kolom,
+                    'baris' => array_merge(
+                        [
+                            $baris(['KEWAJIBAN', null], 'grup'),
+                            $baris(['   Tabungan Siswa (Tapel Payable)', $n['kewajiban']['tabungan_siswa']]),
+                            $baris(['   Tabungan Guru/Karyawan (Takar Payable)', $n['kewajiban']['tabungan_guru']]),
+                            $baris(['   Jasa Tabungan Terutang (Interest Payable)', $n['kewajiban']['jasa_terutang']]),
+                        ],
+                        $manual('kewajiban'),
+                        [$baris(['Total Kewajiban', $n['totalKewajiban']], 'subtotal'), $baris(['EKUITAS', null], 'grup')],
+                        $manual('ekuitas'),
+                        [
+                            $baris(['   Laba (Rugi) Tahun Berjalan', $n['ekuitas']['laba_berjalan']]),
+                            $baris(['   Selisih Belum Terjelaskan', $n['ekuitas']['modal_selisih']]),
+                            $baris(['Total Ekuitas', $n['totalEkuitas']], 'subtotal'),
+                        ]
+                    ),
+                    'kaki'    => [$baris(['TOTAL KEWAJIBAN & EKUITAS', $n['totalKewajiban'] + $n['totalEkuitas']], 'total')],
+                    'catatan' => 'Selisih belum terjelaskan mendekati nol bila seluruh pos manual (modal, deposito, peralatan, dll) sudah diinput.',
+                ],
+            ],
+        ];
     }
 
     /**

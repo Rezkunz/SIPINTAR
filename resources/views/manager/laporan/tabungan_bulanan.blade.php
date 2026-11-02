@@ -13,7 +13,7 @@
     </div>
 </div>
 
-@include('manager.laporan.partials.toolbar_tabungan', ['routeLaporan' => 'laporan.tabungan.bulanan', 'routeCsv' => 'laporan.tabungan.bulanan.csv'])
+@include('manager.laporan.partials.toolbar_tabungan', ['routeLaporan' => 'laporan.tabungan.bulanan'])
 
 {{-- ── 4 FINANCIAL METRICS CARDS ── --}}
 <div class="metric-grid" style="margin-bottom: 24px;">

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Manager\Concerns\EksporDokumen;
+use App\Services\EksporLaporanService;
 use App\Services\LabaRugiService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -11,6 +13,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LaporanTahunanController extends Controller
 {
+    use EksporDokumen;
+
     private const PER_HALAMAN_KAS_MANUAL = 10;
 
     /**
@@ -87,6 +91,72 @@ class LaporanTahunanController extends Controller
         }, $filename, [
             'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
+    }
+
+    /**
+     * Dokumen PDF/Excel laporan laba rugi, dasar perhitungan per bulan, dan rincian kas manual.
+     */
+    protected function dokumenEkspor(Request $request): array
+    {
+        $laporan = $this->susunLaporan($request);
+        $t       = $laporan['total'];
+        $baris   = fn (array $sel, ?string $gaya = null) => EksporLaporanService::baris($sel, $gaya);
+
+        $labaRugi = [
+            $baris(['PENDAPATAN', null, null], 'grup'),
+            $baris(['   Pendapatan Jasa Pinjaman (Interest Revenue)', $t['jasa_pinjaman'], null]),
+            $baris(['   Pendapatan Lain-lain (kas manual masuk)', $t['pendapatan_lain'], null]),
+            $baris(['Total Pendapatan', null, $t['pendapatan']], 'subtotal'),
+            $baris(['BEBAN', null, null], 'grup'),
+            $baris(['   Beban Jasa Tabungan Guru/Karyawan (Interest Takar Expense)', $t['jasa_guru'], null]),
+            $baris(['   Beban Jasa Tabungan Siswa (Interest Tapel Expense)', $t['jasa_siswa'], null]),
+            $baris(['   Beban Operasional (kas manual keluar)', $t['beban_operasional'], null]),
+            $baris(['Total Beban', null, -$t['beban']], 'subtotal'),
+            $baris([$t['laba'] >= 0 ? 'LABA BERSIH (Net Profit)' : 'RUGI BERSIH (Net Loss)', null, $t['laba']], 'total'),
+        ];
+
+        $bulanan = $laporan['bulanan']->values()->map(fn ($b, $i) => $baris([
+            $i + 1, $b->nama_bulan . ($b->dihitung ? '' : ' (belum berjalan)'),
+            $b->jasa_pinjaman, $b->pendapatan_lain, $b->jasa_siswa, $b->jasa_guru, $b->beban_operasional, $b->laba,
+        ]))->all();
+
+        $kasManual = $laporan['kasManual']->values()->map(fn ($k) => $baris([
+            Carbon::parse($k->tgl_mutasi)->format('d/m/Y'), $k->jenis_kas === 'bank' ? 'Bank' : 'Tunai', $k->uraian,
+            $k->arah === 'masuk' ? (float) $k->nominal : null, $k->arah === 'keluar' ? (float) $k->nominal : null,
+        ]))->all();
+
+        return [
+            'judul'     => 'Laporan Laba Rugi (Income Statement)',
+            'subjudul'  => 'Tahun ' . $laporan['tahun'] . ' - per ' . $laporan['tanggalPosisi']->translatedFormat('d F Y'),
+            'nama_file' => "LAPORAN_KEUANGAN_TAHUNAN_{$laporan['tahun']}",
+            'bagian'    => [
+                [
+                    'kolom' => [['label' => 'Uraian'], ['label' => 'Rincian', 'angka' => true], ['label' => 'Jumlah', 'angka' => true]],
+                    'baris' => $labaRugi,
+                ],
+                [
+                    'judul'      => 'Dasar Perhitungan',
+                    'grup_kolom' => [['label' => ''], ['label' => ''], ['label' => 'Pendapatan', 'span' => 2], ['label' => 'Beban', 'span' => 3], ['label' => '']],
+                    'kolom'      => [
+                        ['label' => 'No', 'align' => 'center'], ['label' => 'Bulan'],
+                        ['label' => 'Jasa Pinjaman', 'angka' => true], ['label' => 'Lain-lain', 'angka' => true],
+                        ['label' => 'Jasa Tab. Siswa', 'angka' => true], ['label' => 'Jasa Tab. Guru', 'angka' => true],
+                        ['label' => 'Operasional', 'angka' => true], ['label' => 'Laba/Rugi', 'angka' => true],
+                    ],
+                    'baris' => $bulanan,
+                    'kaki'  => [$baris(['', 'JUMLAH', $t['jasa_pinjaman'], $t['pendapatan_lain'], $t['jasa_siswa'], $t['jasa_guru'], $t['beban_operasional'], $t['laba']], 'total')],
+                ],
+                [
+                    'judul' => 'Rincian Kas Manual Bendahara',
+                    'kolom' => [
+                        ['label' => 'Tanggal'], ['label' => 'Kas'], ['label' => 'Uraian'],
+                        ['label' => 'Pendapatan Lain', 'angka' => true], ['label' => 'Beban Operasional', 'angka' => true],
+                    ],
+                    'baris'   => $kasManual,
+                    'catatan' => 'Seluruh kas manual bendahara dihitung: masuk sebagai pendapatan lain-lain, keluar sebagai beban operasional.',
+                ],
+            ],
+        ];
     }
 
     /**

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Manager\Concerns\EksporDokumen;
+use App\Services\EksporLaporanService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -11,6 +13,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LaporanKasBendaharaController extends Controller
 {
+    use EksporDokumen;
+
     /**
      * Pilihan sumber kas → nilai tblKAS.jenis_kas (null = gabungan tunai & bank).
      */
@@ -85,6 +89,64 @@ class LaporanKasBendaharaController extends Controller
         }, $filename, [
             'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
+    }
+
+    /**
+     * Dokumen PDF/Excel kas harian bendahara (format KAS BENDAHARA) & rekap penerimaan angsuran.
+     */
+    protected function dokumenEkspor(Request $request): array
+    {
+        $buku = $this->susunBukuKas($request);
+        $t    = $buku['total'];
+        $kosongBilaNol = fn ($n) => (float) $n != 0 ? (float) $n : null;
+
+        $baris = [EksporLaporanService::baris(['01/' . $buku['awalBulan']->format('m/Y'), '', 'Saldo awal', null, null, null, null, $buku['saldoAwal']], 'grup')];
+        foreach ($buku['baris'] as $b) {
+            $baris[] = EksporLaporanService::baris([
+                $b->tanggal->format('d/m/Y'), $b->label_kas, $b->uraian,
+                $kosongBilaNol($b->lain_lain), $kosongBilaNol($b->pokok), $kosongBilaNol($b->jasa), $kosongBilaNol($b->pengeluaran), $b->saldo,
+            ]);
+        }
+
+        $saluran = collect($buku['rekapAngsuran']['saluran'])->map(function ($s, $kode) {
+            $tanda = $kode === 'koreksi' ? -1 : 1;
+
+            return EksporLaporanService::baris([$s['label'], $s['jumlah'], $tanda * $s['pokok'], $tanda * $s['jasa'], $tanda * ($s['pokok'] + $s['jasa'])]);
+        })->values()->all();
+        $bersih = $buku['rekapAngsuran']['bersih'];
+
+        return [
+            'judul'       => 'Kas Harian Bendahara Bank Mini',
+            'subjudul'    => 'Bulan ' . $buku['awalBulan']->translatedFormat('F Y') . ' (' . $buku['labelSumber'] . ')',
+            'nama_file'   => 'KAS_BENDAHARA_' . strtoupper($buku['sumber']) . '_' . strtoupper($buku['awalBulan']->translatedFormat('F')) . "_{$buku['tahun']}",
+            'orientasi'   => 'landscape',
+            'ukuran_font' => 8,
+            'bagian'      => [
+                [
+                    'grup_kolom' => [
+                        ['label' => ''], ['label' => ''], ['label' => ''],
+                        ['label' => 'Pemasukan', 'span' => 3], ['label' => ''], ['label' => ''],
+                    ],
+                    'kolom' => [
+                        ['label' => 'Tanggal'], ['label' => 'Kas'], ['label' => 'Uraian'],
+                        ['label' => 'Lain-lain', 'angka' => true], ['label' => 'Pokok', 'angka' => true], ['label' => 'Jasa', 'angka' => true],
+                        ['label' => 'Pengeluaran', 'angka' => true], ['label' => 'Saldo', 'angka' => true],
+                    ],
+                    'baris' => $baris,
+                    'kaki'  => [EksporLaporanService::baris(['', '', 'JUMLAH', $t['lain_lain'], $t['pokok'], $t['jasa'], $t['pengeluaran'], $buku['saldoAkhir']], 'total')],
+                ],
+                [
+                    'judul' => 'Rekap Penerimaan Angsuran',
+                    'kolom' => [
+                        ['label' => 'Saluran Pembayaran'], ['label' => 'Jumlah Transaksi', 'angka' => true],
+                        ['label' => 'Pokok', 'angka' => true], ['label' => 'Jasa', 'angka' => true], ['label' => 'Total', 'angka' => true],
+                    ],
+                    'baris' => $saluran,
+                    'kaki'  => [EksporLaporanService::baris(['Penerimaan Bersih', null, $bersih['pokok'], $bersih['jasa'], $bersih['pokok'] + $bersih['jasa']], 'total')],
+                    'catatan' => 'Koreksi angsuran (pembalik) mengurangi penerimaan.',
+                ],
+            ],
+        ];
     }
 
     /**

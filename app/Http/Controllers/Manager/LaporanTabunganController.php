@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Manager\Concerns\EksporDokumen;
+use App\Services\EksporLaporanService;
 use App\Services\JasaTabunganService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -14,6 +16,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LaporanTabunganController extends Controller
 {
+    use EksporDokumen;
+
     /**
      * Kategori laporan & tarif jasa bulanan (%) — sumber tunggal di JasaTabunganService.
      */
@@ -130,6 +134,88 @@ class LaporanTabunganController extends Controller
         }, $filename, [
             'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
+    }
+
+    /**
+     * Dokumen PDF/Excel rekap harian (dipakai trait EksporDokumen).
+     */
+    protected function dokumenEkspor(Request $request): array
+    {
+        $rekap = $this->susunRekap($request);
+        $namaBulan = strtoupper($rekap['awalBulan']->translatedFormat('F'));
+
+        $kolom = [['label' => 'No', 'align' => 'center'], ['label' => 'No Rekening'], ['label' => 'Nama Nasabah']];
+        foreach ($rekap['tanggalList'] as $tgl) {
+            $kolom[] = ['label' => $tgl->format('d/m'), 'angka' => true];
+        }
+        $kolom[] = ['label' => 'Jumlah', 'angka' => true];
+
+        $baris = $rekap['baris']->values()->map(function ($b, $i) use ($rekap) {
+            $sel = [$i + 1, $b->no_rek, $b->nama_nasabah];
+            foreach ($rekap['tanggalList'] as $tgl) {
+                $sel[] = $b->harian[$tgl->toDateString()] ?? null;
+            }
+            $sel[] = $b->total;
+
+            return EksporLaporanService::baris($sel);
+        })->all();
+
+        $kaki = ['', '', 'JUMLAH'];
+        foreach ($rekap['tanggalList'] as $tgl) {
+            $kaki[] = $rekap['totalHarian'][$tgl->toDateString()] ?? 0;
+        }
+        $kaki[] = $rekap['ringkasan']['mutasi_bersih'];
+
+        return [
+            'judul'       => 'Rekap Harian Tabungan ' . $rekap['labelKategori'],
+            'subjudul'    => 'Bulan ' . $rekap['awalBulan']->translatedFormat('F Y') . ($rekap['cari'] !== '' ? " (pencarian: {$rekap['cari']})" : ''),
+            'nama_file'   => 'REKAP_HARIAN_' . strtoupper($rekap['kategori']) . "_{$namaBulan}_{$rekap['tahun']}",
+            'orientasi'   => 'landscape',
+            'ukuran_font' => 6.5,
+            'bagian'      => [[
+                'kolom'   => $kolom,
+                'baris'   => $baris,
+                'kaki'    => [EksporLaporanService::baris($kaki, 'total')],
+                'catatan' => 'Mutasi bersih = setoran - penarikan; nilai negatif berarti penarikan lebih besar dari setoran.',
+            ]],
+        ];
+    }
+
+    public function exportBulananPdf(Request $request)
+    {
+        return EksporLaporanService::pdf($this->dokumenBulanan($request));
+    }
+
+    public function exportBulananXlsx(Request $request)
+    {
+        return EksporLaporanService::xlsx($this->dokumenBulanan($request));
+    }
+
+    /**
+     * Dokumen PDF/Excel rekap tabungan & jasa bulanan.
+     */
+    private function dokumenBulanan(Request $request): array
+    {
+        $rekap = $this->susunRekapBulanan($request);
+        $namaBulan = strtoupper($rekap['awalBulan']->translatedFormat('F'));
+        $r = $rekap['ringkasan'];
+
+        return [
+            'judul'     => 'Rekap Tabungan & Jasa ' . $rekap['labelKategori'],
+            'subjudul'  => 'Per ' . $rekap['akhirBulan']->translatedFormat('d F Y') . ($rekap['cari'] !== '' ? " (pencarian: {$rekap['cari']})" : ''),
+            'nama_file' => 'REKAP_TABUNGAN_JASA_' . strtoupper($rekap['kategori']) . "_{$namaBulan}_{$rekap['tahun']}",
+            'bagian'    => [[
+                'kolom' => [
+                    ['label' => 'No', 'align' => 'center'], ['label' => 'No Rekening'], ['label' => 'Nama Nasabah'],
+                    ['label' => 'Jumlah Pokok', 'angka' => true], ['label' => 'Jasa ' . $rekap['labelPersenJasa'], 'angka' => true], ['label' => 'Total', 'angka' => true],
+                ],
+                'baris' => $rekap['baris']->values()->map(fn ($b, $i) => EksporLaporanService::baris([
+                    $i + 1, $b->no_rek, $b->nama_nasabah, $b->pokok, $b->jasa, $b->total,
+                ]))->all(),
+                'kaki'  => [EksporLaporanService::baris(['', '', 'JUMLAH', $r['total_pokok'], $r['total_jasa'], $r['total_akhir']], 'total')],
+                'catatan' => "Jasa {$rekap['labelPersenJasa']} per bulan dari saldo pokok, dibulatkan ke rupiah terdekat.",
+            ]],
+        ];
     }
 
     /**

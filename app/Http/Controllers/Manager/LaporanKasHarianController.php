@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Manager\Concerns\EksporDokumen;
+use App\Services\EksporLaporanService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -10,6 +12,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LaporanKasHarianController extends Controller
 {
+    use EksporDokumen;
+
     /**
      * Arus kas tunai tabungan: setoran (1) menambah kas, penarikan (2) mengurangi kas.
      * Jasa tabungan tidak dihitung karena hanya dibukukan ke saldo, tanpa uang fisik.
@@ -91,6 +95,78 @@ class LaporanKasHarianController extends Controller
         }, $filename, [
             'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
+    }
+
+    /**
+     * Dokumen PDF/Excel buku kas harian: ringkasan per tanggal + rincian transaksi sebulan.
+     */
+    protected function dokumenEkspor(Request $request): array
+    {
+        $buku    = $this->susunBukuKas($request);
+        $rincian = $this->queryRincian($buku['awalBulan'], $buku['akhirBulan'])->get();
+        $t       = $buku['total'];
+        $kosongBilaNol = fn ($n) => (float) $n != 0 ? (float) $n : null;
+
+        $ringkasan = $buku['hari']->values()->map(fn ($h, $i) => EksporLaporanService::baris([
+            $i + 1, $h->tanggal->format('d/m/Y'), $h->kas_awal,
+            $kosongBilaNol($h->siswa_masuk), $kosongBilaNol($h->siswa_keluar),
+            $kosongBilaNol($h->guru_masuk), $kosongBilaNol($h->guru_keluar),
+            $h->total_masuk, $h->total_keluar, $h->kas_akhir,
+        ]))->all();
+
+        $detail = $rincian->values()->map(function ($r, $i) use ($kosongBilaNol) {
+            $isGuru = $r->jenis_nasabah === 'pegawai';
+
+            return EksporLaporanService::baris([
+                $i + 1, Carbon::parse($r->tgl_transaksi)->format('d/m/Y H:i'), $r->no_rek, $r->nama_nasabah,
+                $isGuru ? null : $kosongBilaNol($r->debit), $isGuru ? null : $kosongBilaNol($r->kredit),
+                $isGuru ? $kosongBilaNol($r->debit) : null, $isGuru ? $kosongBilaNol($r->kredit) : null,
+            ]);
+        })->all();
+
+        return [
+            'judul'       => 'Buku Kas Harian Tabungan',
+            'subjudul'    => 'Bulan ' . $buku['awalBulan']->translatedFormat('F Y'),
+            'nama_file'   => 'BUKU_KAS_HARIAN_' . strtoupper($buku['awalBulan']->translatedFormat('F')) . "_{$buku['tahun']}",
+            'orientasi'   => 'landscape',
+            'ukuran_font' => 8,
+            'bagian'      => [
+                [
+                    'grup_kolom' => [
+                        ['label' => ''], ['label' => ''], ['label' => ''],
+                        ['label' => 'Tab. Siswa', 'span' => 2], ['label' => 'Tab. Guru / Karyawan', 'span' => 2],
+                        ['label' => 'Jumlah', 'span' => 2], ['label' => ''],
+                    ],
+                    'kolom' => [
+                        ['label' => 'No', 'align' => 'center'], ['label' => 'Tanggal'], ['label' => 'Kas Awal', 'angka' => true],
+                        ['label' => 'Penerimaan', 'angka' => true], ['label' => 'Pengeluaran', 'angka' => true],
+                        ['label' => 'Penerimaan', 'angka' => true], ['label' => 'Pengeluaran', 'angka' => true],
+                        ['label' => 'Penerimaan', 'angka' => true], ['label' => 'Pengeluaran', 'angka' => true],
+                        ['label' => 'Kas Akhir', 'angka' => true],
+                    ],
+                    'baris' => $ringkasan,
+                    'kaki'  => [EksporLaporanService::baris([
+                        '', 'JUMLAH', $buku['kasAwalBulan'], $t['siswa_masuk'], $t['siswa_keluar'],
+                        $t['guru_masuk'], $t['guru_keluar'], $t['total_masuk'], $t['total_keluar'], $buku['kasAkhirBulan'],
+                    ], 'total')],
+                    'catatan' => 'Kas awal bulan = akumulasi setoran dikurangi penarikan tabungan sebelum tanggal 1; jasa tabungan tidak dihitung karena bukan uang kas.',
+                ],
+                [
+                    'judul'      => 'Rincian Transaksi',
+                    'grup_kolom' => [
+                        ['label' => ''], ['label' => ''], ['label' => ''], ['label' => ''],
+                        ['label' => 'Tabungan Pelajar', 'span' => 2], ['label' => 'Tab. Guru / Karyawan', 'span' => 2],
+                    ],
+                    'kolom' => [
+                        ['label' => 'No', 'align' => 'center'], ['label' => 'Waktu'], ['label' => 'No Rekening'], ['label' => 'Nama'],
+                        ['label' => 'Debet', 'angka' => true], ['label' => 'Kredit', 'angka' => true],
+                        ['label' => 'Debet', 'angka' => true], ['label' => 'Kredit', 'angka' => true],
+                    ],
+                    'baris'   => $detail,
+                    'catatan' => 'Debet = penarikan (kas keluar), Kredit = setoran (kas masuk).',
+                ],
+            ],
+        ];
     }
 
     /**

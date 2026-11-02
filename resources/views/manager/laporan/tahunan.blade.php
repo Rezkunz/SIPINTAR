@@ -28,24 +28,7 @@
             Tahun Buku
         </span>
         <div class="lap-periode">
-            <a href="{{ route('laporan.tahunan', ['tahun' => $tahun - 1]) }}" class="lap-periode-nav" title="Tahun sebelumnya ({{ $tahun - 1 }})">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-            </a>
-            <select name="tahun" class="lap-select" onchange="this.form.submit()" title="Pilih Tahun">
-                @for ($y = min(date('Y') - 5, $tahun); $y <= max((int) date('Y'), $tahun); $y++)
-                    <option value="{{ $y }}" {{ $y == $tahun ? 'selected' : '' }}>{{ $y }}</option>
-                @endfor
-            </select>
-            <a href="{{ route('laporan.tahunan', ['tahun' => $tahun + 1]) }}" class="lap-periode-nav" title="Tahun berikutnya ({{ $tahun + 1 }})">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-            </a>
-        </div>
-    </div>
-
-    <a href="{{ route('laporan.tahunan.csv', ['tahun' => $tahun]) }}" class="lap-btn-export">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <span>Unduh CSV</span>
-    </a>
+            @include('manager.laporan.partials.tombol_unduh', ['routeEkspor' => 'laporan.tahunan', 'paramEkspor' => ['tahun' => $tahun]])
 </form>
 
 {{-- ── 4 FINANCIAL METRICS CARDS ── --}}

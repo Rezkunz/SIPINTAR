@@ -177,27 +177,41 @@ Route::middleware('auth')->group(function () {
         Route::prefix('laporan')->name('laporan.')->group(function () {
             Route::get('/tabungan', [LaporanTabunganController::class, 'index'])->name('tabungan');
             Route::get('/tabungan/csv', [LaporanTabunganController::class, 'exportCsv'])->name('tabungan.csv');
+            Route::get('/tabungan/pdf', [LaporanTabunganController::class, 'exportPdf'])->name('tabungan.pdf');
+            Route::get('/tabungan/xlsx', [LaporanTabunganController::class, 'exportXlsx'])->name('tabungan.xlsx');
             Route::get('/tabungan/bulanan', [LaporanTabunganController::class, 'bulanan'])->name('tabungan.bulanan');
             Route::get('/tabungan/bulanan/csv', [LaporanTabunganController::class, 'exportBulananCsv'])->name('tabungan.bulanan.csv');
+            Route::get('/tabungan/bulanan/pdf', [LaporanTabunganController::class, 'exportBulananPdf'])->name('tabungan.bulanan.pdf');
+            Route::get('/tabungan/bulanan/xlsx', [LaporanTabunganController::class, 'exportBulananXlsx'])->name('tabungan.bulanan.xlsx');
             Route::get('/tabungan/kas-harian', [LaporanKasHarianController::class, 'index'])->name('tabungan.kas');
             Route::get('/tabungan/kas-harian/csv', [LaporanKasHarianController::class, 'exportCsv'])->name('tabungan.kas.csv');
+            Route::get('/tabungan/kas-harian/pdf', [LaporanKasHarianController::class, 'exportPdf'])->name('tabungan.kas.pdf');
+            Route::get('/tabungan/kas-harian/xlsx', [LaporanKasHarianController::class, 'exportXlsx'])->name('tabungan.kas.xlsx');
 
             Route::get('/pinjaman', [LaporanPinjamanController::class, 'index'])->name('pinjaman');
             Route::get('/pinjaman/csv', [LaporanPinjamanController::class, 'exportCsv'])->name('pinjaman.csv');
+            Route::get('/pinjaman/pdf', [LaporanPinjamanController::class, 'exportPdf'])->name('pinjaman.pdf');
+            Route::get('/pinjaman/xlsx', [LaporanPinjamanController::class, 'exportXlsx'])->name('pinjaman.xlsx');
             Route::get('/pinjaman/kas-bendahara', [LaporanKasBendaharaController::class, 'index'])->name('pinjaman.kas');
             Route::get('/pinjaman/kas-bendahara/csv', [LaporanKasBendaharaController::class, 'exportCsv'])->name('pinjaman.kas.csv');
+            Route::get('/pinjaman/kas-bendahara/pdf', [LaporanKasBendaharaController::class, 'exportPdf'])->name('pinjaman.kas.pdf');
+            Route::get('/pinjaman/kas-bendahara/xlsx', [LaporanKasBendaharaController::class, 'exportXlsx'])->name('pinjaman.kas.xlsx');
 
             Route::get('/tahunan', [LaporanTahunanController::class, 'index'])->name('tahunan');
             Route::get('/tahunan/csv', [LaporanTahunanController::class, 'exportCsv'])->name('tahunan.csv');
+            Route::get('/tahunan/pdf', [LaporanTahunanController::class, 'exportPdf'])->name('tahunan.pdf');
+            Route::get('/tahunan/xlsx', [LaporanTahunanController::class, 'exportXlsx'])->name('tahunan.xlsx');
 
             Route::get('/neraca', [LaporanNeracaController::class, 'index'])->name('neraca');
             Route::get('/neraca/csv', [LaporanNeracaController::class, 'exportCsv'])->name('neraca.csv');
+            Route::get('/neraca/pdf', [LaporanNeracaController::class, 'exportPdf'])->name('neraca.pdf');
+            Route::get('/neraca/xlsx', [LaporanNeracaController::class, 'exportXlsx'])->name('neraca.xlsx');
             Route::post('/neraca/pos', [PosNeracaController::class, 'store'])->name('neraca.pos.store');
             Route::put('/neraca/pos/{pos}', [PosNeracaController::class, 'update'])->whereNumber('pos')->name('neraca.pos.update');
             Route::delete('/neraca/pos/{pos}', [PosNeracaController::class, 'destroy'])->whereNumber('pos')->name('neraca.pos.destroy');
 
             Route::get('/ekspor', function () {
-                return view('placeholder', ['title' => 'Ekspor Laporan (Excel / PDF)', 'subtitle' => 'Unduh laporan dalam format dokumen']);
+                return view('manager.laporan.ekspor');
             })->name('ekspor');
         });
 

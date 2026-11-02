@@ -25,7 +25,7 @@
     </div>
 </div>
 
-@include('manager.laporan.partials.toolbar_pinjaman', ['routeLaporan' => 'laporan.pinjaman.kas', 'routeCsv' => 'laporan.pinjaman.kas.csv', 'filterHalaman' => ['sumber' => $sumber === 'semua' ? null : $sumber]])
+@include('manager.laporan.partials.toolbar_pinjaman', ['routeLaporan' => 'laporan.pinjaman.kas', 'filterHalaman' => ['sumber' => $sumber === 'semua' ? null : $sumber]])
 
 {{-- ── 4 FINANCIAL METRICS CARDS ── --}}
 <div class="metric-grid" style="margin-bottom: 24px;">

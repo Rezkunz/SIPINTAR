@@ -540,33 +540,152 @@
     box-shadow: 0 0 0 3px rgba(13, 92, 70, 0.12);
 }
 
-/* Tombol ekspor beraksen emas */
-.lap-btn-export {
+/* ── Halaman Ekspor Laporan ── */
+.ekspor-grup-judul {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--brand-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 8px 0 10px;
+}
+
+.ekspor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.ekspor-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px 18px;
+    background-color: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-top: 3px solid var(--brand-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+}
+
+.ekspor-card-judul {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: var(--text-heading);
+}
+
+.ekspor-card-ket {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.ekspor-card-field {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.ekspor-card-aksi {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border-medium);
+}
+
+.ekspor-card-aksi .lap-unduh-btn {
+    height: 34px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.ekspor-lihat {
     margin-left: auto;
+    height: 34px;
+    padding: 0 10px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--brand-primary);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.ekspor-lihat:hover {
+    text-decoration: underline;
+}
+
+/* Grup tombol unduh: Excel (hijau), PDF (emas), CSV (netral) */
+.lap-unduh {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lap-unduh-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-right: 2px;
+}
+
+.lap-unduh-btn {
     height: 38px;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 0 16px;
+    gap: 6px;
+    padding: 0 13px;
     font-size: 13px;
     font-weight: 700;
-    color: var(--brand-accent-hover);
-    background-color: var(--brand-accent-light);
-    border: 1px solid var(--brand-accent-border);
+    border: 1px solid transparent;
     border-radius: 8px;
     text-decoration: none;
     transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-.lap-btn-export:hover {
+.lap-unduh-btn.excel {
+    color: var(--brand-primary);
+    background-color: var(--brand-primary-light);
+    border-color: var(--brand-primary-border);
+}
+
+.lap-unduh-btn.excel:hover {
+    background-color: var(--brand-primary-surface);
+    border-color: var(--brand-primary);
+}
+
+.lap-unduh-btn.pdf {
+    color: var(--brand-accent-hover);
+    background-color: var(--brand-accent-light);
+    border-color: var(--brand-accent-border);
+}
+
+.lap-unduh-btn.pdf:hover {
     background-color: var(--brand-accent-surface);
     border-color: var(--brand-accent);
+}
+
+.lap-unduh-btn.csv {
+    color: var(--text-body);
+    background-color: var(--surface-card);
+    border-color: var(--border-medium);
+}
+
+.lap-unduh-btn.csv:hover {
+    border-color: var(--border-strong);
 }
 
 @media (max-width: 640px) {
     .lap-search,
     .lap-segmented,
-    .lap-btn-export {
+    .lap-unduh {
         width: 100%;
     }
 
@@ -575,8 +694,12 @@
         text-align: center;
     }
 
-    .lap-btn-export {
-        justify-content: center;
+    .lap-unduh {
         margin-left: 0;
+    }
+
+    .lap-unduh-btn {
+        flex: 1;
+        justify-content: center;
     }
 }
