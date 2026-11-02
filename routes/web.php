@@ -18,6 +18,7 @@ use App\Http\Controllers\Manager\LaporanKasBendaharaController;
 use App\Http\Controllers\Manager\LaporanTahunanController;
 use App\Http\Controllers\Manager\LaporanNeracaController;
 use App\Http\Controllers\Manager\PosNeracaController;
+use App\Http\Controllers\Manager\TutupPeriodeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -215,9 +216,9 @@ Route::middleware('auth')->group(function () {
             })->name('ekspor');
         });
 
-        Route::get('/periode/tutup', function () {
-            return view('placeholder', ['title' => 'Tutup Buku / Periode', 'subtitle' => 'Proses penutupan buku periode bulanan / tahunan']);
-        })->name('periode.tutup');
+        Route::get('/periode/tutup', [TutupPeriodeController::class, 'index'])->name('periode.tutup');
+        Route::post('/periode/tutup', [TutupPeriodeController::class, 'tutup'])->name('periode.tutup.proses');
+        Route::post('/periode/buka-kembali', [TutupPeriodeController::class, 'bukaKembali'])->name('periode.tutup.buka');
 
         Route::get('/akun/kelola', function () {
             return view('placeholder', ['title' => 'Kelola Akun Pengguna', 'subtitle' => 'Daftar pengguna dan manajemen hak akses']);

@@ -47,7 +47,28 @@
             Posisi Bulan
         </span>
         <div class="lap-periode">
-            @include('manager.laporan.partials.tombol_unduh', ['routeEkspor' => 'laporan.neraca', 'paramEkspor' => ['bulan' => $bulan, 'tahun' => $tahun]])
+            <a href="{{ route('laporan.neraca', ['bulan' => $periodeSebelum->month, 'tahun' => $periodeSebelum->year]) }}" class="lap-periode-nav" title="Bulan sebelumnya ({{ $periodeSebelum->translatedFormat('F Y') }})">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            </a>
+            <select name="bulan" class="lap-select" onchange="this.form.submit()" title="Pilih Bulan">
+                @for ($b = 1; $b <= 12; $b++)
+                    <option value="{{ $b }}" {{ $b == $bulan ? 'selected' : '' }}>
+                        {{ \Carbon\Carbon::createFromDate(2026, $b, 1)->translatedFormat('F') }}
+                    </option>
+                @endfor
+            </select>
+            <select name="tahun" class="lap-select" onchange="this.form.submit()" title="Pilih Tahun">
+                @for ($y = min(date('Y') - 3, $tahun); $y <= max(date('Y') + 1, $tahun); $y++)
+                    <option value="{{ $y }}" {{ $y == $tahun ? 'selected' : '' }}>{{ $y }}</option>
+                @endfor
+            </select>
+            <a href="{{ route('laporan.neraca', ['bulan' => $periodeSesudah->month, 'tahun' => $periodeSesudah->year]) }}" class="lap-periode-nav" title="Bulan berikutnya ({{ $periodeSesudah->translatedFormat('F Y') }})">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+        </div>
+    </div>
+
+    @include('manager.laporan.partials.tombol_unduh', ['routeEkspor' => 'laporan.neraca', 'paramEkspor' => ['bulan' => $bulan, 'tahun' => $tahun]])
 </form>
 
 {{-- ── 4 FINANCIAL METRICS CARDS ── --}}

@@ -703,3 +703,236 @@
         justify-content: center;
     }
 }
+
+/* ── Notifikasi halaman Manager ── */
+.mgr-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-size: 13.5px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+}
+
+.mgr-alert svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.mgr-alert.sukses {
+    color: #166534;
+    background: #F0FDF4;
+    border-color: #BBF7D0;
+}
+
+.mgr-alert.gagal {
+    color: #991B1B;
+    background: #FEF2F2;
+    border-color: #FECACA;
+}
+
+.mgr-metric-ket {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* ── Tutup Periode ── */
+.periode-layout {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+}
+
+.periode-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+}
+
+.periode-layout .content-card {
+    margin-bottom: 0;
+}
+
+.periode-list {
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+    max-height: 560px;
+    overflow-y: auto;
+}
+
+.periode-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid transparent;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.periode-item:hover {
+    background-color: var(--surface-hover);
+}
+
+.periode-item.active {
+    background-color: var(--brand-primary-light);
+    border-color: var(--brand-primary-border);
+}
+
+.periode-item-ikon {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: #B45309;
+    background: #FFFBEB;
+}
+
+.periode-item-ikon.tutup {
+    color: var(--brand-primary);
+    background: #ECFDF5;
+}
+
+.periode-item-teks {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.periode-item-nama {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-heading);
+}
+
+.periode-item-ket {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.periode-cek {
+    margin: 16px 20px 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.periode-cek-judul {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--brand-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.periode-cek-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    border-radius: 8px;
+    border: 1px solid transparent;
+}
+
+.periode-cek-item svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.periode-cek-item.ok     { color: #065F46; background: #ECFDF5; border-color: #A7F3D0; }
+.periode-cek-item.blokir { color: #991B1B; background: #FEF2F2; border-color: #FECACA; }
+.periode-cek-item.awas   { color: #92400E; background: #FFFBEB; border-color: #FDE68A; }
+
+.periode-ringkas {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 16px 20px;
+}
+
+.periode-ringkas-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    background-color: var(--surface-card);
+}
+
+.periode-ringkas-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.periode-ringkas-nilai {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text-heading);
+}
+
+.periode-ringkas-sub {
+    font-size: 11.5px;
+    color: var(--text-muted);
+}
+
+.periode-konfirmasi {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-heading);
+    cursor: pointer;
+}
+
+.periode-konfirmasi input {
+    margin-top: 3px;
+    accent-color: var(--brand-primary);
+}
+
+.periode-form-buka {
+    border-left-color: #D97706;
+}
+
+button[disabled].btn-ui {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 1000px) {
+    .periode-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .periode-list {
+        max-height: 260px;
+    }
+}
+
+@media (max-width: 640px) {
+    .periode-ringkas {
+        grid-template-columns: 1fr;
+    }
+}
+

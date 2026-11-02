@@ -119,54 +119,42 @@ class TellerDashboardController extends Controller
 
         $setoranAwal = (float) $request->input('setoran_awal');
 
-        DB::transaction(function () use ($rekeningId, $setoranAwal) {
-            $rekening = DB::table('tblREKENING')->where('rekening_id', $rekeningId)->first();
-            if (!$rekening) {
-                throw new \Exception('Rekening tidak ditemukan.');
-            }
+        try {
+            DB::transaction(function () use ($rekeningId, $setoranAwal) {
+                $rekening = DB::table('tblREKENING')->where('rekening_id', $rekeningId)->first();
+                if (!$rekening) {
+                    throw new \Exception('Rekening tidak ditemukan.');
+                }
 
-            // Pastikan periode aktif tersedia
-            $currentYear = (int) date('Y');
-            $currentMonth = (int) date('n');
-            $periode = DB::table('tblPERIODE')
-                ->where('tahun', $currentYear)
-                ->where('bulan', $currentMonth)
-                ->first();
+                // Pastikan periode bulan ini terbuka (ditolak bila sudah ditutup Manager)
+                $periodeId = \App\Services\PeriodeLockService::assertPeriodeTerbuka(now()->toDateString())->periode_id;
 
-            if (!$periode) {
-                $periodeId = DB::table('tblPERIODE')->insertGetId([
-                    'tahun'          => $currentYear,
-                    'bulan'          => $currentMonth,
-                    'status_periode' => 'buka',
-                    'user_id'        => auth()->id(),
+                // 1. Update status rekening menjadi aktif & isi saldo awal
+                DB::table('tblREKENING')->where('rekening_id', $rekeningId)->update([
+                    'status_rekening' => 'aktif',
+                    'saldo'           => $setoranAwal,
+                    'tgl_buka'        => now()->toDateString(),
                 ]);
-            } else {
-                $periodeId = $periode->periode_id;
-            }
 
-            // 1. Update status rekening menjadi aktif & isi saldo awal
-            DB::table('tblREKENING')->where('rekening_id', $rekeningId)->update([
-                'status_rekening' => 'aktif',
-                'saldo'           => $setoranAwal,
-                'tgl_buka'        => now()->toDateString(),
-            ]);
+                // 2. Catat transaksi setoran awal di tblTRANSAKSI (jenis_transaksi_id = 1 = setoran)
+                DB::table('tblTRANSAKSI')->insert([
+                    'rekening_id'        => $rekeningId,
+                    'jenis_transaksi_id' => 1,
+                    'periode_id'         => $periodeId,
+                    'draft_id'           => null,
+                    'user_id'            => auth()->id(),
+                    'debit'              => 0.00,
+                    'kredit'             => $setoranAwal,
+                    'saldo_akhir'        => $setoranAwal,
+                    'tgl_transaksi'      => now(),
+                ]);
 
-            // 2. Catat transaksi setoran awal di tblTRANSAKSI (jenis_transaksi_id = 1 = setoran)
-            DB::table('tblTRANSAKSI')->insert([
-                'rekening_id'        => $rekeningId,
-                'jenis_transaksi_id' => 1,
-                'periode_id'         => $periodeId,
-                'draft_id'           => null,
-                'user_id'            => auth()->id(),
-                'debit'              => 0.00,
-                'kredit'             => $setoranAwal,
-                'saldo_akhir'        => $setoranAwal,
-                'tgl_transaksi'      => now(),
-            ]);
-
-            // 3. Masukkan uang fisik ke kas tunai brankas (kas_id = 1)
-            DB::table('tblKAS')->where('kas_id', 1)->increment('saldo', $setoranAwal);
-        });
+                // 3. Masukkan uang fisik ke kas tunai brankas (kas_id = 1)
+                DB::table('tblKAS')->where('kas_id', 1)->increment('saldo', $setoranAwal);
+            });
+        } catch (\RuntimeException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
 
         return redirect()->back()->with('success', 'Rekening nasabah berhasil diverifikasi dan diaktifkan dengan setoran awal Rp ' . number_format($setoranAwal, 0, ',', '.') . '. Buku tabungan dan slip setoran siap dicetak!');
     }

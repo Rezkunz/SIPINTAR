@@ -28,7 +28,21 @@
             Tahun Buku
         </span>
         <div class="lap-periode">
-            @include('manager.laporan.partials.tombol_unduh', ['routeEkspor' => 'laporan.tahunan', 'paramEkspor' => ['tahun' => $tahun]])
+            <a href="{{ route('laporan.tahunan', ['tahun' => $tahun - 1]) }}" class="lap-periode-nav" title="Tahun sebelumnya ({{ $tahun - 1 }})">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            </a>
+            <select name="tahun" class="lap-select" onchange="this.form.submit()" title="Pilih Tahun">
+                @for ($y = min(date('Y') - 5, $tahun); $y <= max((int) date('Y'), $tahun); $y++)
+                    <option value="{{ $y }}" {{ $y == $tahun ? 'selected' : '' }}>{{ $y }}</option>
+                @endfor
+            </select>
+            <a href="{{ route('laporan.tahunan', ['tahun' => $tahun + 1]) }}" class="lap-periode-nav" title="Tahun berikutnya ({{ $tahun + 1 }})">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+        </div>
+    </div>
+
+    @include('manager.laporan.partials.tombol_unduh', ['routeEkspor' => 'laporan.tahunan', 'paramEkspor' => ['tahun' => $tahun]])
 </form>
 
 {{-- ── 4 FINANCIAL METRICS CARDS ── --}}
