@@ -90,6 +90,112 @@
     border-bottom-color: var(--brand-accent);
 }
 
+/* ── Kolektibilitas Pinjaman (badge & tile sebaran) ── */
+.kolek-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: var(--radius-pill);
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.kolek-badge.kolek-lancar        { color: var(--color-success); background: var(--color-success-bg); border-color: var(--color-success-border); }
+.kolek-badge.kolek-dpk           { color: var(--color-info);    background: var(--color-info-bg);    border-color: var(--color-info-border); }
+.kolek-badge.kolek-kurang_lancar { color: var(--color-warning); background: var(--color-warning-bg); border-color: var(--color-warning-border); }
+.kolek-badge.kolek-diragukan     { color: var(--brand-accent-hover); background: var(--brand-accent-surface); border-color: var(--brand-accent); }
+.kolek-badge.kolek-macet         { color: var(--color-danger);  background: var(--color-danger-bg);  border-color: var(--color-danger-border); }
+
+.kolek-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    padding: 16px 20px 20px;
+}
+
+.kolek-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    background-color: var(--surface-card);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kolek-tile:hover {
+    border-color: var(--brand-primary-border);
+    box-shadow: var(--shadow-float);
+}
+
+.kolek-tile.active {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px rgba(13, 92, 70, 0.12);
+}
+
+.kolek-tile-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.kolek-tile-hari {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.kolek-tile-jumlah {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-heading);
+}
+
+.kolek-tile-jumlah small {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.kolek-tile-nominal {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-body);
+}
+
+.kolek-bar {
+    height: 6px;
+    margin-top: 6px;
+    background-color: var(--surface-subtle);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+}
+
+.kolek-bar > div {
+    height: 100%;
+    border-radius: var(--radius-pill);
+    background-color: var(--brand-primary);
+}
+
+.kolek-tile.kolek-dpk .kolek-bar > div           { background-color: var(--color-info); }
+.kolek-tile.kolek-kurang_lancar .kolek-bar > div { background-color: var(--color-warning); }
+.kolek-tile.kolek-diragukan .kolek-bar > div     { background-color: var(--brand-accent-hover); }
+.kolek-tile.kolek-macet .kolek-bar > div         { background-color: var(--color-danger); }
+
+.kolek-tile-persen {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-align: right;
+}
+
 /* ── Toolbar Filter Laporan (Kategori, Pencarian, Periode, Ekspor) ── */
 .lap-toolbar {
     display: flex;

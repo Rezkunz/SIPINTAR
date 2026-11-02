@@ -12,6 +12,8 @@ use App\Http\Controllers\BendaharaMini\KasController;
 use App\Http\Controllers\Bendahara\PotonganSekolahController;
 use App\Http\Controllers\Nasabah\NasabahDashboardController;
 use App\Http\Controllers\Manager\LaporanTabunganController;
+use App\Http\Controllers\Manager\LaporanKasHarianController;
+use App\Http\Controllers\Manager\LaporanPinjamanController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -173,10 +175,11 @@ Route::middleware('auth')->group(function () {
             Route::get('/tabungan/csv', [LaporanTabunganController::class, 'exportCsv'])->name('tabungan.csv');
             Route::get('/tabungan/bulanan', [LaporanTabunganController::class, 'bulanan'])->name('tabungan.bulanan');
             Route::get('/tabungan/bulanan/csv', [LaporanTabunganController::class, 'exportBulananCsv'])->name('tabungan.bulanan.csv');
+            Route::get('/tabungan/kas-harian', [LaporanKasHarianController::class, 'index'])->name('tabungan.kas');
+            Route::get('/tabungan/kas-harian/csv', [LaporanKasHarianController::class, 'exportCsv'])->name('tabungan.kas.csv');
 
-            Route::get('/pinjaman', function () {
-                return view('placeholder', ['title' => 'Laporan Pinjaman & Kas', 'subtitle' => 'Rekapitulasi pinjaman dan perputaran kas']);
-            })->name('pinjaman');
+            Route::get('/pinjaman', [LaporanPinjamanController::class, 'index'])->name('pinjaman');
+            Route::get('/pinjaman/csv', [LaporanPinjamanController::class, 'exportCsv'])->name('pinjaman.csv');
 
             Route::get('/tahunan', function () {
                 return view('placeholder', ['title' => 'Laporan Keuangan Tahunan', 'subtitle' => 'Laporan kinerja keuangan tahun berjalan']);
