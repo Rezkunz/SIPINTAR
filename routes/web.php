@@ -171,6 +171,8 @@ Route::middleware('auth')->group(function () {
         Route::prefix('laporan')->name('laporan.')->group(function () {
             Route::get('/tabungan', [LaporanTabunganController::class, 'index'])->name('tabungan');
             Route::get('/tabungan/csv', [LaporanTabunganController::class, 'exportCsv'])->name('tabungan.csv');
+            Route::get('/tabungan/bulanan', [LaporanTabunganController::class, 'bulanan'])->name('tabungan.bulanan');
+            Route::get('/tabungan/bulanan/csv', [LaporanTabunganController::class, 'exportBulananCsv'])->name('tabungan.bulanan.csv');
 
             Route::get('/pinjaman', function () {
                 return view('placeholder', ['title' => 'Laporan Pinjaman & Kas', 'subtitle' => 'Rekapitulasi pinjaman dan perputaran kas']);

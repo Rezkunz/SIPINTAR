@@ -7,23 +7,26 @@ use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LaporanTabunganController extends Controller
 {
     /**
-     * Kategori laporan → nilai kolom tblNASABAH.jenis_nasabah.
+     * Kategori laporan → nilai kolom tblNASABAH.jenis_nasabah & tarif jasa bulanan (%).
      */
     private const KATEGORI = [
-        'siswa' => ['jenis' => 'non_pegawai', 'label' => 'Siswa'],
-        'guru'  => ['jenis' => 'pegawai',     'label' => 'Guru / Karyawan'],
+        'siswa' => ['jenis' => 'non_pegawai', 'label' => 'Siswa',           'persen_jasa' => 0.1],
+        'guru'  => ['jenis' => 'pegawai',     'label' => 'Guru / Karyawan', 'persen_jasa' => 0.2],
     ];
 
     /**
      * Hanya setoran (1) & penarikan (2); jasa tabungan direkap di laporan bulanan.
      */
     private const JENIS_TRANSAKSI_REKAP = [1, 2];
+
+    private const JENIS_JASA_TABUNGAN = 3;
 
     private const PER_HALAMAN = 10;
 
@@ -33,16 +36,7 @@ class LaporanTabunganController extends Controller
     public function index(Request $request)
     {
         $rekap = $this->susunRekap($request);
-
-        // Paginasi hanya memotong tampilan; ringkasan & baris JUMLAH tetap dari seluruh hasil filter
-        $halaman = LengthAwarePaginator::resolveCurrentPage();
-        $rekap['baris'] = new LengthAwarePaginator(
-            $rekap['baris']->forPage($halaman, self::PER_HALAMAN)->values(),
-            $rekap['baris']->count(),
-            self::PER_HALAMAN,
-            $halaman,
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
+        $rekap['baris'] = $this->paginasi($rekap['baris'], $request);
 
         return view('manager.laporan.tabungan', $rekap);
     }
@@ -95,33 +89,60 @@ class LaporanTabunganController extends Controller
     }
 
     /**
+     * Rekap saldo pokok & jasa tabungan per rekening pada akhir bulan.
+     */
+    public function bulanan(Request $request)
+    {
+        $rekap = $this->susunRekapBulanan($request);
+        $rekap['baris'] = $this->paginasi($rekap['baris'], $request);
+
+        return view('manager.laporan.tabungan_bulanan', $rekap);
+    }
+
+    /**
+     * Unduh rekap tabungan & jasa bulanan dalam format CSV (kompatibel Excel).
+     */
+    public function exportBulananCsv(Request $request): StreamedResponse
+    {
+        $rekap = $this->susunRekapBulanan($request);
+
+        $namaBulan = strtoupper($rekap['awalBulan']->translatedFormat('F'));
+        $filename  = "REKAP_TABUNGAN_JASA_" . strtoupper($rekap['kategori']) . "_{$namaBulan}_{$rekap['tahun']}.csv";
+
+        return response()->streamDownload(function () use ($rekap) {
+            $output = fopen('php://output', 'w');
+            fwrite($output, "\xEF\xBB\xBF"); // BOM agar Excel membaca UTF-8
+
+            fputcsv($output, ['REKAP TABUNGAN & JASA ' . strtoupper($rekap['labelKategori'])], ';');
+            fputcsv($output, ['PER ' . strtoupper($rekap['akhirBulan']->translatedFormat('d F Y'))], ';');
+            fputcsv($output, [], ';');
+
+            fputcsv($output, ['NO', 'NO REKENING', 'NAMA NASABAH', 'JUMLAH POKOK', 'JASA ' . $rekap['labelPersenJasa'], 'TOTAL'], ';');
+
+            foreach ($rekap['baris'] as $i => $b) {
+                fputcsv($output, [$i + 1, $b->no_rek, $b->nama_nasabah, $b->pokok, $b->jasa, $b->total], ';');
+            }
+
+            fputcsv($output, [
+                '', '', 'JUMLAH',
+                $rekap['ringkasan']['total_pokok'],
+                $rekap['ringkasan']['total_jasa'],
+                $rekap['ringkasan']['total_akhir'],
+            ], ';');
+
+            fclose($output);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
+    /**
      * Bangun matriks rekening × tanggal berisi mutasi bersih (setoran - penarikan).
      */
     private function susunRekap(Request $request): array
     {
-        $validated = $request->validate([
-            'bulan'    => 'nullable|integer|between:1,12',
-            'tahun'    => 'nullable|integer|between:2000,2100',
-            'kategori' => 'nullable|in:siswa,guru',
-            'cari'     => 'nullable|string|max:100',
-        ]);
-
-        $bulan    = (int) ($validated['bulan'] ?? now()->month);
-        $tahun    = (int) ($validated['tahun'] ?? now()->year);
-        $kategori = $validated['kategori'] ?? 'siswa';
-        $cari     = trim($validated['cari'] ?? '');
-
-        $filterCari = function ($q) use ($cari) {
-            if ($cari !== '') {
-                $q->where(function ($w) use ($cari) {
-                    $w->where('tblNASABAH.nama_nasabah', 'like', "%{$cari}%")
-                      ->orWhere('tblREKENING.no_rek', 'like', "%{$cari}%");
-                });
-            }
-        };
-
-        $awalBulan  = Carbon::create($tahun, $bulan, 1)->startOfDay();
-        $akhirBulan = $awalBulan->copy()->endOfMonth();
+        $filter = $this->bacaFilter($request);
+        ['kategori' => $kategori, 'filterCari' => $filterCari, 'awalBulan' => $awalBulan, 'akhirBulan' => $akhirBulan] = $filter;
 
         // Mutasi bersih per rekening per tanggal (kredit = setoran, debit = penarikan)
         $mutasi = DB::table('tblTRANSAKSI')
@@ -185,17 +206,156 @@ class LaporanTabunganController extends Controller
             'jumlah_rekening'  => $rekeningList->count(),
         ];
 
-        return [
-            'bulan'         => $bulan,
-            'tahun'         => $tahun,
-            'kategori'      => $kategori,
-            'cari'          => $cari,
-            'labelKategori' => self::KATEGORI[$kategori]['label'],
-            'awalBulan'     => $awalBulan,
-            'tanggalList'   => $tanggalList,
-            'baris'         => $baris,
-            'totalHarian'   => $totalHarian,
-            'ringkasan'     => $ringkasan,
+        return array_merge($this->dataFilter($filter), [
+            'tanggalList' => $tanggalList,
+            'baris'       => $baris,
+            'totalHarian' => $totalHarian,
+            'ringkasan'   => $ringkasan,
+        ]);
+    }
+
+    /**
+     * Saldo pokok akhir bulan per rekening + jasa (persen × pokok).
+     *
+     * Pokok = saldo_akhir transaksi terakhir s.d. akhir bulan, dikurangi jasa yang sudah
+     * dibukukan pada bulan itu, agar jasa bulan berjalan tidak terhitung dua kali.
+     */
+    private function susunRekapBulanan(Request $request): array
+    {
+        $filter = $this->bacaFilter($request);
+        ['kategori' => $kategori, 'filterCari' => $filterCari, 'awalBulan' => $awalBulan, 'akhirBulan' => $akhirBulan] = $filter;
+        $persenJasa = self::KATEGORI[$kategori]['persen_jasa'];
+
+        $rekeningList = DB::table('tblREKENING')
+            ->join('tblNASABAH', 'tblREKENING.nasabah_id', '=', 'tblNASABAH.nasabah_id')
+            ->where('tblNASABAH.jenis_nasabah', self::KATEGORI[$kategori]['jenis'])
+            ->where('tblREKENING.status_rekening', '!=', 'pending')
+            ->whereDate('tblREKENING.tgl_buka', '<=', $akhirBulan)
+            ->tap($filterCari)
+            ->orderBy('tblREKENING.no_rek')
+            ->select('tblREKENING.rekening_id', 'tblREKENING.no_rek', 'tblREKENING.status_rekening', 'tblNASABAH.nama_nasabah', 'tblNASABAH.kelas_unit')
+            ->get();
+
+        $rekeningIds = $rekeningList->pluck('rekening_id')->all();
+
+        // Saldo dari transaksi terakhir tiap rekening s.d. akhir bulan
+        $saldoAkhir = DB::table('tblTRANSAKSI as t')
+            ->whereIn('t.rekening_id', $rekeningIds)
+            ->where('t.transaksi_id', function ($q) use ($akhirBulan) {
+                $q->select('t2.transaksi_id')
+                  ->from('tblTRANSAKSI as t2')
+                  ->whereColumn('t2.rekening_id', 't.rekening_id')
+                  ->where('t2.tgl_transaksi', '<=', $akhirBulan)
+                  ->orderByDesc('t2.tgl_transaksi')
+                  ->orderByDesc('t2.transaksi_id')
+                  ->limit(1);
+            })
+            ->pluck('t.saldo_akhir', 't.rekening_id');
+
+        $jasaDibukukan = DB::table('tblTRANSAKSI')
+            ->whereIn('rekening_id', $rekeningIds)
+            ->where('jenis_transaksi_id', self::JENIS_JASA_TABUNGAN)
+            ->whereBetween('tgl_transaksi', [$awalBulan, $akhirBulan])
+            ->groupBy('rekening_id')
+            ->select('rekening_id', DB::raw('SUM(kredit) as total'))
+            ->pluck('total', 'rekening_id');
+
+        $baris = $rekeningList
+            ->map(function ($rek) use ($saldoAkhir, $jasaDibukukan, $persenJasa) {
+                $rek->pokok = (float) ($saldoAkhir[$rek->rekening_id] ?? 0) - (float) ($jasaDibukukan[$rek->rekening_id] ?? 0);
+                $rek->jasa  = $rek->pokok > 0 ? round($rek->pokok * $persenJasa / 100) : 0.0;
+                $rek->total = $rek->pokok + $rek->jasa;
+
+                return $rek;
+            })
+            // Rekening yang sudah ditutup dan bersaldo nol tidak perlu direkap
+            ->reject(fn ($rek) => $rek->status_rekening === 'tutup' && $rek->pokok == 0)
+            ->values();
+
+        $ringkasan = [
+            'total_pokok'     => (float) $baris->sum('pokok'),
+            'total_jasa'      => (float) $baris->sum('jasa'),
+            'total_akhir'     => (float) $baris->sum('total'),
+            'jumlah_rekening' => $baris->count(),
+            'rekening_bersaldo' => $baris->where('pokok', '>', 0)->count(),
         ];
+
+        return array_merge($this->dataFilter($filter), [
+            'akhirBulan'      => $akhirBulan,
+            'persenJasa'      => $persenJasa,
+            'labelPersenJasa' => str_replace('.', ',', (string) $persenJasa) . '%',
+            'baris'           => $baris,
+            'ringkasan'       => $ringkasan,
+        ]);
+    }
+
+    /**
+     * Validasi & normalisasi filter bersama (kategori, periode, pencarian).
+     */
+    private function bacaFilter(Request $request): array
+    {
+        $validated = $request->validate([
+            'bulan'    => 'nullable|integer|between:1,12',
+            'tahun'    => 'nullable|integer|between:2000,2100',
+            'kategori' => 'nullable|in:siswa,guru',
+            'cari'     => 'nullable|string|max:100',
+        ]);
+
+        $bulan    = (int) ($validated['bulan'] ?? now()->month);
+        $tahun    = (int) ($validated['tahun'] ?? now()->year);
+        $kategori = $validated['kategori'] ?? 'siswa';
+        $cari     = trim($validated['cari'] ?? '');
+
+        $filterCari = function ($q) use ($cari) {
+            if ($cari !== '') {
+                $q->where(function ($w) use ($cari) {
+                    $w->where('tblNASABAH.nama_nasabah', 'like', "%{$cari}%")
+                      ->orWhere('tblREKENING.no_rek', 'like', "%{$cari}%");
+                });
+            }
+        };
+
+        $awalBulan = Carbon::create($tahun, $bulan, 1)->startOfDay();
+
+        return [
+            'bulan'      => $bulan,
+            'tahun'      => $tahun,
+            'kategori'   => $kategori,
+            'cari'       => $cari,
+            'filterCari' => $filterCari,
+            'awalBulan'  => $awalBulan,
+            'akhirBulan' => $awalBulan->copy()->endOfMonth(),
+        ];
+    }
+
+    /**
+     * Variabel filter yang dikirim ke view.
+     */
+    private function dataFilter(array $filter): array
+    {
+        return [
+            'bulan'         => $filter['bulan'],
+            'tahun'         => $filter['tahun'],
+            'kategori'      => $filter['kategori'],
+            'cari'          => $filter['cari'],
+            'labelKategori' => self::KATEGORI[$filter['kategori']]['label'],
+            'awalBulan'     => $filter['awalBulan'],
+        ];
+    }
+
+    /**
+     * Paginasi hanya memotong tampilan; ringkasan & baris JUMLAH tetap dari seluruh hasil filter.
+     */
+    private function paginasi(Collection $baris, Request $request): LengthAwarePaginator
+    {
+        $halaman = LengthAwarePaginator::resolveCurrentPage();
+
+        return new LengthAwarePaginator(
+            $baris->forPage($halaman, self::PER_HALAMAN)->values(),
+            $baris->count(),
+            self::PER_HALAMAN,
+            $halaman,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
     }
 }

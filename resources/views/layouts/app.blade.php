@@ -62,7 +62,7 @@
                 </a>
 
                 <div class="nav-section-title">Laporan Keuangan</div>
-                <a href="{{ route('laporan.tabungan') }}" class="nav-link {{ request()->routeIs('laporan.tabungan') ? 'active' : '' }}">
+                <a href="{{ route('laporan.tabungan') }}" class="nav-link {{ request()->routeIs('laporan.tabungan', 'laporan.tabungan.bulanan') ? 'active' : '' }}">
                     <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                     <span>Laporan Tabungan</span>
                 </a>
