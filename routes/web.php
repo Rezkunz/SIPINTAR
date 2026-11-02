@@ -19,6 +19,7 @@ use App\Http\Controllers\Manager\LaporanTahunanController;
 use App\Http\Controllers\Manager\LaporanNeracaController;
 use App\Http\Controllers\Manager\PosNeracaController;
 use App\Http\Controllers\Manager\TutupPeriodeController;
+use App\Http\Controllers\Manager\KelolaPenggunaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -41,7 +42,7 @@ Route::get('/', function () {
 | Routes Terotentikasi & Terproteksi Berdasarkan Hak Akses / Role
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'akun.aktif'])->group(function () {
 
     // Dashboard Utama: Masing-masing role otomatis melihat file view dashboard miliknya sendiri
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -220,9 +221,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/periode/tutup', [TutupPeriodeController::class, 'tutup'])->name('periode.tutup.proses');
         Route::post('/periode/buka-kembali', [TutupPeriodeController::class, 'bukaKembali'])->name('periode.tutup.buka');
 
-        Route::get('/akun/kelola', function () {
-            return view('placeholder', ['title' => 'Kelola Akun Pengguna', 'subtitle' => 'Daftar pengguna dan manajemen hak akses']);
-        })->name('akun.kelola');
+        Route::get('/akun/kelola', [KelolaPenggunaController::class, 'index'])->name('akun.kelola');
+        Route::post('/akun/kelola', [KelolaPenggunaController::class, 'store'])->name('akun.kelola.store');
+        Route::put('/akun/kelola/{user}', [KelolaPenggunaController::class, 'update'])->whereNumber('user')->name('akun.kelola.update');
+        Route::patch('/akun/kelola/{user}/status', [KelolaPenggunaController::class, 'ubahStatus'])->whereNumber('user')->name('akun.kelola.status');
     });
 
     /*
