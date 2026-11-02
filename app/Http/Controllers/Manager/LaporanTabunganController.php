@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
+use App\Services\JasaTabunganService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
@@ -14,19 +15,14 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class LaporanTabunganController extends Controller
 {
     /**
-     * Kategori laporan → nilai kolom tblNASABAH.jenis_nasabah & tarif jasa bulanan (%).
+     * Kategori laporan & tarif jasa bulanan (%) — sumber tunggal di JasaTabunganService.
      */
-    private const KATEGORI = [
-        'siswa' => ['jenis' => 'non_pegawai', 'label' => 'Siswa',           'persen_jasa' => 0.1],
-        'guru'  => ['jenis' => 'pegawai',     'label' => 'Guru / Karyawan', 'persen_jasa' => 0.2],
-    ];
+    private const KATEGORI = JasaTabunganService::KATEGORI;
 
     /**
      * Hanya setoran (1) & penarikan (2); jasa tabungan direkap di laporan bulanan.
      */
     private const JENIS_TRANSAKSI_REKAP = [1, 2];
-
-    private const JENIS_JASA_TABUNGAN = 3;
 
     private const PER_HALAMAN = 10;
 
@@ -215,10 +211,7 @@ class LaporanTabunganController extends Controller
     }
 
     /**
-     * Saldo pokok akhir bulan per rekening + jasa (persen × pokok).
-     *
-     * Pokok = saldo_akhir transaksi terakhir s.d. akhir bulan, dikurangi jasa yang sudah
-     * dibukukan pada bulan itu, agar jasa bulan berjalan tidak terhitung dua kali.
+     * Saldo pokok akhir bulan per rekening + jasa (persen × pokok), lihat JasaTabunganService.
      */
     private function susunRekapBulanan(Request $request): array
     {
@@ -226,51 +219,7 @@ class LaporanTabunganController extends Controller
         ['kategori' => $kategori, 'filterCari' => $filterCari, 'awalBulan' => $awalBulan, 'akhirBulan' => $akhirBulan] = $filter;
         $persenJasa = self::KATEGORI[$kategori]['persen_jasa'];
 
-        $rekeningList = DB::table('tblREKENING')
-            ->join('tblNASABAH', 'tblREKENING.nasabah_id', '=', 'tblNASABAH.nasabah_id')
-            ->where('tblNASABAH.jenis_nasabah', self::KATEGORI[$kategori]['jenis'])
-            ->where('tblREKENING.status_rekening', '!=', 'pending')
-            ->whereDate('tblREKENING.tgl_buka', '<=', $akhirBulan)
-            ->tap($filterCari)
-            ->orderBy('tblREKENING.no_rek')
-            ->select('tblREKENING.rekening_id', 'tblREKENING.no_rek', 'tblREKENING.status_rekening', 'tblNASABAH.nama_nasabah', 'tblNASABAH.kelas_unit')
-            ->get();
-
-        $rekeningIds = $rekeningList->pluck('rekening_id')->all();
-
-        // Saldo dari transaksi terakhir tiap rekening s.d. akhir bulan
-        $saldoAkhir = DB::table('tblTRANSAKSI as t')
-            ->whereIn('t.rekening_id', $rekeningIds)
-            ->where('t.transaksi_id', function ($q) use ($akhirBulan) {
-                $q->select('t2.transaksi_id')
-                  ->from('tblTRANSAKSI as t2')
-                  ->whereColumn('t2.rekening_id', 't.rekening_id')
-                  ->where('t2.tgl_transaksi', '<=', $akhirBulan)
-                  ->orderByDesc('t2.tgl_transaksi')
-                  ->orderByDesc('t2.transaksi_id')
-                  ->limit(1);
-            })
-            ->pluck('t.saldo_akhir', 't.rekening_id');
-
-        $jasaDibukukan = DB::table('tblTRANSAKSI')
-            ->whereIn('rekening_id', $rekeningIds)
-            ->where('jenis_transaksi_id', self::JENIS_JASA_TABUNGAN)
-            ->whereBetween('tgl_transaksi', [$awalBulan, $akhirBulan])
-            ->groupBy('rekening_id')
-            ->select('rekening_id', DB::raw('SUM(kredit) as total'))
-            ->pluck('total', 'rekening_id');
-
-        $baris = $rekeningList
-            ->map(function ($rek) use ($saldoAkhir, $jasaDibukukan, $persenJasa) {
-                $rek->pokok = (float) ($saldoAkhir[$rek->rekening_id] ?? 0) - (float) ($jasaDibukukan[$rek->rekening_id] ?? 0);
-                $rek->jasa  = $rek->pokok > 0 ? round($rek->pokok * $persenJasa / 100) : 0.0;
-                $rek->total = $rek->pokok + $rek->jasa;
-
-                return $rek;
-            })
-            // Rekening yang sudah ditutup dan bersaldo nol tidak perlu direkap
-            ->reject(fn ($rek) => $rek->status_rekening === 'tutup' && $rek->pokok == 0)
-            ->values();
+        $baris = JasaTabunganService::rekapBulanan($kategori, $awalBulan, $akhirBulan, $filterCari);
 
         $ringkasan = [
             'total_pokok'     => (float) $baris->sum('pokok'),

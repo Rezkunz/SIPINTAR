@@ -15,6 +15,9 @@ use App\Http\Controllers\Manager\LaporanTabunganController;
 use App\Http\Controllers\Manager\LaporanKasHarianController;
 use App\Http\Controllers\Manager\LaporanPinjamanController;
 use App\Http\Controllers\Manager\LaporanKasBendaharaController;
+use App\Http\Controllers\Manager\LaporanTahunanController;
+use App\Http\Controllers\Manager\LaporanNeracaController;
+use App\Http\Controllers\Manager\PosNeracaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -184,13 +187,14 @@ Route::middleware('auth')->group(function () {
             Route::get('/pinjaman/kas-bendahara', [LaporanKasBendaharaController::class, 'index'])->name('pinjaman.kas');
             Route::get('/pinjaman/kas-bendahara/csv', [LaporanKasBendaharaController::class, 'exportCsv'])->name('pinjaman.kas.csv');
 
-            Route::get('/tahunan', function () {
-                return view('placeholder', ['title' => 'Laporan Keuangan Tahunan', 'subtitle' => 'Laporan kinerja keuangan tahun berjalan']);
-            })->name('tahunan');
+            Route::get('/tahunan', [LaporanTahunanController::class, 'index'])->name('tahunan');
+            Route::get('/tahunan/csv', [LaporanTahunanController::class, 'exportCsv'])->name('tahunan.csv');
 
-            Route::get('/neraca', function () {
-                return view('placeholder', ['title' => 'Laporan Gabungan & Neraca Saldo', 'subtitle' => 'Neraca saldo dan ikhtisar keuangan gabungan']);
-            })->name('neraca');
+            Route::get('/neraca', [LaporanNeracaController::class, 'index'])->name('neraca');
+            Route::get('/neraca/csv', [LaporanNeracaController::class, 'exportCsv'])->name('neraca.csv');
+            Route::post('/neraca/pos', [PosNeracaController::class, 'store'])->name('neraca.pos.store');
+            Route::put('/neraca/pos/{pos}', [PosNeracaController::class, 'update'])->whereNumber('pos')->name('neraca.pos.update');
+            Route::delete('/neraca/pos/{pos}', [PosNeracaController::class, 'destroy'])->whereNumber('pos')->name('neraca.pos.destroy');
 
             Route::get('/ekspor', function () {
                 return view('placeholder', ['title' => 'Ekspor Laporan (Excel / PDF)', 'subtitle' => 'Unduh laporan dalam format dokumen']);

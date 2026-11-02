@@ -90,6 +90,174 @@
     border-bottom-color: var(--brand-accent);
 }
 
+/* ── Laporan Laba Rugi (format income statement) ── */
+.lap-income td {
+    padding-top: 9px;
+    padding-bottom: 9px;
+}
+
+.lap-income-group td {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: var(--brand-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background-color: var(--brand-primary-light);
+}
+
+.lap-income-item {
+    padding-left: 32px !important;
+    color: var(--text-heading);
+    font-weight: 600;
+}
+
+.lap-income-note {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.lap-income-num {
+    text-align: right;
+    white-space: nowrap;
+    width: 180px;
+    font-variant-numeric: tabular-nums;
+}
+
+.lap-income-subtotal td {
+    font-weight: 800;
+    color: var(--text-heading);
+    border-top: 1px solid var(--border-medium);
+}
+
+.lap-income-total td {
+    font-size: 15px;
+    font-weight: 800;
+    border-top: 2px solid var(--text-heading);
+    border-bottom: 3px double var(--text-heading);
+}
+
+.lap-income-total.laba td { color: var(--brand-primary); background-color: var(--brand-primary-light); }
+.lap-income-total.rugi td { color: var(--color-danger);  background-color: var(--color-danger-bg); }
+
+/* ── Neraca dua kolom (Aktiva | Pasiva) ── */
+.neraca-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+}
+
+.neraca-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
+}
+
+.neraca-col + .neraca-col {
+    border-left: 1px solid var(--border-subtle);
+}
+
+.neraca-total-table {
+    margin-top: auto;
+}
+
+.neraca-manual-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--brand-accent-hover);
+    background-color: var(--brand-accent-light);
+    border: 1px solid var(--brand-accent-border);
+    border-radius: var(--radius-pill);
+    vertical-align: middle;
+}
+
+/* ── Form Pos Neraca Manual ── */
+.pos-form {
+    margin: 16px 20px;
+    padding: 16px 18px;
+    background-color: var(--surface-hover);
+    border: 1px solid var(--border-subtle);
+    border-left: 3px solid var(--brand-accent);
+    border-radius: var(--radius-md);
+}
+
+.pos-form-title {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--text-heading);
+    margin-bottom: 12px;
+}
+
+.pos-form-grid {
+    display: grid;
+    grid-template-columns: 150px minmax(200px, 1.4fr) minmax(150px, 1fr) 160px;
+    gap: 14px;
+}
+
+.pos-form-wide {
+    grid-column: 1 / -1;
+}
+
+.pos-input {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-heading);
+    background-color: #FFFFFF;
+    border: 1px solid var(--border-medium);
+    border-radius: 8px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pos-input:focus {
+    outline: none;
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px rgba(13, 92, 70, 0.15);
+}
+
+.pos-form-hint {
+    margin-top: 10px;
+    font-size: 11.5px;
+    color: var(--text-muted);
+}
+
+.pos-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+@media (max-width: 900px) {
+    .pos-form-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .pos-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 900px) {
+    .neraca-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .neraca-col + .neraca-col {
+        border-left: none;
+        border-top: 1px solid var(--border-subtle);
+    }
+}
+
 /* ── Kolektibilitas Pinjaman (badge & tile sebaran) ── */
 .kolek-badge {
     display: inline-flex;
