@@ -20,10 +20,15 @@
             <div style="font-size: 14px; font-weight: 600; color: var(--text-heading); margin-bottom: 4px;">
                 {{ $title ?? 'Modul Sistem' }}
             </div>
-            <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
-                {{ $subtitle ?? 'Fitur ini dalam proses integrasi database operasional Bank Mini.' }}
+            <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">
+                {{ $subtitle ?? 'Modul Bank Mini Sekolah' }}
             </div>
-            <a href="{{ route('dashboard') }}" class="btn-ui btn-ui-primary btn-ui-sm">Kembali ke Dashboard</a>
+            <div style="display:inline-block; font-size: 12.5px; font-weight: 600; color: #92400E; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 8px 14px; margin: 8px 0 20px;">
+                Fitur ini belum tersedia dan masih dalam tahap pengembangan. Silakan kembali ke dashboard Anda.
+            </div>
+            <div>
+                <a href="{{ route('dashboard') }}" class="btn-ui btn-ui-primary btn-ui-sm" style="text-decoration:none;">Kembali ke Dashboard {{ auth()->user()->roleName() }}</a>
+            </div>
         </div>
     </div>
 </div>

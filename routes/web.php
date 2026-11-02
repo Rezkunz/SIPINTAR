@@ -286,3 +286,13 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () {
         return response()->json(['reply' => 'Maaf, asisten AI sedang tidak tersedia. Silakan hubungi staf Bank Mini Sekolah untuk bantuan langsung.']);
     })->name('chatbot.ask');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Alamat tidak dikenal: lewat grup web agar sesi terbaca, sehingga halaman 404
+| dapat menampilkan tombol kembali ke dashboard role pengguna yang sedang login
+|--------------------------------------------------------------------------
+*/
+Route::fallback(function () {
+    abort(404);
+});

@@ -18,5 +18,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Error tidak ditampilkan mentah; pengguna diarahkan kembali ke dashboard role-nya
+        $exceptions->render(fn (\Throwable $e, \Illuminate\Http\Request $request) => \App\Exceptions\HalamanError::render($e, $request));
     })->create();
