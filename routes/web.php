@@ -14,6 +14,7 @@ use App\Http\Controllers\Nasabah\NasabahDashboardController;
 use App\Http\Controllers\Manager\LaporanTabunganController;
 use App\Http\Controllers\Manager\LaporanKasHarianController;
 use App\Http\Controllers\Manager\LaporanPinjamanController;
+use App\Http\Controllers\Manager\LaporanKasBendaharaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -180,6 +181,8 @@ Route::middleware('auth')->group(function () {
 
             Route::get('/pinjaman', [LaporanPinjamanController::class, 'index'])->name('pinjaman');
             Route::get('/pinjaman/csv', [LaporanPinjamanController::class, 'exportCsv'])->name('pinjaman.csv');
+            Route::get('/pinjaman/kas-bendahara', [LaporanKasBendaharaController::class, 'index'])->name('pinjaman.kas');
+            Route::get('/pinjaman/kas-bendahara/csv', [LaporanKasBendaharaController::class, 'exportCsv'])->name('pinjaman.kas.csv');
 
             Route::get('/tahunan', function () {
                 return view('placeholder', ['title' => 'Laporan Keuangan Tahunan', 'subtitle' => 'Laporan kinerja keuangan tahun berjalan']);

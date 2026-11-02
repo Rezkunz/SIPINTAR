@@ -18,7 +18,7 @@
     </div>
 </div>
 
-@include('manager.laporan.partials.toolbar_pinjaman', ['routeLaporan' => 'laporan.pinjaman', 'routeCsv' => 'laporan.pinjaman.csv'])
+@include('manager.laporan.partials.toolbar_pinjaman', ['routeLaporan' => 'laporan.pinjaman', 'routeCsv' => 'laporan.pinjaman.csv', 'filterHalaman' => ['cari' => $cari, 'kolektibilitas' => $filterKolek]])
 
 {{-- ── 4 FINANCIAL METRICS CARDS ── --}}
 <div class="metric-grid" style="margin-bottom: 24px;">
