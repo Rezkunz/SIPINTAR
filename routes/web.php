@@ -5,6 +5,10 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SiswaPraktik\BukaRekeningController;
 use App\Http\Controllers\SiswaPraktik\DraftTransaksiController;
+use App\Http\Controllers\Teller\TellerTransactionController;
+use App\Http\Controllers\Teller\TellerVerificationController;
+use App\Http\Controllers\Teller\TellerInterestController;
+use App\Http\Controllers\Teller\TellerCorrectionController;
 use App\Http\Controllers\BendaharaMini\PinjamanBbmController;
 use App\Http\Controllers\BendaharaMini\AngsuranBbmController;
 use App\Http\Controllers\BendaharaMini\KartuPiutangBbmController;
@@ -70,41 +74,43 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () {
             Route::get('/draft/cari-rekening', [DraftTransaksiController::class, 'searchRekening'])->name('draft.cari-rekening');
             Route::get('/draft/{draft}', [DraftTransaksiController::class, 'show'])->name('draft.show');
 
-            Route::get('/buka-rekening', [BukaRekeningController::class, 'create'])->name('buka-rekening');
             Route::post('/buka-rekening', [BukaRekeningController::class, 'store'])->name('buka-rekening.store');
+            Route::post('/buka-rekening/{rekening}/approve', [BukaRekeningController::class, 'approve'])->name('buka-rekening.approve');
         });
 
         // Akses bersama: Siswa Praktik & Teller (Otoritas Teller Sebagai Pusat Approval)
         Route::middleware('role:siswa_praktik,teller')->group(function () {
-            Route::get('/setoran', [DraftTransaksiController::class, 'handleSetoran'])->name('setoran');
-            Route::get('/penarikan', [DraftTransaksiController::class, 'handlePenarikan'])->name('penarikan');
-            Route::get('/buka-rekening', [\App\Http\Controllers\Teller\TellerDashboardController::class, 'bukaRekening'])->name('buka-rekening');
-            Route::post('/buka-rekening/aktivasi/{id}', [\App\Http\Controllers\Teller\TellerDashboardController::class, 'aktivasiRekening'])->name('buka-rekening.aktivasi');
+            Route::get('/setoran', [TellerTransactionController::class, 'setoran'])->name('setoran');
+            Route::post('/setoran', [TellerTransactionController::class, 'storeSetoran'])->name('setoran.store');
+            Route::get('/penarikan', [TellerTransactionController::class, 'penarikan'])->name('penarikan');
+            Route::post('/penarikan', [TellerTransactionController::class, 'storePenarikan'])->name('penarikan.store');
+            Route::get('/buka-rekening', [TellerTransactionController::class, 'bukaRekening'])->name('buka-rekening');
+            Route::get('/rekening/cari', [TellerTransactionController::class, 'searchRekening'])->name('rekening.cari');
 
           
         });
 
         // Akses khusus Teller
         Route::middleware('role:teller')->group(function () {
-            Route::get('/verifikasi', function () {
-                return view('placeholder', ['title' => 'Verifikasi Draft Transaksi', 'subtitle' => 'Daftar verifikasi & validasi transaksi teller']);
-            })->name('verifikasi');
+            Route::get('/verifikasi', [TellerVerificationController::class, 'index'])->name('verifikasi');
+            Route::get('/verifikasi/{draft}', [TellerVerificationController::class, 'show'])->name('verifikasi.show');
+            Route::post('/verifikasi/{draft}/setujui', [TellerVerificationController::class, 'approve'])->name('verifikasi.approve');
+            Route::post('/verifikasi/{draft}/tolak', [TellerVerificationController::class, 'reject'])->name('verifikasi.reject');
 
-            Route::get('/bukti', function () {
-                return view('placeholder', ['title' => 'Cetak Bukti Transaksi', 'subtitle' => 'Cetak slip setoran / penarikan']);
-            })->name('bukti');
+            Route::get('/bukti', [TellerTransactionController::class, 'bukti'])->name('bukti');
+            Route::get('/bukti/{transaksi}', [TellerTransactionController::class, 'showBukti'])->name('bukti.show');
 
-            Route::get('/jasa', function () {
-                return view('placeholder', ['title' => 'Hitung & Catat Jasa Tabungan', 'subtitle' => 'Perhitungan bagi hasil / jasa tabungan']);
-            })->name('jasa');
+            Route::get('/jasa', [TellerInterestController::class, 'index'])->name('jasa');
+            Route::post('/jasa/{rekening}', [TellerInterestController::class, 'process'])->name('jasa.process');
 
-            Route::get('/saldo', function () {
-                return view('placeholder', ['title' => 'Cek Saldo & Mutasi Tabungan', 'subtitle' => 'Riwayat mutasi saldo seluruh nasabah']);
-            })->name('saldo');
+            Route::get('/saldo', [TellerTransactionController::class, 'saldo'])->name('saldo');
+            Route::get('/mutasi', [TellerTransactionController::class, 'mutasi'])->name('mutasi');
+            Route::get('/mutasi/cetak', [TellerTransactionController::class, 'printMutasi'])->name('mutasi.cetak');
+            Route::get('/log-transaksi', [TellerTransactionController::class, 'logHarian'])->name('log-transaksi');
+            Route::get('/log-transaksi/cetak', [TellerTransactionController::class, 'printLogHarian'])->name('log-transaksi.cetak');
 
-            Route::get('/koreksi', function () {
-                return view('placeholder', ['title' => 'Pengajuan Koreksi Transaksi', 'subtitle' => 'Form koreksi transaksi tabungan']);
-            })->name('koreksi');
+            Route::get('/koreksi', [TellerCorrectionController::class, 'index'])->name('koreksi');
+            Route::post('/koreksi/{transaksi}', [TellerCorrectionController::class, 'correct'])->name('koreksi.process');
         });
     });
 

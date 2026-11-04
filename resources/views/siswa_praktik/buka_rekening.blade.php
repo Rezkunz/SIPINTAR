@@ -22,7 +22,7 @@
                 <h2 class="card-heading">Formulir Pendaftaran Nasabah</h2>
                 <div style="font-size: 12px; color: var(--text-muted);">Lengkapi identitas nasabah untuk menerbitkan nomor rekening tabungan</div>
             </div>
-            <span class="badge-pill green">Rekening Langsung Aktif</span>
+            <span class="badge-pill amber">Menunggu Setoran Awal</span>
         </div>
 
         @if(session('success_rekening'))
@@ -37,6 +37,12 @@
                         <strong style="font-family: ui-monospace, SFMono-Regular, monospace; letter-spacing: 0.5px;">{{ session('success_rekening') }}</strong>
                     </div>
                 </div>
+            </div>
+        @endif
+
+        @if(session('status'))
+            <div style="margin: 20px 24px 0; padding: 12px 16px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: var(--radius-md); color: #1E40AF; font-size: 13px;">
+                {{ session('status') }}
             </div>
         @endif
 
@@ -151,8 +157,8 @@
             <div style="display: flex; gap: 12px; margin-bottom: 16px;">
                 <div style="width: 28px; height: 28px; border-radius: 6px; background: #ECFDF5; color: #059669; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 700;">1</div>
                 <div>
-                    <strong style="color: var(--text-heading);">Aktivasi Langsung</strong>
-                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Rekening langsung berstatus aktif dengan saldo awal Rp 0 tanpa verifikasi teller.</div>
+                    <strong style="color: var(--text-heading);">Persetujuan Siswa Praktik</strong>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Rekening menunggu persetujuan dan setoran awal dari Siswa Praktik.</div>
                 </div>
             </div>
 
@@ -176,12 +182,58 @@
                 <div style="width: 28px; height: 28px; border-radius: 6px; background: #F1F5F9; color: var(--text-muted); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 700;">4</div>
                 <div>
                     <strong style="color: var(--text-heading);">Langkah Berikutnya</strong>
-                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Setelah rekening terbit, nasabah dapat disimulasikan melakukan setoran tabungan pertama melalui menu Input Draft.</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Siswa Praktik menerima setoran awal minimal Rp10.000 lalu menyetujui rekening agar statusnya menjadi aktif.</div>
                 </div>
             </div>
         </div>
     </div>
 
+</div>
+
+<div class="content-card" style="margin-top: 24px;">
+    <div class="card-header-bar">
+        <div>
+            <h2 class="card-heading">Rekening Menunggu Setoran Awal</h2>
+            <div style="font-size: 12px; color: var(--text-muted);">Setoran minimal Rp10.000 mengaktifkan rekening dan dicatat sebagai transaksi awal.</div>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="financial-table">
+            <thead>
+                <tr>
+                    <th>Nomor Rekening</th>
+                    <th>Nama Nasabah</th>
+                    <th>Kategori</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Setoran Awal</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($pendingRekening as $pending)
+                    <tr>
+                        <td>{{ $pending->no_rek }}</td>
+                        <td>{{ $pending->nasabah->nama_nasabah ?? '-' }}</td>
+                        <td>{{ ucfirst($pending->nasabah->jenis_nasabah ?? '-') }}</td>
+                        <td><span class="badge-pill amber">Pending</span></td>
+                        <td style="text-align: right;">
+                            <form method="POST" action="{{ route('tabungan.buka-rekening.approve', $pending) }}" style="display: inline-flex; gap: 8px; align-items: center;">
+                                @csrf
+                                <input type="number" name="setoran_awal" min="10000" step="1000" value="10000" required style="width: 130px;" class="form-input">
+                                <button type="submit" class="btn-ui btn-ui-primary btn-ui-sm">Setujui & Aktifkan</button>
+                            </form>
+                        </td>
+                        <td></td>
+                    </tr>
+                @empty
+                    <tr><td colspan="6"><div class="empty-placeholder">Tidak ada rekening yang menunggu setoran awal.</div></td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    @if ($pendingRekening->hasPages())
+        <div style="padding: 16px 20px;">{{ $pendingRekening->links() }}</div>
+    @endif
 </div>
 
 <script>
@@ -224,8 +276,8 @@
         @if(session('success_rekening'))
             if (typeof window.showSuccessPopup === 'function') {
                 window.showSuccessPopup(
-                    "Rekening tabungan berhasil dibuka dengan Nomor Rekening: {{ session('success_rekening') }} untuk nasabah {{ session('success_nama') }}.",
-                    "REKENING TERBIT !",
+                    "Pengajuan rekening {{ session('success_rekening') }} berhasil dicatat untuk nasabah {{ session('success_nama') }} dan menunggu setoran awal minimal Rp10.000.",
+                    "PENGAJUAN TERCATAT",
                     "SELESAI"
                 );
             }

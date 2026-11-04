@@ -29,4 +29,9 @@ return [
         'prefix' => '1001',
     ],
 
+    'bunga_tabungan' => [
+        'siswa' => 0.001,
+        'pegawai' => 0.002,
+    ],
+
 ];
