@@ -19,9 +19,6 @@ class Draft extends Model
         'nominal',
         'tgl_input',
         'status_verifikasi',
-        'keterangan',
-        'alasan_penolakan',
-        'tgl_verifikasi',
     ];
 
     protected function casts(): array
@@ -29,7 +26,6 @@ class Draft extends Model
         return [
             'nominal' => 'decimal:2',
             'tgl_input' => 'datetime',
-            'tgl_verifikasi' => 'datetime',
         ];
     }
 
