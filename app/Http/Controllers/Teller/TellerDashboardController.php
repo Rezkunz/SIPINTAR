@@ -67,7 +67,7 @@ class TellerDashboardController extends Controller
     }
 
     /**
-     * Tampilkan antrean pembukaan rekening baru (Use Case: Membuka Rekening).
+     * Tampilkan rekening yang sudah diaktifkan oleh Siswa Praktik.
      */
     public function bukaRekening(Request $request)
     {
@@ -85,7 +85,7 @@ class TellerDashboardController extends Controller
                 'tblUSER.no_induk',
                 'tblUSER.email'
             )
-            ->where('tblREKENING.status_rekening', 'pending')
+            ->where('tblREKENING.status_rekening', 'aktif')
             ->orderBy('tblREKENING.rekening_id', 'desc');
 
         if ($search) {
@@ -96,11 +96,10 @@ class TellerDashboardController extends Controller
             });
         }
 
-        $pendingRekening = $query->paginate(10)->withQueryString();
-
-        $totalPending = DB::table('tblREKENING')->where('status_rekening', 'pending')->count();
+        $activeRekening = $query->paginate(10)->withQueryString();
         $totalAktif = DB::table('tblREKENING')->where('status_rekening', 'aktif')->count();
 
+        return view('teller.rekening_aktif', compact('activeRekening', 'totalAktif', 'search'));
         return view('teller.buka_rekening', compact('pendingRekening', 'totalPending', 'totalAktif', 'search'));
     }
 
