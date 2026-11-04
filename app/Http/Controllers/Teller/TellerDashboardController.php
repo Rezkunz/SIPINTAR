@@ -100,5 +100,87 @@ class TellerDashboardController extends Controller
         $totalAktif = DB::table('tblREKENING')->where('status_rekening', 'aktif')->count();
 
         return view('teller.rekening_aktif', compact('activeRekening', 'totalAktif', 'search'));
+        return view('teller.buka_rekening', compact('pendingRekening', 'totalPending', 'totalAktif', 'search'));
+    }
+
+    /**
+     * Otorisasi dan aktivasi rekening baru dengan setoran awal fisik (Use Case: Membuka Rekening).
+     */
+    public function aktivasiRekening(Request $request, $rekeningId)
+    {
+        $request->validate([
+            'setoran_awal' => ['required', 'numeric', 'min:10000'],
+        ], [
+            'setoran_awal.required' => 'Nominal uang setoran awal tunai wajib diisi.',
+            'setoran_awal.numeric'  => 'Setoran awal harus berupa angka.',
+            'setoran_awal.min'      => 'Setoran awal minimum pembukaan rekening adalah Rp 10.000.',
+        ]);
+
+        $setoranAwal = (float) $request->input('setoran_awal');
+
+        try {
+            DB::transaction(function () use ($rekeningId, $setoranAwal) {
+                $rekening = DB::table('tblREKENING')->where('rekening_id', $rekeningId)->first();
+                if (!$rekening) {
+                    throw new \Exception('Rekening tidak ditemukan.');
+                }
+
+                // Pastikan periode bulan ini terbuka (ditolak bila sudah ditutup Manager)
+                $periodeId = \App\Services\PeriodeLockService::assertPeriodeTerbuka(now()->toDateString())->periode_id;
+
+                // 1. Update status rekening menjadi aktif & isi saldo awal
+                DB::table('tblREKENING')->where('rekening_id', $rekeningId)->update([
+                    'status_rekening' => 'aktif',
+                    'saldo'           => $setoranAwal,
+                    'tgl_buka'        => now()->toDateString(),
+                ]);
+
+                // 2. Catat transaksi setoran awal di tblTRANSAKSI (jenis_transaksi_id = 1 = setoran)
+                $transaksiId = DB::table('tblTRANSAKSI')->insertGetId([
+                    'rekening_id'        => $rekeningId,
+                    'jenis_transaksi_id' => 1,
+                    'periode_id'         => $periodeId,
+                    'draft_id'           => null,
+                    'user_id'            => auth()->id(),
+                    'debit'              => 0.00,
+                    'kredit'             => $setoranAwal,
+                    'saldo_akhir'        => $setoranAwal,
+                    'tgl_transaksi'      => now(),
+                ]);
+
+                // 3. Masukkan uang fisik ke kas tunai brankas dan catat mutasinya, ditautkan ke
+                //    transaksi tabungan agar saldo kas per tanggal (Neraca, Tutup Periode) tepat dan
+                //    laporan pinjaman dapat memisahkannya
+                $kasTunai = DB::table('tblKAS')->where('jenis_kas', 'kas')->orderBy('kas_id')->first();
+                if (!$kasTunai) {
+                    throw new \RuntimeException('Kas tunai Bank Mini belum tersedia. Hubungi Bendahara Bank Mini.');
+                }
+
+                $nasabah = DB::table('tblNASABAH')->where('nasabah_id', $rekening->nasabah_id)->value('nama_nasabah');
+                $mutasiId = DB::table('tblMUTASI_KAS')->insertGetId([
+                    'kas_id'       => $kasTunai->kas_id,
+                    'periode_id'   => $periodeId,
+                    'user_id'      => auth()->id(),
+                    'transaksi_id' => $transaksiId,
+                    'tgl_mutasi'   => now()->toDateString(),
+                    'arah'         => 'masuk',
+                    'nominal'      => $setoranAwal,
+                    'uraian'       => "Setoran awal tabungan {$rekening->no_rek}" . ($nasabah ? " a.n. {$nasabah}" : ''),
+                ]);
+
+                DB::table('tblKAS')->where('kas_id', $kasTunai->kas_id)->increment('saldo', $setoranAwal);
+
+                \App\Services\AuditLogService::log(
+                    aksi: 'INSERT',
+                    entitas: 'tblTRANSAKSI',
+                    entitasId: $transaksiId,
+                    dataBaru: ['rekening_id' => (int) $rekeningId, 'jenis' => 'setoran_awal', 'kredit' => $setoranAwal, 'mutasi_kas_id' => $mutasiId]
+                );
+            });
+        } catch (\RuntimeException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', 'Rekening nasabah berhasil diverifikasi dan diaktifkan dengan setoran awal Rp ' . number_format($setoranAwal, 0, ',', '.') . '. Buku tabungan dan slip setoran siap dicetak!');
     }
 }

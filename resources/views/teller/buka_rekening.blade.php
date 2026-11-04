@@ -13,6 +13,13 @@
     </div>
 @endif
 
+@if (session('error'))
+    <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; color: #991b1b;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div style="font-size: 14px; font-weight: 600;">{{ session('error') }}</div>
+    </div>
+@endif
+
 @if ($errors->any())
     <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; color: #991b1b;">
         <div style="font-weight: 700; margin-bottom: 4px;">Terjadi Kesalahan Validasi:</div>

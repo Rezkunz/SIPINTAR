@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role'           => \App\Http\Middleware\RoleMiddleware::class,
             'rekening.aktif' => \App\Http\Middleware\EnsureRekeningAktif::class,
+            'akun.aktif'     => \App\Http\Middleware\EnsureAkunAktif::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
