@@ -96,7 +96,6 @@
                     <th>Nasabah & Rekening</th>
                     <th style="width: 120px;">Jenis</th>
                     <th style="text-align: right; width: 140px;">Nominal</th>
-                    <th>Keterangan / Alasan</th>
                     <th style="text-align: center; width: 160px;">Status Otorisasi</th>
                     <th style="width: 130px;">Teller Loket</th>
                 </tr>
@@ -132,19 +131,6 @@
                         <td style="text-align: right; font-weight: 700; color: var(--text-heading); font-family: ui-monospace, SFMono-Regular, monospace; font-variant-numeric: tabular-nums;">
                             Rp {{ number_format($d->nominal, 0, ',', '.') }}
                         </td>
-                        <td>
-                            @if($d->keterangan)
-                                <div style="font-size: 12.5px; color: var(--text-body);">{{ $d->keterangan }}</div>
-                            @endif
-
-                            @if($d->status_verifikasi === 'ditolak' && $d->alasan_penolakan)
-                                <div style="font-size: 11.5px; color: #DC2626; margin-top: 3px; background: #FEF2F2; padding: 3px 8px; border-radius: 4px; display: inline-block;">
-                                    <strong>Alasan:</strong> {{ $d->alasan_penolakan }}
-                                </div>
-                            @elseif(!$d->keterangan)
-                                <span style="font-size: 11px; color: var(--text-faint);">-</span>
-                            @endif
-                        </td>
                         <td style="text-align: center;">
                             @if ($d->status_verifikasi === 'disetujui')
                                 <span class="badge-pill green" style="display: inline-flex; align-items: center; gap: 4px;">
@@ -166,7 +152,6 @@
                         <td>
                             @if($d->teller)
                                 <div style="font-size: 12px; font-weight: 600; color: var(--text-heading);">{{ $d->teller->nama_user }}</div>
-                                <div style="font-size: 10.5px; color: var(--text-muted);">{{ $d->tgl_verifikasi ? $d->tgl_verifikasi->format('d/m H:i') : 'Terverifikasi' }}</div>
                             @else
                                 <span style="font-size: 11px; color: var(--text-faint);">Menunggu loket</span>
                             @endif
@@ -174,7 +159,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7">
+                        <td colspan="6">
                             <div class="empty-placeholder" style="padding: 40px 20px;">
                                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 10px; color: var(--text-faint); display: block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                                 <div style="font-weight: 700; color: var(--text-heading); margin-bottom: 4px;">Tidak Ada Data Draft Transaksi</div>

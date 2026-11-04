@@ -64,11 +64,8 @@ class DraftService
             'siswa_id'           => $siswaId,
             'teller_id'          => null,
             'nominal'            => $nominal,
-            'keterangan'         => !empty($data['keterangan']) ? trim($data['keterangan']) : null,
             'tgl_input'          => now(),
             'status_verifikasi'  => 'pending',
-            'alasan_penolakan'   => null,
-            'tgl_verifikasi'     => null,
         ]);
 
         // Catatan: Jika modul Notification diimplementasikan di kemudian hari,

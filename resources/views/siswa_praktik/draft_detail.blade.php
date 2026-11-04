@@ -67,20 +67,6 @@
             </div>
         </div>
 
-        @if($draft->keterangan)
-            <div style="margin-bottom: 20px; padding: 12px 14px; background: #F8FAFC; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
-                <div style="font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin-bottom: 4px;">Keterangan</div>
-                <div style="font-size: 13px; color: var(--text-body);">{{ $draft->keterangan }}</div>
-            </div>
-        @endif
-
-        @if($draft->status_verifikasi === 'ditolak' && $draft->alasan_penolakan)
-            <div style="margin-bottom: 20px; padding: 12px 14px; background: #FEF2F2; border-radius: var(--radius-md); border: 1px solid #FECACA;">
-                <div style="font-size: 11px; color: #991B1B; font-weight: 700; text-transform: uppercase; margin-bottom: 4px;">Alasan Penolakan dari Teller</div>
-                <div style="font-size: 13px; color: #B91C1C;">{{ $draft->alasan_penolakan }}</div>
-            </div>
-        @endif
-
         <div style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
             <a href="{{ route('tabungan.draft.riwayat') }}" class="btn-ui btn-ui-outline" style="text-decoration: none; display: inline-flex; align-items: center;">
                 Kembali ke Riwayat
