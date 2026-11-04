@@ -9,6 +9,7 @@ use App\Models\Rekening;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class SiswaPraktikTest extends TestCase
@@ -31,6 +32,21 @@ class SiswaPraktikTest extends TestCase
         JenisTransaksi::create(['jenis_transaksi_id' => 1, 'nama_jenis' => 'setoran']);
         JenisTransaksi::create(['jenis_transaksi_id' => 2, 'nama_jenis' => 'penarikan']);
         JenisTransaksi::create(['jenis_transaksi_id' => 3, 'nama_jenis' => 'jasa_tabungan']);
+
+        DB::table('tblKAS')->insert([
+            'kas_id' => 1,
+            'nama_kas' => 'Kas Teller Test',
+            'jenis_kas' => 'kas',
+            'saldo' => 10000000,
+        ]);
+
+        DB::table('tblPERIODE')->insert([
+            'periode_id' => 1,
+            'tahun' => now()->year,
+            'bulan' => now()->month,
+            'status_periode' => 'buka',
+            'user_id' => null,
+        ]);
     }
 
     /**
@@ -73,7 +89,7 @@ class SiswaPraktikTest extends TestCase
     }
 
     /**
-     * Test: Buka rekening baru berhasil, berformat 1001-TAHUN-NNNNN, langsung aktif, dan saldo 0.
+    * Test: Buka rekening baru menunggu setoran awal dan dapat diaktifkan siswa.
      */
     public function test_buka_rekening_berhasil_dan_nomor_rekening_unik_berformat_benar(): void
     {
@@ -103,7 +119,23 @@ class SiswaPraktikTest extends TestCase
         $this->assertDatabaseHas('tblREKENING', [
             'no_rek'          => $expectedFirstRek,
             'saldo'           => 0.00,
+            'status_rekening' => 'pending',
+        ]);
+
+        $rekening = Rekening::where('no_rek', $expectedFirstRek)->firstOrFail();
+        $approval = $this->actingAs($siswa)->post("/tabungan/buka-rekening/{$rekening->rekening_id}/approve", [
+            'setoran_awal' => 10000,
+        ]);
+
+        $approval->assertRedirect('/tabungan/buka-rekening');
+        $this->assertDatabaseHas('tblREKENING', [
+            'no_rek'          => $expectedFirstRek,
+            'saldo'           => 10000.00,
             'status_rekening' => 'aktif',
+        ]);
+        $this->assertDatabaseHas('tblTRANSAKSI', [
+            'rekening_id' => $rekening->rekening_id,
+            'kredit'      => 10000.00,
         ]);
 
         // Buat rekening kedua, nomor urut harus bertambah ke 00002
@@ -119,6 +151,7 @@ class SiswaPraktikTest extends TestCase
         $response2->assertSessionHas('success_rekening', $expectedSecondRek);
         $this->assertDatabaseHas('tblREKENING', [
             'no_rek' => $expectedSecondRek,
+            'status_rekening' => 'pending',
         ]);
     }
 

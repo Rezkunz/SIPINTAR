@@ -67,7 +67,7 @@ class TellerDashboardController extends Controller
     }
 
     /**
-     * Tampilkan antrean pembukaan rekening baru (Use Case: Membuka Rekening).
+     * Tampilkan rekening yang sudah diaktifkan oleh Siswa Praktik.
      */
     public function bukaRekening(Request $request)
     {
@@ -85,7 +85,7 @@ class TellerDashboardController extends Controller
                 'tblUSER.no_induk',
                 'tblUSER.email'
             )
-            ->where('tblREKENING.status_rekening', 'pending')
+            ->where('tblREKENING.status_rekening', 'aktif')
             ->orderBy('tblREKENING.rekening_id', 'desc');
 
         if ($search) {
@@ -96,78 +96,9 @@ class TellerDashboardController extends Controller
             });
         }
 
-        $pendingRekening = $query->paginate(10)->withQueryString();
-
-        $totalPending = DB::table('tblREKENING')->where('status_rekening', 'pending')->count();
+        $activeRekening = $query->paginate(10)->withQueryString();
         $totalAktif = DB::table('tblREKENING')->where('status_rekening', 'aktif')->count();
 
-        return view('teller.buka_rekening', compact('pendingRekening', 'totalPending', 'totalAktif', 'search'));
-    }
-
-    /**
-     * Otorisasi dan aktivasi rekening baru dengan setoran awal fisik (Use Case: Membuka Rekening).
-     */
-    public function aktivasiRekening(Request $request, $rekeningId)
-    {
-        $request->validate([
-            'setoran_awal' => ['required', 'numeric', 'min:10000'],
-        ], [
-            'setoran_awal.required' => 'Nominal uang setoran awal tunai wajib diisi.',
-            'setoran_awal.numeric'  => 'Setoran awal harus berupa angka.',
-            'setoran_awal.min'      => 'Setoran awal minimum pembukaan rekening adalah Rp 10.000.',
-        ]);
-
-        $setoranAwal = (float) $request->input('setoran_awal');
-
-        DB::transaction(function () use ($rekeningId, $setoranAwal) {
-            $rekening = DB::table('tblREKENING')->where('rekening_id', $rekeningId)->first();
-            if (!$rekening) {
-                throw new \Exception('Rekening tidak ditemukan.');
-            }
-
-            // Pastikan periode aktif tersedia
-            $currentYear = (int) date('Y');
-            $currentMonth = (int) date('n');
-            $periode = DB::table('tblPERIODE')
-                ->where('tahun', $currentYear)
-                ->where('bulan', $currentMonth)
-                ->first();
-
-            if (!$periode) {
-                $periodeId = DB::table('tblPERIODE')->insertGetId([
-                    'tahun'          => $currentYear,
-                    'bulan'          => $currentMonth,
-                    'status_periode' => 'buka',
-                    'user_id'        => auth()->id(),
-                ]);
-            } else {
-                $periodeId = $periode->periode_id;
-            }
-
-            // 1. Update status rekening menjadi aktif & isi saldo awal
-            DB::table('tblREKENING')->where('rekening_id', $rekeningId)->update([
-                'status_rekening' => 'aktif',
-                'saldo'           => $setoranAwal,
-                'tgl_buka'        => now()->toDateString(),
-            ]);
-
-            // 2. Catat transaksi setoran awal di tblTRANSAKSI (jenis_transaksi_id = 1 = setoran)
-            DB::table('tblTRANSAKSI')->insert([
-                'rekening_id'        => $rekeningId,
-                'jenis_transaksi_id' => 1,
-                'periode_id'         => $periodeId,
-                'draft_id'           => null,
-                'user_id'            => auth()->id(),
-                'debit'              => 0.00,
-                'kredit'             => $setoranAwal,
-                'saldo_akhir'        => $setoranAwal,
-                'tgl_transaksi'      => now(),
-            ]);
-
-            // 3. Masukkan uang fisik ke kas tunai brankas (kas_id = 1)
-            DB::table('tblKAS')->where('kas_id', 1)->increment('saldo', $setoranAwal);
-        });
-
-        return redirect()->back()->with('success', 'Rekening nasabah berhasil diverifikasi dan diaktifkan dengan setoran awal Rp ' . number_format($setoranAwal, 0, ',', '.') . '. Buku tabungan dan slip setoran siap dicetak!');
+        return view('teller.rekening_aktif', compact('activeRekening', 'totalAktif', 'search'));
     }
 }
