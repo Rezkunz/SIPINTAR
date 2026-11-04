@@ -138,21 +138,6 @@
                 </div>
             </div>
 
-            {{-- 4. Keterangan / Catatan Transaksi --}}
-            <div class="profile-field-group" style="margin-bottom: 24px;">
-                <label for="keterangan" class="profile-field-label">
-                    <span>Catatan / Keterangan Transaksi</span>
-                    <span style="font-size: 10px; color: var(--text-muted); font-weight: normal;">(Opsional)</span>
-                </label>
-                <div class="profile-input-wrap">
-                    <svg class="profile-input-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                    <input type="text" id="keterangan" name="keterangan" class="profile-input" value="{{ old('keterangan') }}" placeholder="Contoh: Tabungan rutin kelas XII atau Pembayaran kas mingguan" maxlength="255">
-                </div>
-                @error('keterangan')
-                    <span class="profile-error-msg">{{ $message }}</span>
-                @enderror
-            </div>
-
             <div style="display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
                 <a href="{{ route('dashboard') }}" class="btn-ui btn-ui-outline" style="min-height: 44px; padding: 0 18px; text-decoration: none; display: inline-flex; align-items: center;">
                     Batal

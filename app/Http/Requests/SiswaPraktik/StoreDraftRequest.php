@@ -42,7 +42,6 @@ class StoreDraftRequest extends FormRequest
             'no_rek'     => ['required', 'string', 'exists:tblREKENING,no_rek'],
             'jenis'      => ['required', 'in:setoran,penarikan'],
             'nominal'    => ['required', 'numeric', "min:{$min}", "max:{$max}"],
-            'keterangan' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -63,7 +62,6 @@ class StoreDraftRequest extends FormRequest
             'nominal.numeric'  => 'Nominal transaksi harus berupa angka yang valid.',
             'nominal.min'      => "Nominal transaksi minimal adalah Rp {$minFormatted}.",
             'nominal.max'      => "Nominal transaksi maksimal per draft adalah Rp {$maxFormatted}.",
-            'keterangan.max'   => 'Keterangan tidak boleh melebihi 255 karakter.',
         ];
     }
 }

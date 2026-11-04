@@ -163,7 +163,6 @@ class SiswaPraktikTest extends TestCase
             'no_rek'     => $rekening->no_rek,
             'jenis'      => 'setoran',
             'nominal'    => '100000',
-            'keterangan' => 'Setoran awal tabungan',
         ]);
 
         $responseSetor->assertRedirect('/tabungan/draft/riwayat');
@@ -174,7 +173,6 @@ class SiswaPraktikTest extends TestCase
             'siswa_id'           => $siswa->user_id,
             'nominal'            => 100000.00,
             'status_verifikasi'  => 'pending',
-            'keterangan'         => 'Setoran awal tabungan',
         ]);
 
         // Pastikan saldo rekening TIDAK bertambah
@@ -185,7 +183,6 @@ class SiswaPraktikTest extends TestCase
             'no_rek'     => $rekening->no_rek,
             'jenis'      => 'penarikan',
             'nominal'    => '50000',
-            'keterangan' => 'Penarikan uang saku',
         ]);
 
         $responseTarik->assertRedirect('/tabungan/draft/riwayat');
@@ -196,7 +193,6 @@ class SiswaPraktikTest extends TestCase
             'siswa_id'           => $siswa->user_id,
             'nominal'            => 50000.00,
             'status_verifikasi'  => 'pending',
-            'keterangan'         => 'Penarikan uang saku',
         ]);
 
         // Pastikan saldo rekening TIDAK berkurang
@@ -289,7 +285,6 @@ class SiswaPraktikTest extends TestCase
             'jenis_transaksi_id' => 1,
             'siswa_id'           => $siswa1->user_id,
             'nominal'            => 111000.00,
-            'keterangan'         => 'Draft Unik Siswa 1',
             'tgl_input'          => now(),
             'status_verifikasi'  => 'pending',
         ]);
@@ -299,7 +294,6 @@ class SiswaPraktikTest extends TestCase
             'jenis_transaksi_id' => 1,
             'siswa_id'           => $siswa2->user_id,
             'nominal'            => 222000.00,
-            'keterangan'         => 'Draft Rahasia Siswa 2',
             'tgl_input'          => now(),
             'status_verifikasi'  => 'pending',
         ]);
@@ -307,8 +301,8 @@ class SiswaPraktikTest extends TestCase
         $response = $this->actingAs($siswa1)->get('/tabungan/draft/riwayat');
 
         $response->assertStatus(200);
-        $response->assertSee('Draft Unik Siswa 1');
-        $response->assertDontSee('Draft Rahasia Siswa 2');
+        $response->assertSee('1001-2026-00001');
+        $response->assertDontSee('222000');
     }
 
     /**
