@@ -101,7 +101,6 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () {
             Route::get('/bukti/{transaksi}', [TellerTransactionController::class, 'showBukti'])->name('bukti.show');
 
             Route::get('/jasa', [TellerInterestController::class, 'index'])->name('jasa');
-            Route::post('/jasa/{rekening}', [TellerInterestController::class, 'process'])->name('jasa.process');
 
             Route::get('/saldo', [TellerTransactionController::class, 'saldo'])->name('saldo');
             Route::get('/mutasi', [TellerTransactionController::class, 'mutasi'])->name('mutasi');
