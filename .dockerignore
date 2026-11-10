@@ -1,0 +1,55 @@
+
+# Git
+.git
+.github
+.gitignore
+
+# Environment & credentials
+.env
+.env.*
+!.env.example
+auth.json
+*.pem
+*.key
+*.pfx
+*.cert
+
+# Dependencies (will be installed during Docker build)
+vendor/
+node_modules/
+
+# Local development tools
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+.phpactor.json
+
+# PHPUnit
+.phpunit.cache/
+.phpunit.result.cache
+
+# Laravel generated files
+/public/hot
+/public/storage
+
+# Logs and temporary files
+*.log
+.DS_Store
+Thumbs.db
+/storage/pail
+
+# Local database files and SQL dumps
+*.sql
+*.sql.gz
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.db
+*.bak
+*.dump
+/database/*.sqlite
+
+# Local mockups
+/mockups_export_figma/

@@ -31,6 +31,7 @@ return [
 
     'bunga_tabungan' => [
         'siswa' => 0.001,
+        'non_pegawai' => 0.001,
         'pegawai' => 0.002,
     ],
 
