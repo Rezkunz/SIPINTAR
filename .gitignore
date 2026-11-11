@@ -43,5 +43,6 @@ Thumbs.db
 *.cert
 
 # Figma Mockups (Local export only, not for GitHub)
-/mockups_export_figma/
+mockup-export
+ExportMockup.php
 
