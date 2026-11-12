@@ -158,7 +158,9 @@ class PinjamanBbmController extends Controller
             'tgl_pengajuan'    => $request->tgl_pengajuan,
             'metode_bayar'     => $request->metode_bayar,
             'status_pinjaman'  => 'diajukan',
-        ]);
+        ], 'pinjaman_id');
+
+
 
         AuditLogService::log(
             aksi: 'PENGAJUAN_PINJAMAN',
@@ -383,7 +385,7 @@ class PinjamanBbmController extends Controller
                 'nominal_cair' => $pinjaman->nominal_pinjaman,
                 'metode_cair'  => $metodeCair,
                 'catatan_cair' => $request->catatan,
-            ]);
+            ], 'pencairan_id');
 
             // 2. Bentuk baris jadwal angsuran (jasa flat 2% per bulan)
             $jadwalList = PinjamanCalculatorService::generateJadwalAngsuran(
