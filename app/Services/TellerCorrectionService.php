@@ -99,7 +99,7 @@ class TellerCorrectionService
                 throw ValidationException::withMessages(['transaksi' => 'Saldo kas tidak cukup untuk koreksi ini.']);
             }
 
-            $reversalId = DB::table('tblTRANSAKSI')->insertGetId([
+            $reversalId = DB::table('tblTRANSAKSI')->insertGetId([, 'transaksi_id')
                 'rekening_id' => $original->rekening_id,
                 'jenis_transaksi_id' => $original->jenis_transaksi_id,
                 'periode_id' => $periode->periode_id,
@@ -119,7 +119,7 @@ class TellerCorrectionService
                 $this->recordCashMutation($kas->kas_id, $periode->periode_id, $tellerId, $reversalId, $nominal, $isReversalIn ? 'masuk' : 'keluar', 'Pembalik transaksi #' . $transactionId);
             }
 
-            $correctedId = DB::table('tblTRANSAKSI')->insertGetId([
+            $correctedId = DB::table('tblTRANSAKSI')->insertGetId([, 'transaksi_id')
                 'rekening_id' => $original->rekening_id,
                 'jenis_transaksi_id' => $correctedTypeId,
                 'periode_id' => $periode->periode_id,

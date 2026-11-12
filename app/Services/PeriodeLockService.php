@@ -34,7 +34,7 @@ class PeriodeLockService
 
         // Jika periode belum ada sama sekali, buat periode terbuka secara otomatis
         if (!$periode) {
-            $periodeId = DB::table('tblPERIODE')->insertGetId([
+            $periodeId = DB::table('tblPERIODE')->insertGetId([, 'periode_id')
                 'user_id'        => auth()->id(),
                 'tahun'          => $tahun,
                 'bulan'          => $bulan,
