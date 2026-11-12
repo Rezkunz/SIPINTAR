@@ -172,6 +172,15 @@ class LaporanPinjamanController extends Controller
      * Status lunas angsuran dihitung dari pembayaran sah (tidak dikoreksi) s.d. tanggal posisi,
      * bukan dari status_bayar saat ini, agar laporan bulan lampau tetap mencerminkan kondisi saat itu.
      */
+    /**
+     * Ringkasan portofolio pinjaman pada posisi bulan tertentu (dipakai dashboard Manager
+     * agar angka sisa piutang selalu sama dengan Laporan Pinjaman).
+     */
+    public function ringkasanPortofolio(int $bulan, int $tahun): array
+    {
+        return $this->susunRekap(Request::create('/', 'GET', ['bulan' => $bulan, 'tahun' => $tahun]))['ringkasan'];
+    }
+
     private function susunRekap(Request $request): array
     {
         $validated = $request->validate([

@@ -24,7 +24,14 @@
 </div>
 
 {{-- ── 4 EXECUTIVE FINANCIAL METRICS ── --}}
-<div class="metric-grid">
+<style>
+    /* Angka utama sejajar di semua kartu; rincian berada di bawahnya */
+    .metric-grid-ringkasan .metric-card { justify-content: flex-start; container-type: inline-size; }
+    /* Ukuran angka mengikuti lebar kartu agar nilai miliaran tetap utuh di layar laptop */
+    .metric-grid-ringkasan .metric-value { font-size: clamp(1.1rem, 9cqi, 1.85rem); overflow-wrap: anywhere; }
+    .metric-grid-ringkasan .metric-value .curr-prefix { font-size: clamp(0.8rem, 5cqi, 1.15rem); }
+</style>
+<div class="metric-grid metric-grid-ringkasan">
     <div class="metric-card card-emerald">
         <div class="metric-watermark">
             <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -32,7 +39,10 @@
         <div class="metric-header">
             <span class="metric-title">Dana Pihak Ketiga (Tabungan)</span>
         </div>
-        <div class="metric-value"><span class="curr-prefix">Rp</span>{{ number_format($totalTabungan, 0, ',', '.') }}</div>
+        <div class="metric-value" dusk="dashboard-simpanan"><span class="curr-prefix">Rp</span>{{ number_format($totalTabungan, 0, ',', '.') }}</div>
+        <div class="metric-rincian" style="margin-top: 8px; font-size: 11.5px; color: var(--text-muted); line-height: 1.6; position: relative; z-index: 1;">
+            <div>Dari {{ number_format($jumlahRekeningAktif, 0, ',', '.') }} rekening aktif</div>
+        </div>
     </div>
 
     <div class="metric-card card-blue">
@@ -40,9 +50,14 @@
             <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
         </div>
         <div class="metric-header">
-            <span class="metric-title">Portofolio Pembiayaan Kredit</span>
+            <span class="metric-title">Sisa Piutang Pinjaman</span>
         </div>
-        <div class="metric-value"><span class="curr-prefix">Rp</span>{{ number_format($totalPinjamanCair, 0, ',', '.') }}</div>
+        <div class="metric-value" dusk="dashboard-piutang"><span class="curr-prefix">Rp</span>{{ number_format($portofolio['total_sisa_pokok'], 0, ',', '.') }}</div>
+        <div class="metric-rincian" style="margin-top: 8px; font-size: 11.5px; color: var(--text-muted); line-height: 1.6; position: relative; z-index: 1;">
+            <div>{{ $portofolio['jumlah_pinjaman'] }} pinjaman berjalan</div>
+            <div>Pinjaman awal: Rp {{ number_format($portofolio['total_plafon'], 0, ',', '.') }}</div>
+            <div>Pokok dibayar: Rp {{ number_format($portofolio['total_pokok_terbayar'], 0, ',', '.') }}</div>
+        </div>
     </div>
 
     <div class="metric-card card-amber">
@@ -50,9 +65,13 @@
             <svg viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
         </div>
         <div class="metric-header">
-            <span class="metric-title">Posisi Kas Brankas Sekolah</span>
+            <span class="metric-title">Total Kas Bank Mini</span>
         </div>
-        <div class="metric-value"><span class="curr-prefix">Rp</span>{{ number_format($saldoKasFisik, 0, ',', '.') }}</div>
+        <div class="metric-value" dusk="dashboard-kas"><span class="curr-prefix">Rp</span>{{ number_format($totalKas, 0, ',', '.') }}</div>
+        <div class="metric-rincian" style="margin-top: 8px; font-size: 11.5px; color: var(--text-muted); line-height: 1.6; position: relative; z-index: 1;">
+            <div>Kas Tunai: <span dusk="dashboard-kas-tunai">Rp {{ number_format($saldoKasTunai, 0, ',', '.') }}</span></div>
+            <div>Kas Bank: <span dusk="dashboard-kas-bank">Rp {{ number_format($saldoKasBank, 0, ',', '.') }}</span></div>
+        </div>
     </div>
 
     <div class="metric-card card-indigo">

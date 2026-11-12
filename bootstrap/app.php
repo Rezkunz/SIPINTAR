@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role'           => \App\Http\Middleware\RoleMiddleware::class,
             'rekening.aktif' => \App\Http\Middleware\EnsureRekeningAktif::class,
             'akun.aktif'     => \App\Http\Middleware\EnsureAkunAktif::class,
+            'no.cache'       => \App\Http\Middleware\NoCacheHalamanLogin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

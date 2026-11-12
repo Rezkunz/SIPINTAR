@@ -118,7 +118,13 @@ class RekeningService
                 ]);
             }
 
-            $periode = PeriodeLockService::assertPeriodeTerbuka(now());
+            try {
+                $periode = PeriodeLockService::assertPeriodeTerbuka(now());
+            } catch (\RuntimeException $e) {
+                throw ValidationException::withMessages([
+                    'setoran_awal' => 'Transaksi ditolak: periode ' . now()->month . '/' . now()->year . ' sudah ditutup Manajer dan terkunci.',
+                ]);
+            }
             $jenisSetoran = DB::table('tblJENIS_TRANSAKSI')->where('nama_jenis', 'setoran')->first();
             if (!$jenisSetoran) {
                 throw ValidationException::withMessages([

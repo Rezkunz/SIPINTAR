@@ -43,7 +43,7 @@ class TellerTransactionService
                 ]);
             }
 
-            $periode = PeriodeLockService::assertPeriodeTerbuka(now());
+            $periode = $this->periodeTerbuka('draft');
             $nominal = (float) $draft->nominal;
             $kas = $this->lockKas();
             $saldoAkhir = $this->calculateBalance($jenis->nama_jenis, (float) $rekening->saldo, $nominal, (float) $kas->saldo);
@@ -124,7 +124,7 @@ class TellerTransactionService
                 ]);
             }
 
-            $periode = PeriodeLockService::assertPeriodeTerbuka(now());
+            $periode = $this->periodeTerbuka('nominal');
             $kas = $this->lockKas();
             $saldoAkhir = $this->calculateBalance($jenis, (float) $rekening->saldo, $nominal, (float) $kas->saldo);
 
@@ -150,6 +150,20 @@ class TellerTransactionService
 
             return ['transaksi_id' => $transaksiId, 'bukti_id' => $receiptId];
         });
+    }
+
+    /**
+     * Periode bulan berjalan harus terbuka; bila sudah ditutup Manajer, tampilkan pesan pada form.
+     */
+    private function periodeTerbuka(string $field): object
+    {
+        try {
+            return PeriodeLockService::assertPeriodeTerbuka(now());
+        } catch (\RuntimeException $e) {
+            throw ValidationException::withMessages([
+                $field => 'Transaksi ditolak: periode ' . now()->month . '/' . now()->year . ' sudah ditutup Manajer dan terkunci.',
+            ]);
+        }
     }
 
     private function lockKas(): object

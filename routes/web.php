@@ -47,7 +47,7 @@ Route::get('/', function () {
 | Routes Terotentikasi & Terproteksi Berdasarkan Hak Akses / Role
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'akun.aktif'])->group(function () {
+Route::middleware(['auth', 'akun.aktif', 'no.cache'])->group(function () {
 
     // Dashboard Utama: Masing-masing role otomatis melihat file view dashboard miliknya sendiri
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

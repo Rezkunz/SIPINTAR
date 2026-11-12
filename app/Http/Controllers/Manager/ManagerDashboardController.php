@@ -18,18 +18,20 @@ class ManagerDashboardController extends Controller
             ->where('status_rekening', 'aktif')
             ->sum('saldo');
 
-        // 2. Total Pinjaman Disalurkan
-        $totalPinjamanCair = DB::table('tblPINJAMAN')
-            ->where('status_pinjaman', 'cair')
-            ->sum('nominal_pinjaman');
+        $jumlahRekeningAktif = DB::table('tblREKENING')->where('status_rekening', 'aktif')->count();
+
+        // 2. Sisa piutang pinjaman (pokok belum dibayar), dihitung sama dengan Laporan Pinjaman
+        $portofolio = app(LaporanPinjamanController::class)->ringkasanPortofolio(now()->month, now()->year);
 
         // 3. Total Nasabah Aktif
         $totalNasabah = DB::table('tblNASABAH')
             ->where('status_nasabah', 'aktif')
             ->count();
 
-        // 4. Saldo Kas Brankas Fisik
-        $saldoKasFisik = DB::table('tblKAS')->where('jenis_kas', 'kas')->sum('saldo');
+        // 4. Total kas Bank Mini = kas tunai + rekening bank
+        $saldoKasTunai = (float) DB::table('tblKAS')->where('jenis_kas', 'kas')->sum('saldo');
+        $saldoKasBank  = (float) DB::table('tblKAS')->where('jenis_kas', 'bank')->sum('saldo');
+        $totalKas      = $saldoKasTunai + $saldoKasBank;
 
         // 5. Periode Berjalan
         $periodeAktif = DB::table('tblPERIODE')
@@ -55,9 +57,12 @@ class ManagerDashboardController extends Controller
 
         return view('manager.dashboard', compact(
             'totalTabungan',
-            'totalPinjamanCair',
+            'jumlahRekeningAktif',
+            'portofolio',
             'totalNasabah',
-            'saldoKasFisik',
+            'saldoKasTunai',
+            'saldoKasBank',
+            'totalKas',
             'periodeAktif',
             'transaksiTerbesar'
         ));
