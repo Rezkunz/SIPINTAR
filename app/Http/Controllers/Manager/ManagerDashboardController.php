@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ManagerDashboardController extends Controller
@@ -29,7 +28,9 @@ class ManagerDashboardController extends Controller
             ->count();
 
         // 4. Saldo Kas Brankas Fisik
-        $saldoKasFisik = DB::table('tblKAS')->where('jenis_kas', 'kas')->sum('saldo');
+        $saldoKasFisik = DB::table('tblKAS')
+            ->where('jenis_kas', 'kas')
+            ->sum('saldo');
 
         // 5. Periode Berjalan
         $periodeAktif = DB::table('tblPERIODE')
@@ -40,16 +41,33 @@ class ManagerDashboardController extends Controller
 
         // 6. Ringkasan 5 Transaksi Terbesar Terkini
         $transaksiTerbesar = DB::table('tblTRANSAKSI')
-            ->join('tblREKENING', 'tblTRANSAKSI.rekening_id', '=', 'tblREKENING.rekening_id')
-            ->join('tblNASABAH', 'tblREKENING.nasabah_id', '=', 'tblNASABAH.nasabah_id')
-            ->join('tblJENIS_TRANSAKSI', 'tblTRANSAKSI.jenis_transaksi_id', '=', 'tblJENIS_TRANSAKSI.jenis_transaksi_id')
+            ->join(
+                'tblREKENING',
+                'tblTRANSAKSI.rekening_id',
+                '=',
+                'tblREKENING.rekening_id'
+            )
+            ->join(
+                'tblNASABAH',
+                'tblREKENING.nasabah_id',
+                '=',
+                'tblNASABAH.nasabah_id'
+            )
+            ->join(
+                'tblJENIS_TRANSAKSI',
+                'tblTRANSAKSI.jenis_transaksi_id',
+                '=',
+                'tblJENIS_TRANSAKSI.jenis_transaksi_id'
+            )
             ->select(
                 'tblTRANSAKSI.*',
                 'tblNASABAH.nama_nasabah',
                 'tblREKENING.no_rek',
                 'tblJENIS_TRANSAKSI.nama_jenis as nama_jenis_transaksi'
             )
-            ->orderBy(DB::raw('GREATEST(tblTRANSAKSI.debit, tblTRANSAKSI.kredit)'), 'desc')
+            ->orderByRaw(
+                'GREATEST("tblTRANSAKSI"."debit", "tblTRANSAKSI"."kredit") DESC'
+            )
             ->limit(5)
             ->get();
 
