@@ -77,9 +77,16 @@ class TellerTransactionService
         });
     }
 
-    public function rejectDraft(int $draftId, int $tellerId): void
+    public function rejectDraft(int $draftId, int $tellerId, string $alasan): void
     {
-        DB::transaction(function () use ($draftId, $tellerId) {
+        $alasan = trim($alasan);
+        if ($alasan === '') {
+            throw ValidationException::withMessages([
+                'alasan_penolakan' => 'Alasan penolakan wajib diisi.',
+            ]);
+        }
+
+        DB::transaction(function () use ($draftId, $tellerId, $alasan) {
             $draft = DB::table('tblDRAFT')->where('draft_id', $draftId)->lockForUpdate()->first();
 
             if (!$draft || $draft->status_verifikasi !== 'pending') {
@@ -91,6 +98,7 @@ class TellerTransactionService
             DB::table('tblDRAFT')->where('draft_id', $draftId)->update([
                 'status_verifikasi' => 'ditolak',
                 'teller_id' => $tellerId,
+                'alasan_penolakan' => $alasan,
             ]);
         });
     }

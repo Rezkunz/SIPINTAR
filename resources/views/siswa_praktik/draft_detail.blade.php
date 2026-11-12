@@ -67,6 +67,15 @@
             </div>
         </div>
 
+        @if ($draft->status_verifikasi === 'ditolak')
+            <div id="alasan-penolakan" style="margin-bottom: 24px; padding: 14px 16px; border-radius: 10px; background: #FEF2F2; border: 1px solid #FECACA;">
+                <div style="font-size: 11px; color: #991B1B; font-weight: 700; text-transform: uppercase;">Alasan Penolakan</div>
+                <div style="font-size: 13.5px; color: #7F1D1D; margin-top: 4px;">
+                    {{ $draft->alasan_penolakan ?: 'Tidak ada alasan yang dicatat.' }}
+                </div>
+            </div>
+        @endif
+
         <div style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
             <a href="{{ route('tabungan.draft.riwayat') }}" class="btn-ui btn-ui-outline" style="text-decoration: none; display: inline-flex; align-items: center;">
                 Kembali ke Riwayat

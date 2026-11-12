@@ -9,6 +9,7 @@ use App\Http\Controllers\Teller\TellerTransactionController;
 use App\Http\Controllers\Teller\TellerVerificationController;
 use App\Http\Controllers\Teller\TellerInterestController;
 use App\Http\Controllers\Teller\TellerCorrectionController;
+use App\Http\Controllers\Teller\TellerNasabahController;
 use App\Http\Controllers\BendaharaMini\PinjamanBbmController;
 use App\Http\Controllers\BendaharaMini\AngsuranBbmController;
 use App\Http\Controllers\BendaharaMini\KartuPiutangBbmController;
@@ -110,6 +111,13 @@ Route::middleware(['auth', 'akun.aktif'])->group(function () {
 
             Route::get('/koreksi', [TellerCorrectionController::class, 'index'])->name('koreksi');
             Route::post('/koreksi/{transaksi}', [TellerCorrectionController::class, 'correct'])->name('koreksi.process');
+            Route::get('/audit-log', [TellerCorrectionController::class, 'auditLog'])->name('audit-log');
+
+            Route::get('/nasabah/tambah', [TellerNasabahController::class, 'create'])->name('nasabah.tambah');
+            Route::post('/nasabah', [TellerNasabahController::class, 'store'])->name('nasabah.store');
+            Route::get('/nasabah/{nasabah}/ubah', [TellerNasabahController::class, 'edit'])->whereNumber('nasabah')->name('nasabah.ubah');
+            Route::put('/nasabah/{nasabah}', [TellerNasabahController::class, 'update'])->whereNumber('nasabah')->name('nasabah.update');
+            Route::post('/rekening/{rekening}/tutup', [TellerNasabahController::class, 'tutup'])->whereNumber('rekening')->name('rekening.tutup');
         });
     });
 

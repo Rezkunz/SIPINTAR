@@ -169,4 +169,107 @@ class RekeningService
             return Rekening::with('nasabah')->findOrFail($rekeningId);
         });
     }
+
+    /**
+     * Teller membuka rekening langsung di loket: nasabah baru + rekening + setoran awal dalam satu transaksi.
+     */
+    public function bukaRekeningLoket(array $data, int $tellerId): Rekening
+    {
+        try {
+            return DB::transaction(function () use ($data, $tellerId) {
+                $rekening = $this->bukaRekening($data);
+
+                return $this->aktifkanDenganSetoran($rekening->rekening_id, $tellerId, (float) ($data['setoran_awal'] ?? 0));
+            });
+        } catch (\RuntimeException $e) {
+            throw ValidationException::withMessages(['setoran_awal' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Ubah data identitas nasabah (nama, kelas/unit, nomor HP). Nomor HP akun login ikut disinkronkan.
+     */
+    public function ubahNasabah(int $nasabahId, array $data): Nasabah
+    {
+        return DB::transaction(function () use ($nasabahId, $data) {
+            $nasabah = Nasabah::lockForUpdate()->findOrFail($nasabahId);
+            $noHp = trim($data['no_hp']);
+
+            $akun = User::where('nasabah_id', $nasabahId)->first();
+            $dipakaiAkunLain = User::where('no_hp', $noHp)
+                ->when($akun, fn ($q) => $q->where('user_id', '!=', $akun->user_id))
+                ->exists();
+            if ($dipakaiAkunLain) {
+                throw ValidationException::withMessages([
+                    'no_hp' => 'Nomor HP/WhatsApp ini sudah digunakan pada akun pengguna lain.',
+                ]);
+            }
+
+            $lama = $nasabah->only(['nama_nasabah', 'kelas_unit', 'no_hp']);
+
+            $nasabah->update([
+                'nama_nasabah' => trim($data['nama_nasabah']),
+                'kelas_unit'   => !empty($data['kelas_unit']) ? trim($data['kelas_unit']) : null,
+                'no_hp'        => $noHp,
+            ]);
+
+            if ($akun && $akun->no_hp !== $noHp) {
+                $akun->update(['no_hp' => $noHp]);
+            }
+
+            AuditLogService::log(
+                aksi: 'UBAH_NASABAH',
+                entitas: 'tblNASABAH',
+                entitasId: $nasabahId,
+                dataLama: $lama,
+                dataBaru: $nasabah->only(['nama_nasabah', 'kelas_unit', 'no_hp'])
+            );
+
+            return $nasabah;
+        });
+    }
+
+    /**
+     * Tutup rekening aktif. Hanya boleh bila saldo tepat Rp 0 dan tidak ada draft yang menunggu verifikasi.
+     * Riwayat transaksi tidak dihapus.
+     */
+    public function tutupRekening(int $rekeningId): void
+    {
+        DB::transaction(function () use ($rekeningId) {
+            $rekening = DB::table('tblREKENING')->where('rekening_id', $rekeningId)->lockForUpdate()->first();
+
+            if (!$rekening || $rekening->status_rekening !== 'aktif') {
+                throw ValidationException::withMessages([
+                    'rekening' => 'Hanya rekening berstatus aktif yang dapat ditutup.',
+                ]);
+            }
+
+            if ((float) $rekening->saldo != 0.0) {
+                throw ValidationException::withMessages([
+                    'rekening' => self::pesanSaldoHarusNol((float) $rekening->saldo),
+                ]);
+            }
+
+            if (DB::table('tblDRAFT')->where('rekening_id', $rekeningId)->where('status_verifikasi', 'pending')->exists()) {
+                throw ValidationException::withMessages([
+                    'rekening' => 'Rekening tidak dapat ditutup: masih ada draft transaksi yang menunggu verifikasi.',
+                ]);
+            }
+
+            DB::table('tblREKENING')->where('rekening_id', $rekeningId)->update(['status_rekening' => 'tutup']);
+
+            AuditLogService::log(
+                aksi: 'TUTUP_REKENING',
+                entitas: 'tblREKENING',
+                entitasId: $rekeningId,
+                dataLama: ['status_rekening' => 'aktif', 'saldo' => (float) $rekening->saldo],
+                dataBaru: ['status_rekening' => 'tutup']
+            );
+        });
+    }
+
+    public static function pesanSaldoHarusNol(float $saldo): string
+    {
+        return 'Rekening tidak dapat ditutup: saldo harus Rp 0 (saldo saat ini Rp ' . number_format($saldo, 0, ',', '.') . ').';
+    }
 }

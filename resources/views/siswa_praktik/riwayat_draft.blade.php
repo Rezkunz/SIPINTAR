@@ -98,6 +98,7 @@
                     <th style="text-align: right; width: 140px;">Nominal</th>
                     <th style="text-align: center; width: 160px;">Status Otorisasi</th>
                     <th style="width: 130px;">Teller Loket</th>
+                    <th style="text-align: center; width: 90px;">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -156,10 +157,13 @@
                                 <span style="font-size: 11px; color: var(--text-faint);">Menunggu loket</span>
                             @endif
                         </td>
+                        <td style="text-align: center;">
+                            <a href="{{ route('tabungan.draft.show', $d) }}" class="btn-ui btn-ui-outline btn-ui-sm" dusk="detail-draft-{{ $d->draft_id }}">Detail</a>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6">
+                        <td colspan="7">
                             <div class="empty-placeholder" style="padding: 40px 20px;">
                                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 10px; color: var(--text-faint); display: block;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                                 <div style="font-weight: 700; color: var(--text-heading); margin-bottom: 4px;">Tidak Ada Data Draft Transaksi</div>

@@ -72,6 +72,7 @@ class TellerDashboardController extends Controller
     public function bukaRekening(Request $request)
     {
         $search = trim($request->input('search', ''));
+        $status = in_array($request->input('status'), ['aktif', 'tutup', 'semua'], true) ? $request->input('status') : 'aktif';
 
         $query = DB::table('tblREKENING')
             ->join('tblNASABAH', 'tblREKENING.nasabah_id', '=', 'tblNASABAH.nasabah_id')
@@ -85,7 +86,8 @@ class TellerDashboardController extends Controller
                 'tblUSER.no_induk',
                 'tblUSER.email'
             )
-            ->where('tblREKENING.status_rekening', 'aktif')
+            ->when($status === 'semua', fn ($q) => $q->whereIn('tblREKENING.status_rekening', ['aktif', 'tutup']))
+            ->when($status !== 'semua', fn ($q) => $q->where('tblREKENING.status_rekening', $status))
             ->orderBy('tblREKENING.rekening_id', 'desc');
 
         if ($search) {
@@ -98,8 +100,10 @@ class TellerDashboardController extends Controller
 
         $activeRekening = $query->paginate(10)->withQueryString();
         $totalAktif = DB::table('tblREKENING')->where('status_rekening', 'aktif')->count();
+        $totalTutup = DB::table('tblREKENING')->where('status_rekening', 'tutup')->count();
+        $pendingDraftRekening = DB::table('tblDRAFT')->where('status_verifikasi', 'pending')->pluck('rekening_id')->flip();
 
-        return view('teller.rekening_aktif', compact('activeRekening', 'totalAktif', 'search'));
+        return view('teller.rekening_aktif', compact('activeRekening', 'totalAktif', 'totalTutup', 'search', 'status', 'pendingDraftRekening'));
         return view('teller.buka_rekening', compact('pendingRekening', 'totalPending', 'totalAktif', 'search'));
     }
 

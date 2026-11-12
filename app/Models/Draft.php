@@ -19,6 +19,7 @@ class Draft extends Model
         'nominal',
         'tgl_input',
         'status_verifikasi',
+        'alasan_penolakan',
     ];
 
     protected function casts(): array

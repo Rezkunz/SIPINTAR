@@ -88,25 +88,50 @@ class TellerTransactionController extends Controller
 
     public function mutasi(Request $request): View
     {
-        $rekening = $this->findAccount($request->query('no_rek'));
+        $rekening = $this->findAccount($request->query('no_rek'), true);
         $mutasi = collect();
-        $mode = $request->query('mode') === 'koreksi' ? 'koreksi' : 'lihat';
+        $mode = $request->query('mode') === 'koreksi' && $rekening?->status_rekening !== 'tutup' ? 'koreksi' : 'lihat';
         $types = \Illuminate\Support\Facades\DB::table('tblJENIS_TRANSAKSI')
             ->whereIn('nama_jenis', ['setoran', 'penarikan', 'jasa_tabungan'])
             ->orderBy('jenis_transaksi_id')
             ->get();
 
+        $sudahDikoreksi = [];
         if ($rekening) {
             $mutasi = \Illuminate\Support\Facades\DB::table('tblTRANSAKSI')
                 ->join('tblJENIS_TRANSAKSI', 'tblTRANSAKSI.jenis_transaksi_id', '=', 'tblJENIS_TRANSAKSI.jenis_transaksi_id')
+                ->leftJoin('tblPERIODE', 'tblTRANSAKSI.periode_id', '=', 'tblPERIODE.periode_id')
                 ->where('tblTRANSAKSI.rekening_id', $rekening->rekening_id)
-                ->select('tblTRANSAKSI.*', 'tblJENIS_TRANSAKSI.nama_jenis')
+                ->select(
+                    'tblTRANSAKSI.*',
+                    'tblJENIS_TRANSAKSI.nama_jenis',
+                    'tblPERIODE.status_periode',
+                    'tblPERIODE.bulan as periode_bulan',
+                    'tblPERIODE.tahun as periode_tahun'
+                )
                 ->orderByDesc('tblTRANSAKSI.tgl_transaksi')
+                ->orderByDesc('tblTRANSAKSI.transaksi_id')
                 ->paginate(15)
                 ->withQueryString();
+
+            // Transaksi yang sudah dikoreksi, beserta transaksi pembalik & hasil koreksinya
+            \Illuminate\Support\Facades\DB::table('tblAUDIT_LOG')
+                ->where('aksi', 'KOREKSI_TRANSAKSI')
+                ->where('entitas', 'tblTRANSAKSI')
+                ->get(['entitas_id', 'data_baru'])
+                ->each(function ($log) use (&$sudahDikoreksi) {
+                    $data = json_decode((string) $log->data_baru, true) ?: [];
+                    $sudahDikoreksi[(int) $log->entitas_id] = 'dikoreksi';
+                    if (!empty($data['reversal_id'])) {
+                        $sudahDikoreksi[(int) $data['reversal_id']] = 'pembalik';
+                    }
+                    if (!empty($data['corrected_id'])) {
+                        $sudahDikoreksi[(int) $data['corrected_id']] = 'hasil';
+                    }
+                });
         }
 
-        return view('teller.mutasi', compact('rekening', 'mutasi', 'mode', 'types'));
+        return view('teller.mutasi', compact('rekening', 'mutasi', 'mode', 'types', 'sudahDikoreksi'));
     }
 
     public function logHarian(Request $request): View
@@ -129,7 +154,7 @@ class TellerTransactionController extends Controller
 
     public function printMutasi(Request $request): View
     {
-        $rekening = $this->findAccount($request->query('no_rek'));
+        $rekening = $this->findAccount($request->query('no_rek'), true);
         abort_unless($rekening, 404);
 
         $mutasi = \Illuminate\Support\Facades\DB::table('tblTRANSAKSI')
@@ -179,13 +204,16 @@ class TellerTransactionController extends Controller
             ->get();
     }
 
-    private function findAccount(?string $noRek)
+    private function findAccount(?string $noRek, bool $termasukTertutup = false)
     {
         if (!$noRek) {
             return null;
         }
 
-        return Rekening::with('nasabah')->where('no_rek', $noRek)->where('status_rekening', 'aktif')->first();
+        return Rekening::with('nasabah')
+            ->where('no_rek', $noRek)
+            ->whereIn('status_rekening', $termasukTertutup ? ['aktif', 'tutup'] : ['aktif'])
+            ->first();
     }
 
     private function dailyLogQuery(string $tanggal)
