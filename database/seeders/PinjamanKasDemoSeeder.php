@@ -233,7 +233,7 @@ class PinjamanKasDemoSeeder extends Seeder
             'tgl_pengajuan'    => $now->copy()->subDays(2)->toDateString(),
             'metode_bayar'     => 'potong_gaji',
             'status_pinjaman'  => 'diajukan',
-        ]);
+        ], 'pinjaman_id');
 
         // =========================================================================
         // SKENARIO 2: Disetujui Layak (Menunggu Pencairan Dana oleh BBM)
@@ -250,7 +250,7 @@ class PinjamanKasDemoSeeder extends Seeder
             'tgl_pengajuan'    => $now->copy()->subDays(5)->toDateString(),
             'metode_bayar'     => 'potong_gaji',
             'status_pinjaman'  => 'layak',
-        ]);
+        ], 'pinjaman_id');
 
         DB::table('tblKELAYAKAN')->insert([
             'pinjaman_id'     => $pinj2Id,
@@ -279,7 +279,7 @@ class PinjamanKasDemoSeeder extends Seeder
             'tgl_pengajuan'    => $twoMonthsAgo->copy()->startOfMonth()->toDateString(),
             'metode_bayar'     => 'potong_gaji',
             'status_pinjaman'  => 'cair',
-        ]);
+        ], 'pinjaman_id');
 
         DB::table('tblKELAYAKAN')->insert([
             'pinjaman_id'     => $pinj3Id,
@@ -336,7 +336,7 @@ class PinjamanKasDemoSeeder extends Seeder
             'tgl_pengajuan'    => $prevMonth->copy()->startOfMonth()->toDateString(),
             'metode_bayar'     => 'tunai',
             'status_pinjaman'  => 'cair',
-        ]);
+        ], 'pinjaman_id');
 
         DB::table('tblKELAYAKAN')->insert([
             'pinjaman_id'     => $pinj4Id,
@@ -392,7 +392,7 @@ class PinjamanKasDemoSeeder extends Seeder
             'tgl_pengajuan'    => $now->copy()->subMonths(3)->subDays(3)->toDateString(),
             'metode_bayar'     => 'tunai',
             'status_pinjaman'  => 'lunas',
-        ]);
+        ], 'pinjaman_id');
 
         DB::table('tblPENCAIRAN')->insert([
             'pinjaman_id'   => $pinj5Id,
@@ -404,7 +404,7 @@ class PinjamanKasDemoSeeder extends Seeder
         $jadwal5 = PinjamanCalculatorService::generateJadwalAngsuran($pinj5Id, 2000000, 2, $tglCair5, 2.0);
         foreach ($jadwal5 as $row) {
             $row['status_bayar'] = 'lunas';
-            $jId = DB::table('tblJADWAL_ANGSURAN')->insertGetId($row);
+            $jId = DB::table('tblJADWAL_ANGSURAN')->insertGetId($row, 'jadwal_angsuran_id');
 
             DB::table('tblANGSURAN')->insert([
                 'jadwal_angsuran_id' => $jId,
@@ -435,7 +435,7 @@ class PinjamanKasDemoSeeder extends Seeder
             'tgl_pengajuan'    => $twoMonthsAgo->copy()->startOfMonth()->toDateString(),
             'metode_bayar'     => 'potong_gaji',
             'status_pinjaman'  => 'cair',
-        ]);
+        ], 'pinjaman_id');
 
         DB::table('tblKELAYAKAN')->insert([
             'pinjaman_id'     => $pinj6Id,
@@ -476,7 +476,7 @@ class PinjamanKasDemoSeeder extends Seeder
             'tgl_pengajuan'    => $twoMonthsAgo->copy()->startOfMonth()->toDateString(),
             'metode_bayar'     => 'potong_gaji',
             'status_pinjaman'  => 'cair',
-        ]);
+        ], 'pinjaman_id');
 
         DB::table('tblKELAYAKAN')->insert([
             'pinjaman_id'     => $pinj7Id,
@@ -517,7 +517,7 @@ class PinjamanKasDemoSeeder extends Seeder
             'tgl_pengajuan'    => $prevMonth->copy()->startOfMonth()->toDateString(),
             'metode_bayar'     => 'potong_gaji',
             'status_pinjaman'  => 'cair',
-        ]);
+        ], 'pinjaman_id');
 
         DB::table('tblKELAYAKAN')->insert([
             'pinjaman_id'     => $pinj8Id,
@@ -564,7 +564,7 @@ class PinjamanKasDemoSeeder extends Seeder
                 'metode_penyerahan' => 'transfer',
                 'catatan_sekolah'   => 'Pemotongan gaji periode Oktober 2026 berhasil disalurkan via Payroll Bank BJB.',
                 'status_potongan'   => 'selesai',
-            ]);
+            ], 'rencana_potongan_id');
 
             DB::table('tblDETAIL_POTONGAN')->insert([
                 'rencana_potongan_id' => $rpOktId,
@@ -593,7 +593,7 @@ class PinjamanKasDemoSeeder extends Seeder
                 'metode_penyerahan' => 'transfer',
                 'catatan_sekolah'   => 'Pemotongan gaji November 2026 telah diproses, dana telah ditransfer ke Bank Mini Wiyata.',
                 'status_potongan'   => 'menunggu_verifikasi',
-            ]);
+            ], 'rencana_potongan_id');
 
             DB::table('tblDETAIL_POTONGAN')->insert([
                 'rencana_potongan_id' => $rpNovId,
