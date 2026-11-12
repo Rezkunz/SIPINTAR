@@ -196,7 +196,7 @@ class KasController extends Controller
                 'arah'         => $request->arah,
                 'nominal'      => $request->nominal,
                 'uraian'       => $request->uraian,
-            ]);
+            ], 'mutasi_kas_id');
 
             if ($request->arah === 'masuk') {
                 DB::table('tblKAS')->where('kas_id', $kasBank->kas_id)->increment('saldo', $request->nominal);

@@ -113,7 +113,11 @@ class AngsuranBbmController extends Controller
 
         DB::transaction(function () use ($jadwal, $request, $periode, $kasTunai, $totalBayar) {
             // 1. Simpan baris angsuran
-            $angsuranId = DB::table('tblANGSURAN')->insertGetId([
+                    // 1. Simpan baris angsuran
+        $angsuranId = DB::table('tblANGSURAN')
+            ->insertGetId([
+
+
                 'jadwal_angsuran_id' => $jadwal->jadwal_angsuran_id,
                 'detail_potongan_id' => null,
                 'user_id'            => auth()->id(),
@@ -464,7 +468,11 @@ class AngsuranBbmController extends Controller
                 }
 
                 // 1. Catat baris angsuran resmi
-                $angsuranId = DB::table('tblANGSURAN')->insertGetId([
+                        // 1. Simpan baris angsuran
+        $angsuranId = DB::table('tblANGSURAN')
+            ->insertGetId([
+
+
                     'jadwal_angsuran_id' => $detail->jadwal_angsuran_id,
                     'detail_potongan_id' => $detail->detail_potongan_id,
                     'user_id'            => auth()->id(),

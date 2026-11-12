@@ -272,7 +272,7 @@ class NasabahDashboardController extends Controller
             'tgl_pengajuan'    => now()->toDateString(),
             'metode_bayar'     => $request->metode_bayar,
             'status_pinjaman'  => 'diajukan',
-        ]);
+        ], 'pinjaman_id');
 
         \App\Services\AuditLogService::log(
             aksi: 'PENGAJUAN_PINJAMAN_NASABAH',
