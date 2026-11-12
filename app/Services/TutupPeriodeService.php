@@ -343,7 +343,7 @@ class TutupPeriodeService
             'bulan'          => $awalBulan->month,
             'status_periode' => 'buka',
             'tgl_tutup'      => null,
-        ]);
+        ], 'periode_id');
 
         return DB::table('tblPERIODE')->where('periode_id', $id)->first();
     }

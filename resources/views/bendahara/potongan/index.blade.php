@@ -613,6 +613,7 @@
 
                 {{-- Tabel Rincian Pegawai dalam Paket --}}
                 <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
                         <h4 style="font-size:13px; font-weight:700; text-transform:uppercase; color:var(--text-muted); letter-spacing:0.04em; margin:0;">Daftar Pegawai dalam Paket</h4>
                         <div style="width:220px;">
@@ -620,6 +621,7 @@
                         </div>
                     </div>
                     <div class="table-responsive" style="border:1px solid #E2E8F0; border-radius:10px; overflow-x:auto;">
+                        <table class="financial-table" style="min-width: 820px;">
                         <table class="financial-table" id="tablePegawaiPotongan" style="min-width: 820px;">
                             <thead id="bannerPegawaiTableHead">
                                 {{-- Diisi secara dinamis sesuai mode (interactive vs read-only) --}}

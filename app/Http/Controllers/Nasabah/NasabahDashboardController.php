@@ -58,8 +58,8 @@ class NasabahDashboardController extends Controller
                         'tblJADWAL_ANGSURAN.*',
                         'tblJADWAL_ANGSURAN.jatuh_tempo as tgl_jatuh_tempo',
                         'tblJADWAL_ANGSURAN.pokok as nominal_angsuran',
-                        DB::raw('(tblJADWAL_ANGSURAN.pokok + tblJADWAL_ANGSURAN.bunga) as total_angsuran'),
-                        DB::raw("CASE WHEN tblJADWAL_ANGSURAN.status_bayar = 'lunas' THEN 'lunas' ELSE 'belum_bayar' END as status_angsuran")
+                        DB::raw('(pokok + bunga) as total_angsuran'),
+                        DB::raw("CASE WHEN status_bayar = 'lunas' THEN 'lunas' ELSE 'belum_bayar' END as status_angsuran")
                     )
                     ->where('pinjaman_id', $pinjamanAktif->pinjaman_id)
                     ->orderBy('jatuh_tempo')
@@ -108,8 +108,8 @@ class NasabahDashboardController extends Controller
                     'tblJADWAL_ANGSURAN.*',
                     'tblJADWAL_ANGSURAN.jatuh_tempo as tgl_jatuh_tempo',
                     'tblJADWAL_ANGSURAN.pokok as nominal_angsuran',
-                    DB::raw('(tblJADWAL_ANGSURAN.pokok + tblJADWAL_ANGSURAN.bunga) as total_angsuran'),
-                    DB::raw("CASE WHEN tblJADWAL_ANGSURAN.status_bayar = 'lunas' THEN 'lunas' ELSE 'belum_bayar' END as status_angsuran")
+                    DB::raw('(pokok + bunga) as total_angsuran'),
+                    DB::raw("CASE WHEN status_bayar = 'lunas' THEN 'lunas' ELSE 'belum_bayar' END as status_angsuran")
                 )
                 ->where('pinjaman_id', $pinjamanAktif->pinjaman_id)
                 ->orderBy('jatuh_tempo')
@@ -149,7 +149,7 @@ class NasabahDashboardController extends Controller
             $jadwalAngsuran = DB::table('tblJADWAL_ANGSURAN')
                 ->select(
                     'tblJADWAL_ANGSURAN.*',
-                    DB::raw('(tblJADWAL_ANGSURAN.pokok + tblJADWAL_ANGSURAN.bunga) as total_angsuran')
+                    DB::raw('(pokok + bunga) as total_angsuran')
                 )
                 ->where('pinjaman_id', $pinjamanAktif->pinjaman_id)
                 ->orderBy('angsuran_ke')
@@ -272,7 +272,7 @@ class NasabahDashboardController extends Controller
             'tgl_pengajuan'    => now()->toDateString(),
             'metode_bayar'     => $request->metode_bayar,
             'status_pinjaman'  => 'diajukan',
-        ]);
+        ], 'pinjaman_id');
 
         \App\Services\AuditLogService::log(
             aksi: 'PENGAJUAN_PINJAMAN_NASABAH',

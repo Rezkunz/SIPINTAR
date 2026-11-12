@@ -207,10 +207,11 @@ class LaporanPinjamanController extends Controller
             ->whereIn('pin.status_pinjaman', ['cair', 'lunas'])
             ->whereDate('cair.tgl_cair', '<=', $tanggalPosisi)
             ->when($cari !== '', function ($q) use ($cari) {
-                $q->where(function ($w) use ($cari) {
+                $likeOp = DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
+                $q->where(function ($w) use ($cari, $likeOp) {
                     $nomor = ltrim(preg_replace('/\D/', '', $cari), '0');
-                    $w->where('n.nama_nasabah', 'like', "%{$cari}%")
-                      ->orWhere('n.kelas_unit', 'like', "%{$cari}%");
+                    $w->where('n.nama_nasabah', $likeOp, "%{$cari}%")
+                      ->orWhere('n.kelas_unit', $likeOp, "%{$cari}%");
                     if ($nomor !== '') {
                         $w->orWhere('pin.pinjaman_id', (int) $nomor);
                     }

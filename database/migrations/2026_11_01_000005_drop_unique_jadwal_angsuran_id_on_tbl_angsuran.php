@@ -30,14 +30,21 @@ return new class extends Migration
                 // Ignore jika sudah diubah
             }
         } else {
-            // SQLite / Driver lain untuk testing
-            try {
+            // PostgreSQL / SQLite: periksa index lebih dulu agar transaksi DDL PostgreSQL tidak gagal (25P02)
+            $indexes = collect(Schema::getIndexes('tblANGSURAN'));
+            $hasRegularIndex = $indexes->contains(fn (array $idx) => !$idx['unique'] && $idx['columns'] === ['jadwal_angsuran_id']);
+            $uniqueIndex = $indexes->first(fn (array $idx) => $idx['unique'] && $idx['columns'] === ['jadwal_angsuran_id']);
+
+            if (!$hasRegularIndex) {
                 Schema::table('tblANGSURAN', function (Blueprint $table) {
-                    $table->dropUnique(['jadwal_angsuran_id']);
                     $table->index('jadwal_angsuran_id');
                 });
-            } catch (\Throwable $e) {
-                // Ignore
+            }
+
+            if ($uniqueIndex) {
+                Schema::table('tblANGSURAN', function (Blueprint $table) use ($uniqueIndex) {
+                    $table->dropUnique($uniqueIndex['name']);
+                });
             }
         }
     }

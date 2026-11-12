@@ -28,7 +28,10 @@ class TellerCorrectionService
             $isReversal = DB::table('tblAUDIT_LOG')
                 ->where('aksi', 'KOREKSI_TRANSAKSI')
                 ->where('entitas', 'tblTRANSAKSI')
-                ->where('data_baru', 'like', '%"reversal_id":' . $transactionId . '%')
+                ->whereRaw(
+                    DB::getDriverName() === 'pgsql' ? 'CAST(data_baru AS TEXT) LIKE ?' : 'data_baru LIKE ?',
+                    ['%"reversal_id":' . $transactionId . '%']
+                )
                 ->exists();
 
             if ($alreadyCorrected || $isReversal) {
@@ -110,7 +113,7 @@ class TellerCorrectionService
                 throw ValidationException::withMessages(['transaksi' => 'Saldo kas tidak cukup untuk koreksi ini.']);
             }
 
-            $reversalId = DB::table('tblTRANSAKSI')->insertGetId([
+            $reversalId = DB::table('tblTRANSAKSI')->insertGetId([, 'transaksi_id')
                 'rekening_id' => $original->rekening_id,
                 'jenis_transaksi_id' => $original->jenis_transaksi_id,
                 'periode_id' => $periode->periode_id,
@@ -120,7 +123,7 @@ class TellerCorrectionService
                 'kredit' => $debit,
                 'saldo_akhir' => $saldoAkhir,
                 'tgl_transaksi' => now(),
-            ]);
+            ], 'transaksi_id');
 
             DB::table('tblREKENING')->where('rekening_id', $rekening->rekening_id)->update(['saldo' => $saldoAkhir]);
 
@@ -130,7 +133,7 @@ class TellerCorrectionService
                 $this->recordCashMutation($kas->kas_id, $periode->periode_id, $tellerId, $reversalId, $nominal, $isReversalIn ? 'masuk' : 'keluar', 'Pembalik transaksi #' . $transactionId);
             }
 
-            $correctedId = DB::table('tblTRANSAKSI')->insertGetId([
+            $correctedId = DB::table('tblTRANSAKSI')->insertGetId([, 'transaksi_id')
                 'rekening_id' => $original->rekening_id,
                 'jenis_transaksi_id' => $correctedTypeId,
                 'periode_id' => $periode->periode_id,
@@ -140,7 +143,7 @@ class TellerCorrectionService
                 'kredit' => $correctedKredit,
                 'saldo_akhir' => $saldoAkhir,
                 'tgl_transaksi' => now(),
-            ]);
+            ], 'transaksi_id');
 
             if ($correctedIsCash) {
                 $this->recordCashMutation(

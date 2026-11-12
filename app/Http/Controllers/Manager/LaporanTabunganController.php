@@ -227,6 +227,8 @@ class LaporanTabunganController extends Controller
         ['kategori' => $kategori, 'filterCari' => $filterCari, 'awalBulan' => $awalBulan, 'akhirBulan' => $akhirBulan] = $filter;
 
         // Mutasi bersih per rekening per tanggal (kredit = setoran, debit = penarikan)
+        $tblTx = DB::getDriverName() === 'pgsql' ? '"tblTRANSAKSI"' : 'tblTRANSAKSI';
+        $tglCol = "{$tblTx}.tgl_transaksi";
         $mutasi = DB::table('tblTRANSAKSI')
             ->join('tblREKENING', 'tblTRANSAKSI.rekening_id', '=', 'tblREKENING.rekening_id')
             ->join('tblNASABAH', 'tblREKENING.nasabah_id', '=', 'tblNASABAH.nasabah_id')
@@ -234,12 +236,12 @@ class LaporanTabunganController extends Controller
             ->whereIn('tblTRANSAKSI.jenis_transaksi_id', self::JENIS_TRANSAKSI_REKAP)
             ->whereBetween('tblTRANSAKSI.tgl_transaksi', [$awalBulan, $akhirBulan])
             ->tap($filterCari)
-            ->groupBy('tblTRANSAKSI.rekening_id', DB::raw('DATE(tblTRANSAKSI.tgl_transaksi)'))
+            ->groupBy('tblTRANSAKSI.rekening_id', DB::raw("DATE({$tglCol})"))
             ->select(
                 'tblTRANSAKSI.rekening_id',
-                DB::raw('DATE(tblTRANSAKSI.tgl_transaksi) as tanggal'),
-                DB::raw('SUM(tblTRANSAKSI.kredit) as total_setoran'),
-                DB::raw('SUM(tblTRANSAKSI.debit) as total_penarikan')
+                DB::raw("DATE({$tglCol}) as tanggal"),
+                DB::raw("SUM({$tblTx}.kredit) as total_setoran"),
+                DB::raw("SUM({$tblTx}.debit) as total_penarikan")
             )
             ->get();
 
@@ -341,11 +343,12 @@ class LaporanTabunganController extends Controller
         $kategori = $validated['kategori'] ?? 'siswa';
         $cari     = trim($validated['cari'] ?? '');
 
-        $filterCari = function ($q) use ($cari) {
+        $likeOp = DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
+        $filterCari = function ($q) use ($cari, $likeOp) {
             if ($cari !== '') {
-                $q->where(function ($w) use ($cari) {
-                    $w->where('tblNASABAH.nama_nasabah', 'like', "%{$cari}%")
-                      ->orWhere('tblREKENING.no_rek', 'like', "%{$cari}%");
+                $q->where(function ($w) use ($cari, $likeOp) {
+                    $w->where('tblNASABAH.nama_nasabah', $likeOp, "%{$cari}%")
+                      ->orWhere('tblREKENING.no_rek', $likeOp, "%{$cari}%");
                 });
             }
         };

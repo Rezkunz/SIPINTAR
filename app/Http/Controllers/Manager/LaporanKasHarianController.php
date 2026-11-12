@@ -191,17 +191,20 @@ class LaporanKasHarianController extends Controller
             ->where('tgl_transaksi', '<', $awalBulan)
             ->sum(DB::raw('kredit - debit'));
 
+        $tblTx = DB::getDriverName() === 'pgsql' ? '"tblTRANSAKSI"' : 'tblTRANSAKSI';
+        $tglCol = "{$tblTx}.tgl_transaksi";
+
         $perHari = DB::table('tblTRANSAKSI')
             ->join('tblREKENING', 'tblTRANSAKSI.rekening_id', '=', 'tblREKENING.rekening_id')
             ->join('tblNASABAH', 'tblREKENING.nasabah_id', '=', 'tblNASABAH.nasabah_id')
             ->whereIn('tblTRANSAKSI.jenis_transaksi_id', self::JENIS_TRANSAKSI_KAS)
             ->whereBetween('tblTRANSAKSI.tgl_transaksi', [$awalBulan, $akhirBulan])
-            ->groupBy(DB::raw('DATE(tblTRANSAKSI.tgl_transaksi)'), 'tblNASABAH.jenis_nasabah')
+            ->groupBy(DB::raw("DATE({$tglCol})"), 'tblNASABAH.jenis_nasabah')
             ->select(
-                DB::raw('DATE(tblTRANSAKSI.tgl_transaksi) as tanggal'),
+                DB::raw("DATE({$tglCol}) as tanggal"),
                 'tblNASABAH.jenis_nasabah',
-                DB::raw('SUM(tblTRANSAKSI.kredit) as masuk'),
-                DB::raw('SUM(tblTRANSAKSI.debit) as keluar'),
+                DB::raw("SUM({$tblTx}.kredit) as masuk"),
+                DB::raw("SUM({$tblTx}.debit) as keluar"),
                 DB::raw('COUNT(*) as jumlah_transaksi')
             )
             ->orderBy('tanggal')

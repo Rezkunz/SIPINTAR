@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup Mobile — Hasil Potongan Payroll (Bendahara Sekolah) — SIPINTAR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-primary: #0D5C46;
+            --brand-primary-dark: #064030;
+            --brand-accent: #D97706;
+            --bg-app: #F8FAFC;
+            --border-color: #E2E8F0;
+            --text-heading: #0F172A;
+            --text-body: #334155;
+            --text-muted: #64748B;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #E2E8F0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px 0;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            color: #334155;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .tabular-numbers {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
+
+        .mobile-device-screen {
+            width: 390px;
+            min-height: 844px;
+            background: #F8FAFC;
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.3), 0 0 0 10px #0F172A;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .mobile-status-bar {
+            height: 44px;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            color: #0F172A;
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .mobile-app-header {
+            background: #FFFFFF;
+            padding: 12px 20px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #E2E8F0;
+            flex-shrink: 0;
+        }
+
+        .user-profile-header {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .avatar-badge-amber {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--brand-accent);
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .user-greeting-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-heading);
+            line-height: 1.2;
+        }
+
+        .user-role-tag {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .badge-payroll-blue {
+            background: #F0F9FF;
+            color: #0369A1;
+            border: 1px solid #BAE6FD;
+            font-size: 10.5px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 9999px;
+        }
+
+        .mobile-scroll-content {
+            flex: 1;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .mini-hero-banner {
+            background: linear-gradient(135deg, #0D5C46 0%, #064030 100%);
+            border-radius: 14px;
+            padding: 12px 15px;
+            color: #FFFFFF;
+        }
+
+        .mini-hero-banner h1 {
+            font-size: 14.5px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #FFFFFF;
+        }
+
+        .mini-hero-banner p {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.85);
+            margin-top: 2px;
+        }
+
+        .bg-paket-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bg-paket-title {
+            font-size: 12.5px;
+            font-weight: 800;
+            color: var(--text-heading);
+        }
+
+        .bg-paket-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .bg-paket-amount {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: var(--brand-primary);
+            text-align: right;
+        }
+
+        /* ── BOTTOM-SHEET OVERLAY ── */
+        .bottom-sheet-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.56);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            z-index: 40;
+        }
+
+        .bottom-sheet-panel {
+            background: #FFFFFF;
+            border-radius: 24px 24px 0 0;
+            overflow: hidden;
+            box-shadow: 0 -12px 32px rgba(15, 23, 42, 0.28);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sheet-header-emerald {
+            background: linear-gradient(135deg, #0D5C46 0%, #064030 100%);
+            padding: 8px 16px 12px;
+            color: #FFFFFF;
+        }
+
+        .sheet-handle-pill {
+            width: 36px;
+            height: 4px;
+            border-radius: 99px;
+            background: rgba(255, 255, 255, 0.35);
+            margin: 0 auto 8px;
+        }
+
+        .sheet-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .sheet-title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sheet-title-row h2 {
+            font-size: 15.5px;
+            font-weight: 800;
+            color: #FFFFFF;
+            letter-spacing: -0.02em;
+        }
+
+        .badge-siap {
+            background: #F0F9FF;
+            color: #0369A1;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .sheet-subtitle {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.85);
+            margin-top: 2px;
+        }
+
+        .sheet-close-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .sheet-body {
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #FFFFFF;
+        }
+
+        .sheet-metric-strip {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .sheet-metric-box {
+            background: #F8FAFC;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 8px 10px;
+        }
+
+        .sheet-metric-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+        }
+
+        .sheet-metric-val {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-heading);
+            margin-top: 2px;
+        }
+
+        .method-segmented {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            background: #F1F5F9;
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .method-btn {
+            border: 1px solid transparent;
+            background: transparent;
+            border-radius: 8px;
+            padding: 6px 8px;
+            font-family: inherit;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #64748B;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .method-btn.active {
+            background: #ECFDF5;
+            border-color: #059669;
+            color: #047857;
+            box-shadow: 0 1px 2px rgba(5, 150, 105, 0.12);
+        }
+
+        .sheet-list-heading {
+            font-size: 10.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            margin-bottom: -4px;
+        }
+
+        .emp-result-list {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .emp-result-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 8px 10px;
+        }
+
+        .emp-result-card.failed {
+            background: #FFF5F5;
+            border-color: #FECACA;
+        }
+
+        .emp-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .emp-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-heading);
+        }
+
+        .emp-meta {
+            font-size: 10.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .toggle-pill-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: #F1F5F9;
+            padding: 2px;
+            border-radius: 8px;
+            border: 1px solid #E2E8F0;
+            flex-shrink: 0;
+        }
+
+        .toggle-pill {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 7px;
+            border-radius: 6px;
+            color: #64748B;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+
+        .toggle-pill.active-green {
+            background: #ECFDF5;
+            color: #047857;
+            border-color: #A7F3D0;
+        }
+
+        .toggle-pill.active-red {
+            background: #FEF2F2;
+            color: #B91C1C;
+            border-color: #FECACA;
+        }
+
+        .emp-bottom-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 6px;
+            gap: 6px;
+        }
+
+        .emp-failed-note {
+            margin-top: 6px;
+            background: #FFFFFF;
+            border: 1px solid #FCA5A5;
+            border-radius: 7px;
+            padding: 4px 8px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #991B1B;
+        }
+
+        .sheet-footer {
+            background: #F8FAFC;
+            border-top: 1px solid var(--border-color);
+            padding: 10px 14px 4px;
+        }
+
+        .sheet-footer-btns {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .btn-outline-sm {
+            background: #FFFFFF;
+            border: 1px solid #CBD5E1;
+            color: #334155;
+            border-radius: 10px;
+            padding: 9px 12px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-primary-sm {
+            background: var(--brand-primary);
+            border: none;
+            color: #FFFFFF;
+            border-radius: 10px;
+            padding: 9px 14px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .mobile-home-indicator {
+            width: 134px;
+            height: 5px;
+            background: #0F172A;
+            border-radius: 99px;
+            margin: 4px auto 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-device-screen">
+        <!-- STATUS BAR -->
+        <div class="mobile-status-bar">
+            <span>09:41</span>
+            <div style="display: flex; gap: 6px; align-items: center;">
+                <span>5G</span>
+                <span>100%</span>
+            </div>
+        </div>
+
+        <!-- ROLE HEADER -->
+        <header class="mobile-app-header">
+            <div class="user-profile-header">
+                <div class="avatar-badge-amber">SM</div>
+                <div>
+                    <div class="user-greeting-name">Dra. Sri Mulyani</div>
+                    <div class="user-role-tag">Bendahara Sekolah</div>
+                </div>
+            </div>
+            <span class="badge-payroll-blue">Payroll</span>
+        </header>
+
+        <!-- UNDERLYING BACKGROUND CONTENT -->
+        <div class="mobile-scroll-content">
+            <div class="mini-hero-banner">
+                <h1>Monitoring Potongan Pegawai</h1>
+                <p>Catat hasil eksekusi potong gaji dari Bank Mini</p>
+            </div>
+
+            <div class="bg-paket-card">
+                <div>
+                    <div class="bg-paket-title tabular-numbers">#RP-0005 &bull; Desember 2026</div>
+                    <div class="bg-paket-sub">4 Pegawai &bull; Dari Hendra Wijaya</div>
+                </div>
+                <div class="bg-paket-amount tabular-numbers">Rp 3.880.000</div>
+            </div>
+
+            <div class="bg-paket-card">
+                <div>
+                    <div class="bg-paket-title tabular-numbers">#RP-0004 &bull; November 2026</div>
+                    <div class="bg-paket-sub">Selesai Dibukukan</div>
+                </div>
+                <div class="bg-paket-amount tabular-numbers">Rp 2.200.000</div>
+            </div>
+        </div>
+
+        <!-- MOBILE BOTTOM-SHEET OVERLAY -->
+        <div class="bottom-sheet-backdrop">
+            <div class="bottom-sheet-panel">
+                <!-- Header Emerald -->
+                <div class="sheet-header-emerald">
+                    <div class="sheet-handle-pill"></div>
+                    <div class="sheet-header-top">
+                        <div>
+                            <div class="sheet-title-row">
+                                <h2 class="tabular-numbers">Paket #RP-0005</h2>
+                                <span class="badge-siap">Siap Dipotong</span>
+                            </div>
+                            <div class="sheet-subtitle">Desember 2026 &bull; 4 Pegawai</div>
+                        </div>
+                        <button type="button" class="sheet-close-btn" title="Tutup">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sheet Body -->
+                <div class="sheet-body">
+                    <!-- 2 Metrik Ringkas -->
+                    <div class="sheet-metric-strip">
+                        <div class="sheet-metric-box">
+                            <div class="sheet-metric-label">Rencana</div>
+                            <div class="sheet-metric-val tabular-numbers">Rp 3.880.000</div>
+                        </div>
+                        <div class="sheet-metric-box">
+                            <div class="sheet-metric-label">Realisasi Dipotong</div>
+                            <div class="sheet-metric-val tabular-numbers" style="color: #059669;">Rp 2.760.000</div>
+                        </div>
+                    </div>
+
+                    <!-- Segmented Metode Serah Terima -->
+                    <div class="method-segmented">
+                        <button type="button" class="method-btn active">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+                            <span>Setor Tunai</span>
+                        </button>
+                        <button type="button" class="method-btn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v4M12 14v4M16 14v4"/></svg>
+                            <span>Transfer</span>
+                        </button>
+                    </div>
+
+                    <div class="sheet-list-heading">Catat Hasil Potongan Pegawai</div>
+
+                    <!-- Daftar Pegawai dengan Pill Toggle -->
+                    <div class="emp-result-list">
+                        <!-- 1 -->
+                        <div class="emp-result-card">
+                            <div class="emp-top-row">
+                                <div>
+                                    <div class="emp-name">Ibu Endang Purwanti</div>
+                                    <div class="emp-meta tabular-numbers">Rp 560.000 &bull; Ke-1/6</div>
+                                </div>
+                                <div class="toggle-pill-group">
+                                    <span class="toggle-pill active-green">&#10003; Terpotong</span>
+                                    <span class="toggle-pill">&#10005; Gagal</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2 -->
+                        <div class="emp-result-card">
+                            <div class="emp-top-row">
+                                <div>
+                                    <div class="emp-name">Bpk. Bambang Irawan</div>
+                                    <div class="emp-meta tabular-numbers">Rp 1.120.000 &bull; Ke-2/6</div>
+                                </div>
+                                <div class="toggle-pill-group">
+                                    <span class="toggle-pill active-green">&#10003; Terpotong</span>
+                                    <span class="toggle-pill">&#10005; Gagal</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3 -->
+                        <div class="emp-result-card">
+                            <div class="emp-top-row">
+                                <div>
+                                    <div class="emp-name">Ibu Dewi Sartika</div>
+                                    <div class="emp-meta tabular-numbers">Rp 1.080.000 &bull; Ke-2/4</div>
+                                </div>
+                                <div class="toggle-pill-group">
+                                    <span class="toggle-pill active-green">&#10003; Terpotong</span>
+                                    <span class="toggle-pill">&#10005; Gagal</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4 (Gagal) -->
+                        <div class="emp-result-card failed">
+                            <div class="emp-top-row">
+                                <div>
+                                    <div class="emp-name">Ibu Hj. Ratna Sari</div>
+                                    <div class="emp-meta tabular-numbers" style="color: #991B1B;">Rp 1.120.000 &bull; Ke-1/6</div>
+                                </div>
+                            </div>
+                            <div class="emp-bottom-row">
+                                <span style="font-size: 10px; font-weight: 700; color: #991B1B;">Status Potongan:</span>
+                                <div class="toggle-pill-group">
+                                    <span class="toggle-pill">&#10003; Terpotong</span>
+                                    <span class="toggle-pill active-red">&#10005; Tidak Terpotong</span>
+                                </div>
+                            </div>
+                            <div class="emp-failed-note">Tunjangan ditangguhkan, bayar tunai di loket</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Tombol + Home Indicator -->
+                <div class="sheet-footer">
+                    <div class="sheet-footer-btns">
+                        <button type="button" class="btn-outline-sm">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Unduh CSV</span>
+                        </button>
+                        <button type="button" class="btn-primary-sm">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            <span>Simpan &amp; Serahkan</span>
+                        </button>
+                    </div>
+                    <div class="mobile-home-indicator"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -138,7 +138,7 @@ class RekeningService
                 'tgl_buka' => now()->toDateString(),
             ]);
 
-            $transaksiId = DB::table('tblTRANSAKSI')->insertGetId([
+            $transaksiId = DB::table('tblTRANSAKSI')->insertGetId([, 'transaksi_id')
                 'rekening_id' => $rekeningId,
                 'jenis_transaksi_id' => $jenisSetoran->jenis_transaksi_id,
                 'periode_id' => $periode->periode_id,
@@ -148,7 +148,7 @@ class RekeningService
                 'kredit' => $setoranAwal,
                 'saldo_akhir' => $setoranAwal,
                 'tgl_transaksi' => now(),
-            ]);
+            ], 'transaksi_id');
 
             DB::table('tblMUTASI_KAS')->insert([
                 'kas_id' => $kas->kas_id,

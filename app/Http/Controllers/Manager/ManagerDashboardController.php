@@ -40,10 +40,6 @@ class ManagerDashboardController extends Controller
             ->first();
 
         // 6. Ringkasan 5 Transaksi Terbesar Terkini
-        // Nama kolom dikutip sesuai database aktif (MySQL: `tbl`.`kolom`, PostgreSQL: "tbl"."kolom")
-        $grammar = DB::getQueryGrammar();
-        $debit   = $grammar->wrap('tblTRANSAKSI.debit');
-        $kredit  = $grammar->wrap('tblTRANSAKSI.kredit');
 
         $transaksiTerbesar = DB::table('tblTRANSAKSI')
             ->join(
@@ -70,7 +66,11 @@ class ManagerDashboardController extends Controller
                 'tblREKENING.no_rek',
                 'tblJENIS_TRANSAKSI.nama_jenis as nama_jenis_transaksi'
             )
-            ->orderByRaw("GREATEST({$debit}, {$kredit}) DESC")
+            ->orderByRaw(match (DB::getDriverName()) {
+                'sqlite' => 'MAX(tblTRANSAKSI.debit, tblTRANSAKSI.kredit) DESC',
+                'pgsql'  => 'GREATEST("tblTRANSAKSI"."debit", "tblTRANSAKSI"."kredit") DESC',
+                default  => 'GREATEST(tblTRANSAKSI.debit, tblTRANSAKSI.kredit) DESC',
+            })
             ->limit(5)
             ->get();
 

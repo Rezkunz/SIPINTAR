@@ -17,11 +17,11 @@ class PosNeracaController extends Controller
     {
         $data = $this->validasi($request);
 
-        $posId = DB::table('tblPOS_NERACA')->insertGetId(array_merge($data, [
+        $posId = DB::table('tblPOS_NERACA')->insertGetId(array_merge($data, [, 'pos_neraca_id')
             'user_id'    => auth()->id(),
             'created_at' => now(),
             'updated_at' => now(),
-        ]));
+        ]), 'pos_neraca_id');
 
         AuditLogService::log(aksi: 'INSERT', entitas: 'tblPOS_NERACA', entitasId: $posId, dataBaru: $data);
 

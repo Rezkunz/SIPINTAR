@@ -91,10 +91,11 @@ class TellerDashboardController extends Controller
             ->orderBy('tblREKENING.rekening_id', 'desc');
 
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('tblNASABAH.nama_nasabah', 'like', "%{$search}%")
-                  ->orWhere('tblUSER.no_induk', 'like', "%{$search}%")
-                  ->orWhere('tblREKENING.no_rek', 'like', "%{$search}%");
+            $likeOp = DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $query->where(function ($q) use ($search, $likeOp) {
+                $q->where('tblNASABAH.nama_nasabah', $likeOp, "%{$search}%")
+                  ->orWhere('tblUSER.no_induk', $likeOp, "%{$search}%")
+                  ->orWhere('tblREKENING.no_rek', $likeOp, "%{$search}%");
             });
         }
 
@@ -150,7 +151,7 @@ class TellerDashboardController extends Controller
                     'kredit'             => $setoranAwal,
                     'saldo_akhir'        => $setoranAwal,
                     'tgl_transaksi'      => now(),
-                ]);
+                ], 'transaksi_id');
 
                 // 3. Masukkan uang fisik ke kas tunai brankas dan catat mutasinya, ditautkan ke
                 //    transaksi tabungan agar saldo kas per tanggal (Neraca, Tutup Periode) tepat dan
@@ -170,7 +171,7 @@ class TellerDashboardController extends Controller
                     'arah'         => 'masuk',
                     'nominal'      => $setoranAwal,
                     'uraian'       => "Setoran awal tabungan {$rekening->no_rek}" . ($nasabah ? " a.n. {$nasabah}" : ''),
-                ]);
+                ], 'mutasi_kas_id');
 
                 DB::table('tblKAS')->where('kas_id', $kasTunai->kas_id)->increment('saldo', $setoranAwal);
 

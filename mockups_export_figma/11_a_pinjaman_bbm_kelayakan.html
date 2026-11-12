@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup — Penilaian Kelayakan Kredit (Bendahara Bank Mini) — SIPINTAR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-primary: #0D5C46;
+            --brand-primary-hover: #083E2F;
+            --brand-primary-light: #ECFDF5;
+            --brand-accent: #D97706;
+            --bg-app: #F8FAFC;
+            --surface-card: #FFFFFF;
+            --surface-subtle: #F1F5F9;
+            --border-subtle: #E2E8F0;
+            --border-medium: #CBD5E1;
+            --text-heading: #0F172A;
+            --text-body: #334155;
+            --text-muted: #64748B;
+            --text-faint: #94A3B8;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 18px;
+            --radius-pill: 9999px;
+            --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+            --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.03);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            width: 1440px;
+            min-height: 100vh;
+            display: flex;
+            background: #F8FAFC;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: #334155;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
+        /* ── SIDEBAR ── */
+        .app-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            background: #FFFFFF;
+            border-right: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 1px 0 3px rgba(15, 23, 42, 0.03);
+        }
+
+        .sidebar-brand-wrapper {
+            height: 64px;
+            border-bottom: 1px solid #E2E8F0;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #FFFFFF;
+        }
+
+        .sidebar-logo-box {
+            width: 38px;
+            height: 38px;
+            background: #0D5C46;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(13, 92, 70, 0.18);
+        }
+
+        .sidebar-brand-info {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .sidebar-brand-title {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #0D5C46;
+            line-height: 1.1;
+        }
+
+        .sidebar-brand-title span {
+            color: #D97706;
+        }
+
+        .sidebar-brand-caption {
+            font-size: 10.5px;
+            color: #0D5C46;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .sidebar-collapse-toggle {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748B;
+            background: #F1F5F9;
+            border: 1px solid #E2E8F0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+        }
+
+        .nav-section-title {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #94A3B8;
+            padding: 14px 12px 6px;
+        }
+
+        .nav-section-title:first-child {
+            padding-top: 4px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 9.5px 14px;
+            border-radius: 10px;
+            color: #334155;
+            font-size: 13.5px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-bottom: 3px;
+        }
+
+        .nav-svg-icon {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            stroke: #64748B;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .nav-link.active {
+            color: #FFFFFF;
+            background: linear-gradient(135deg, #0D5C46 0%, #107558 100%);
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(13, 92, 70, 0.22);
+        }
+
+        .nav-link.active .nav-svg-icon {
+            stroke: #FFFFFF;
+        }
+
+        .sidebar-footer {
+            padding: 12px 14px;
+            border-top: 1px solid #E2E8F0;
+            background: #FFFFFF;
+        }
+
+        .user-profile-widget {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            padding: 9px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar-initial {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0D5C46 0%, #10B981 100%);
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(13, 92, 70, 0.2);
+        }
+
+        .avatar-status-dot {
+            position: absolute;
+            bottom: -1px;
+            right: -1px;
+            width: 9px;
+            height: 9px;
+            background: #10B981;
+            border: 2px solid #FFFFFF;
+            border-radius: 50%;
+        }
+
+        .user-meta-name {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #0F172A;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+        }
+
+        .user-meta-role {
+            font-size: 10.5px;
+            color: #0D5C46;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-top: 2px;
+        }
+
+        /* ── MAIN AREA & TOPBAR ── */
+        .app-main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            position: relative;
+        }
+
+        .app-topbar {
+            height: 64px;
+            background: #FFFFFF;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            flex-shrink: 0;
+        }
+
+        .topbar-breadcrumbs {
+            font-size: 13px;
+            color: #64748B;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .topbar-breadcrumbs .separator {
+            color: #94A3B8;
+            font-size: 11px;
+        }
+
+        .topbar-breadcrumbs .current {
+            color: #0F172A;
+            font-weight: 700;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .topbar-date-card {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 6px 14px;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 9999px;
+        }
+
+        .date-icon-box {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #ECFDF5;
+            color: #0D5C46;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .date-text-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            line-height: 1.1;
+        }
+
+        .topbar-clock-row {
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+        }
+
+        .topbar-live-clock {
+            font-size: 13px;
+            font-weight: 800;
+            font-family: 'IBM Plex Sans', ui-monospace, SFMono-Regular, Consolas, monospace;
+            color: #0D5C46;
+            letter-spacing: 0.04em;
+        }
+
+        .topbar-clock-tz {
+            font-size: 9.5px;
+            font-weight: 800;
+            color: #0D5C46;
+            background: #ECFDF5;
+            padding: 1px 4px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+        }
+
+        .date-full {
+            font-size: 11px;
+            font-weight: 500;
+            color: #64748B;
+        }
+
+        .topbar-notif-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0F172A;
+            position: relative;
+        }
+
+        .topbar-notif-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            min-width: 17px;
+            height: 17px;
+            padding: 0 4px;
+            border-radius: 10px;
+            background: #EF4444;
+            color: #FFFFFF;
+            font-size: 10px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #FFFFFF;
+        }
+
+        .topbar-profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 12px 4px 5px;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 9999px;
+        }
+
+        .topbar-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0D5C46 0%, #10B981 100%);
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .topbar-avatar .avatar-status-dot {
+            width: 8px;
+            height: 8px;
+            bottom: 0;
+            right: 0;
+        }
+
+        .topbar-user-info {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            line-height: 1.2;
+        }
+
+        .topbar-user-name {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #0F172A;
+        }
+
+        .topbar-user-role {
+            font-size: 10.5px;
+            color: #0D5C46;
+            font-weight: 600;
+        }
+
+        .dropdown-chevron {
+            color: #64748B;
+        }
+
+        /* ── CONTENT BODY ── */
+        .app-content {
+            padding: 28px 32px 48px;
+            flex: 1;
+        }
+
+        .dashboard-welcome-banner {
+            background: linear-gradient(135deg, #0D5C46 0%, #064030 100%);
+            border-radius: 18px;
+            padding: 24px 28px;
+            color: #FFFFFF;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 14px rgba(13, 92, 70, 0.2);
+        }
+
+        .welcome-content h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            margin-bottom: 4px;
+            letter-spacing: -0.02em;
+        }
+
+        .welcome-content p {
+            font-size: 13.5px;
+            color: rgba(255, 255, 255, 0.85);
+            max-width: 780px;
+            line-height: 1.5;
+        }
+
+        .content-card {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.03);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .card-header-bar {
+            padding: 16px 20px;
+            border-bottom: 1px solid #E2E8F0;
+            background: #FAFAFA;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .card-heading {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0F172A;
+            letter-spacing: -0.01em;
+        }
+
+        .financial-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            text-align: left;
+        }
+
+        .financial-table th {
+            background: #F8FAFC;
+            color: #475569;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+            padding: 12px 18px;
+            border-bottom: 1px solid #E2E8F0;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .financial-table td {
+            padding: 13px 18px;
+            border-bottom: 1px solid #E2E8F0;
+            font-size: 13.5px;
+            color: #334155;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .financial-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge-pill {
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-pill.green {
+            background: #ECFDF5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+
+        .badge-pill.blue {
+            background: #F0F9FF;
+            color: #0369A1;
+            border: 1px solid #BAE6FD;
+        }
+
+        .badge-pill.amber {
+            background: #FFFBEB;
+            color: #92400E;
+            border: 1px solid #FDE68A;
+        }
+
+        .badge-pill.red {
+            background: #FEF2F2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+
+        .btn-ui {
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            border: 1px solid transparent;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-ui-primary {
+            background: #0D5C46;
+            color: #FFFFFF;
+            box-shadow: 0 1px 3px rgba(13, 92, 70, 0.2);
+        }
+
+        .btn-ui-outline {
+            background: #FFFFFF;
+            border-color: #CBD5E1;
+            color: #334155;
+        }
+
+        .btn-ui-sm {
+            padding: 5px 12px;
+            font-size: 12px;
+            border-radius: 8px;
+        }
+
+        .search-input {
+            padding: 6px 12px;
+            font-family: inherit;
+            font-size: 12.5px;
+            border: 1.5px solid #CBD5E1;
+            border-radius: 6px;
+            width: 250px;
+            color: #0F172A;
+            background: #FFFFFF;
+        }
+
+        .preset-chip {
+            border: 1px solid #CBD5E1;
+            background: #FFFFFF;
+            color: #334155;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .preset-chip.active {
+            border-color: #0D5C46;
+            background: #ECFDF5;
+            color: #0D5C46;
+        }
+
+        /* ── OVERLAY MODAL ── */
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.52);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 60;
+            padding: 28px;
+        }
+
+        .modal-card {
+            width: 100%;
+            max-width: 580px;
+            background: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.3);
+            border: 1px solid #E2E8F0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── SIDEBAR BENDAHARA BANK MINI ── -->
+    <aside class="app-sidebar">
+        <div>
+            <div class="sidebar-brand-wrapper">
+                <div class="sidebar-logo-box">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="9.5" stroke="#FCD34D" stroke-width="1.8"/>
+                        <path d="M9 7.5H13.2C14.7 7.5 15.8 8.3 15.8 9.6C15.8 10.6 15.1 11.3 14.1 11.6C15.3 11.9 16.2 12.8 16.2 14C16.2 15.5 15 16.5 13.3 16.5H9V7.5Z" stroke="#FFFFFF" stroke-width="1.8" stroke-linejoin="round"/>
+                        <path d="M9 11.8H13.4" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
+                        <circle cx="17.5" cy="6.5" r="2" fill="#FCD34D"/>
+                    </svg>
+                </div>
+                <div class="sidebar-brand-info">
+                    <div class="sidebar-brand-title">SIP<span>INTAR</span></div>
+                    <div class="sidebar-brand-caption">BANK MINI SEKOLAH</div>
+                </div>
+                <div class="sidebar-collapse-toggle">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Pinjaman Pegawai</div>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                    <span>Daftar Pinjaman</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                    <span>Pengajuan Pinjaman</span>
+                </a>
+                <a href="#" class="nav-link active">
+                    <svg class="nav-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/></svg>
+                    <span>Penilaian Kelayakan</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+                    <span>Pencairan Pinjaman</span>
+                </a>
+
+                <div class="nav-section-title">Angsuran &amp; Potongan</div>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <span>Angsuran Langsung</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/></svg>
+                    <span>Rencana Potongan</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                    <span>Koreksi Angsuran</span>
+                </a>
+
+                <div class="nav-section-title">Piutang &amp; Kas</div>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><line x1="15" y1="8" x2="17" y2="8"/><line x1="15" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="17" y2="16"/></svg>
+                    <span>Kartu Piutang</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+                    <span>Kas Tunai (Cash)</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v4M12 14v4M16 14v4"/></svg>
+                    <span>Kas Bank Bendahara</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-profile-widget">
+                <div class="user-avatar-initial">
+                    HW
+                    <span class="avatar-status-dot"></span>
+                </div>
+                <div style="min-width: 0; flex: 1;">
+                    <div class="user-meta-name">Hendra Wijaya</div>
+                    <div class="user-meta-role">BENDAHARA BANK MINI</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── MAIN AREA ── -->
+    <div class="app-main-area">
+        <header class="app-topbar">
+            <div class="topbar-breadcrumbs">
+                <span>SIPINTAR</span>
+                <span class="separator">/</span>
+                <span class="current">Penilaian Kelayakan</span>
+            </div>
+
+            <div class="topbar-right">
+                <div class="topbar-date-card">
+                    <div class="date-icon-box">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="date-text-wrap">
+                        <div class="topbar-clock-row">
+                            <span class="topbar-live-clock">09 : 42 : 18</span>
+                            <span class="topbar-clock-tz">WIB</span>
+                        </div>
+                        <span class="date-full">Selasa, 10 November 2026</span>
+                    </div>
+                </div>
+
+                <div class="topbar-notif-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span class="topbar-notif-badge">2</span>
+                </div>
+
+                <div class="topbar-profile-btn">
+                    <div class="topbar-avatar">
+                        HW
+                        <span class="avatar-status-dot"></span>
+                    </div>
+                    <div class="topbar-user-info">
+                        <span class="topbar-user-name">Hendra Wijaya</span>
+                        <span class="topbar-user-role">Bendahara Bank Mini</span>
+                    </div>
+                    <svg class="dropdown-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+            </div>
+        </header>
+
+        <main class="app-content">
+            <!-- HERO BANNER -->
+            <div class="dashboard-welcome-banner">
+                <div class="welcome-content">
+                    <h1>Penilaian Kelayakan Pinjaman Pegawai</h1>
+                    <p>Analisis kapasitas pembayaran calon peminjam berdasarkan penghasilan rutin dan rekam jejak kedisiplinan.</p>
+                </div>
+            </div>
+
+            <!-- CARD 1: ANTREAN PERLU PENILAIAN -->
+            <div class="content-card">
+                <div class="card-header-bar">
+                    <div>
+                        <h2 class="card-heading">Antrean Permohonan Pinjaman Belum Dinilai</h2>
+                        <div style="font-size: 12px; color: #64748B;">Persetujuan komite wajib disimpan sebagai dokumentasi audit kredit</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="text" class="search-input" placeholder="Cari nama atau unit peminjam..." readonly>
+                        <span class="badge-pill amber">3 Menunggu Verifikasi</span>
+                    </div>
+                </div>
+
+                <div>
+                    <table class="financial-table">
+                        <thead>
+                            <tr>
+                                <th>Tgl Pengajuan</th>
+                                <th>Peminjam &amp; Unit</th>
+                                <th style="text-align: right;">Gaji + Tunjangan</th>
+                                <th style="text-align: right;">Plafon Diajukan</th>
+                                <th>Tenor</th>
+                                <th style="text-align: right;">Est. Cicilan/Bln</th>
+                                <th style="text-align: center;">Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>10/11/2026</td>
+                                <td>
+                                    <div style="font-weight: 700; color: #0F172A;">Ibu Endang Purwanti, S.Pd</div>
+                                    <div style="font-size: 11px; color: #64748B;">Guru Bahasa Indonesia</div>
+                                </td>
+                                <td style="text-align: right;">
+                                    <div style="font-weight: 600; color: #0F172A;">Rp 6.000.000</div>
+                                    <div style="font-size: 11px; color: #64748B;">Gaji: Rp 4.200.000</div>
+                                </td>
+                                <td style="text-align: right; font-weight: 700; color: #0F172A;">Rp 3.000.000</td>
+                                <td>6 Bulan</td>
+                                <td style="text-align: right;">
+                                    <div style="font-weight: 700; color: #0284C7;">Rp 560.000</div>
+                                    <div style="font-size: 11px; font-weight: 700; color: #15803D;">DSR: 9.3%</div>
+                                </td>
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn-ui btn-ui-sm btn-ui-primary">Beri Penilaian</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>09/11/2026</td>
+                                <td>
+                                    <div style="font-weight: 700; color: #0F172A;">Drs. H. Ahmad Sudrajat, M.Pd</div>
+                                    <div style="font-size: 11px; color: #64748B;">Wakil Kepala Sekolah</div>
+                                </td>
+                                <td style="text-align: right;">
+                                    <div style="font-weight: 600; color: #0F172A;">Rp 7.500.000</div>
+                                    <div style="font-size: 11px; color: #64748B;">Gaji: Rp 5.200.000</div>
+                                </td>
+                                <td style="text-align: right; font-weight: 700; color: #0F172A;">Rp 5.000.000</td>
+                                <td>10 Bulan</td>
+                                <td style="text-align: right;">
+                                    <div style="font-weight: 700; color: #0284C7;">Rp 600.000</div>
+                                    <div style="font-size: 11px; font-weight: 700; color: #15803D;">DSR: 8.0%</div>
+                                </td>
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn-ui btn-ui-sm btn-ui-primary">Beri Penilaian</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>08/11/2026</td>
+                                <td>
+                                    <div style="font-weight: 700; color: #0F172A;">Rudi Hartono, S.Kom</div>
+                                    <div style="font-size: 11px; color: #64748B;">Staf Lab Komputer</div>
+                                </td>
+                                <td style="text-align: right;">
+                                    <div style="font-weight: 600; color: #0F172A;">Rp 3.800.000</div>
+                                    <div style="font-size: 11px; color: #64748B;">Gaji: Rp 2.800.000</div>
+                                </td>
+                                <td style="text-align: right; font-weight: 700; color: #0F172A;">Rp 6.000.000</td>
+                                <td>4 Bulan</td>
+                                <td style="text-align: right;">
+                                    <div style="font-weight: 700; color: #0284C7;">Rp 1.620.000</div>
+                                    <div style="font-size: 11px; font-weight: 700; color: #B91C1C;">DSR: 42.6%</div>
+                                </td>
+                                <td style="text-align: center;">
+                                    <button type="button" class="btn-ui btn-ui-sm btn-ui-primary">Beri Penilaian</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CARD 2: RIWAYAT KEPUTUSAN KELAYAKAN TERAKHIR -->
+            <div class="content-card" style="margin-bottom: 0;">
+                <div class="card-header-bar">
+                    <h2 class="card-heading">Riwayat Keputusan Kelayakan Terakhir</h2>
+                </div>
+                <div>
+                    <table class="financial-table">
+                        <thead>
+                            <tr>
+                                <th>Tgl Dinilai</th>
+                                <th>Nama Peminjam</th>
+                                <th style="text-align: right;">Plafon</th>
+                                <th style="text-align: right;">Penghasilan Diverifikasi</th>
+                                <th style="text-align: center;">Hasil</th>
+                                <th>Catatan Pertimbangan Komite</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>05/11/2026</td>
+                                <td>
+                                    <div style="font-weight: 700; color: #0F172A;">Ibu Hj. Ratna Sari, M.Pd</div>
+                                    <div style="font-size: 11px; color: #64748B;">Guru Matematika</div>
+                                </td>
+                                <td style="text-align: right; font-weight: 600;">Rp 6.000.000</td>
+                                <td style="text-align: right;">Rp 6.400.000</td>
+                                <td style="text-align: center;">
+                                    <span class="badge-pill green">Layak</span>
+                                </td>
+                                <td style="font-size: 12px; color: #64748B; max-width: 280px;">
+                                    Rasio cicilan aman (&lt; 30% dari total pendapatan). Rekam jejak peminjam disiplin.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>02/11/2026</td>
+                                <td>
+                                    <div style="font-weight: 700; color: #0F172A;">Dedi Kusnadi, S.Pd</div>
+                                    <div style="font-size: 11px; color: #64748B;">Guru PJOK</div>
+                                </td>
+                                <td style="text-align: right; font-weight: 600;">Rp 12.000.000</td>
+                                <td style="text-align: right;">Rp 4.500.000</td>
+                                <td style="text-align: center;">
+                                    <span class="badge-pill red">Tidak Layak (Ditolak)</span>
+                                </td>
+                                <td style="font-size: 12px; color: #64748B; max-width: 280px;">
+                                    Ditolak: Beban cicilan melebihi toleransi komite kredit (&gt; 40% dari total pendapatan).
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <!-- ── OVERLAY MODAL EVALUASI KELAYAKAN ── -->
+        <div class="modal-overlay">
+            <div class="modal-card">
+                <!-- Header Modal -->
+                <div style="padding: 18px 24px; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center; background: #FFFFFF;">
+                    <div>
+                        <div style="font-weight: 800; font-size: 16px; color: #0F172A; letter-spacing: -0.01em;">Form Evaluasi Kelayakan Kredit</div>
+                        <div style="font-size: 12px; color: #64748B; margin-top: 2px;">Dokumentasi audit persetujuan komite kredit Bank Mini</div>
+                    </div>
+                    <button type="button" style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #E2E8F0; background: #F8FAFC; color: #64748B; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div style="padding: 24px; display: flex; flex-direction: column; gap: 18px;">
+
+                    <!-- Ringkasan Pegawai & Pinjaman -->
+                    <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 16px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <div style="width: 42px; height: 42px; border-radius: 50%; background: #0D5C46; color: #FFFFFF; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                IE
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-weight: 700; font-size: 15px; color: #0F172A;">Ibu Endang Purwanti, S.Pd</div>
+                                <div style="font-size: 12px; color: #64748B; margin-top: 2px;">Guru Bahasa Indonesia</div>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px 12px; text-align: center;">
+                            <div>
+                                <div style="font-size: 10.5px; color: #64748B; font-weight: 600; text-transform: uppercase;">Plafon Pinjaman</div>
+                                <div style="font-size: 13px; font-weight: 700; color: #0F172A; margin-top: 2px; font-variant-numeric: tabular-nums;">Rp 3.000.000</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 10.5px; color: #64748B; font-weight: 600; text-transform: uppercase;">Jangka Waktu</div>
+                                <div style="font-size: 13px; font-weight: 700; color: #0F172A; margin-top: 2px;">6 Bulan</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 10.5px; color: #64748B; font-weight: 600; text-transform: uppercase;">Est. Cicilan/Bln</div>
+                                <div style="font-size: 13px; font-weight: 800; color: #0D5C46; margin-top: 2px; font-variant-numeric: tabular-nums;">Rp 560.000</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pendapatan Bulanan Terverifikasi -->
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 700; color: #0F172A; margin-bottom: 6px;">
+                            Pendapatan Bulanan Terverifikasi (Rp) <span style="color: #DC2626;">*</span>
+                        </label>
+                        <div style="position: relative;">
+                            <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-weight: 700; font-size: 14px; color: #64748B;">Rp</span>
+                            <input type="number" value="6000000" readonly
+                                   style="display: block; width: 100%; padding: 10px 14px 10px 44px; font-family: inherit; font-size: 15px; font-weight: 700; border: 1.5px solid #CBD5E1; border-radius: 8px; color: #0F172A; background: #FFFFFF; font-variant-numeric: tabular-nums;">
+                        </div>
+                        <div style="font-size: 11.5px; color: #64748B; margin-top: 5px;">Gaji pokok ditambah tunjangan tetap peminjam per bulan</div>
+
+                        <!-- Live DSR Bar -->
+                        <div style="background: #F1F5F9; border-radius: 8px; padding: 10px 12px; margin-top: 10px; border: 1px solid #E2E8F0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span style="font-size: 11.5px; font-weight: 700; color: #334155;">Analisis Rasio Beban Cicilan (DSR):</span>
+                                <span style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: #D1FAE5; color: #065F46;">
+                                    9,3% (Sangat Aman)
+                                </span>
+                            </div>
+                            <div style="width: 100%; height: 6px; background: #E2E8F0; border-radius: 999px; overflow: hidden;">
+                                <div style="width: 9.3%; height: 100%; background: #059669; border-radius: 999px;"></div>
+                            </div>
+                            <div style="font-size: 11px; color: #64748B; margin-top: 4px;">
+                                Cicilan menyerap 9,3% dari total pendapatan bulanan. Sangat layak disetujui.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Keputusan Kelayakan Komite -->
+                    <div>
+                        <label style="display: block; font-size: 13px; font-weight: 700; color: #0F172A; margin-bottom: 6px;">
+                            Keputusan Kelayakan Komite <span style="color: #DC2626;">*</span>
+                        </label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <label style="border: 1.5px solid #0D5C46; background: #F0FDF4; border-radius: 10px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 10px;">
+                                <input type="radio" name="hasil_kelayakan" value="layak" checked style="margin-top: 3px; accent-color: #0D5C46; width: 15px; height: 15px; flex-shrink: 0;">
+                                <div>
+                                    <div style="font-weight: 700; color: #166534; font-size: 13.5px;">LAYAK (Disetujui)</div>
+                                    <div style="font-size: 11.5px; color: #15803D; margin-top: 2px;">Plafon disetujui, siap diteruskan ke pencairan dana</div>
+                                </div>
+                            </label>
+                            <label style="border: 1.5px solid #CBD5E1; background: #FFFFFF; border-radius: 10px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 10px;">
+                                <input type="radio" name="hasil_kelayakan" value="tidak_layak" style="margin-top: 3px; accent-color: #0D5C46; width: 15px; height: 15px; flex-shrink: 0;">
+                                <div>
+                                    <div style="font-weight: 700; color: #991B1B; font-size: 13.5px;">TIDAK LAYAK</div>
+                                    <div style="font-size: 11.5px; color: #B91C1C; margin-top: 2px;">Pengajuan ditolak, arsipkan catatan evaluasi</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Catatan Evaluasi Kredit -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <label style="font-size: 13px; font-weight: 700; color: #0F172A; margin: 0;">
+                                Catatan Evaluasi Kredit <span style="color: #DC2626;">*</span>
+                            </label>
+                            <span style="font-size: 11px; color: #64748B;">Klik rekomendasi cepat:</span>
+                        </div>
+
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;">
+                            <button type="button" class="preset-chip active">Cicilan Aman &amp; Disiplin</button>
+                            <button type="button" class="preset-chip">Batas Wajar 40%</button>
+                            <button type="button" class="preset-chip">Ditolak DSR Tinggi</button>
+                        </div>
+
+                        <textarea rows="3" readonly
+                                  style="display: block; width: 100%; padding: 10px 14px; font-size: 13px; border: 1.5px solid #CBD5E1; border-radius: 8px; color: #0F172A; background: #FFFFFF; line-height: 1.5; font-family: inherit; resize: none;">Rasio cicilan aman (&lt; 30% dari total pendapatan). Tunjangan tetap mencukupi dan rekam jejak disiplin.</textarea>
+                    </div>
+
+                    <!-- Footer Aksi -->
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 14px; border-top: 1px solid #E2E8F0; margin-top: 4px;">
+                        <button type="button" class="btn-ui btn-ui-outline" style="padding: 10px 18px; font-size: 13px;">Batal</button>
+                        <button type="button" class="btn-ui btn-ui-primary" style="padding: 10px 22px; font-size: 13.5px; font-weight: 800;">Simpan Keputusan</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
