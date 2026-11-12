@@ -21,7 +21,7 @@ class PosNeracaController extends Controller
             'user_id'    => auth()->id(),
             'created_at' => now(),
             'updated_at' => now(),
-        ]));
+        ]), 'pos_neraca_id');
 
         AuditLogService::log(aksi: 'INSERT', entitas: 'tblPOS_NERACA', entitasId: $posId, dataBaru: $data);
 

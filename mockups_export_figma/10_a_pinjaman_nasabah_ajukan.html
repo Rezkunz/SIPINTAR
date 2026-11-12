@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup — Pengajuan Pinjaman Pegawai (Nasabah) — SIPINTAR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-primary: #0D5C46;
+            --brand-primary-hover: #083E2F;
+            --brand-primary-light: #ECFDF5;
+            --brand-accent: #D97706;
+            --bg-app: #F8FAFC;
+            --surface-card: #FFFFFF;
+            --surface-subtle: #F1F5F9;
+            --border-subtle: #E2E8F0;
+            --border-medium: #CBD5E1;
+            --text-heading: #0F172A;
+            --text-body: #334155;
+            --text-muted: #64748B;
+            --text-faint: #94A3B8;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 18px;
+            --radius-pill: 9999px;
+            --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+            --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.03);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            width: 1440px;
+            min-height: 100vh;
+            display: flex;
+            background: #F8FAFC;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: #334155;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
+        .tabular-numbers {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
+
+        /* ── SIDEBAR ── */
+        .app-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            background: #FFFFFF;
+            border-right: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 1px 0 3px rgba(15, 23, 42, 0.03);
+        }
+
+        .sidebar-brand-wrapper {
+            height: 64px;
+            border-bottom: 1px solid #E2E8F0;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #FFFFFF;
+        }
+
+        .sidebar-logo-box {
+            width: 38px;
+            height: 38px;
+            background: #0D5C46;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(13, 92, 70, 0.18);
+        }
+
+        .sidebar-brand-info {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .sidebar-brand-title {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #0D5C46;
+            line-height: 1.1;
+        }
+
+        .sidebar-brand-title span {
+            color: #D97706;
+        }
+
+        .sidebar-brand-caption {
+            font-size: 10.5px;
+            color: #0D5C46;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .sidebar-collapse-toggle {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748B;
+            background: #F1F5F9;
+            border: 1px solid #E2E8F0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+        }
+
+        .nav-section-title {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #94A3B8;
+            padding: 14px 12px 6px;
+        }
+
+        .nav-section-title:first-child {
+            padding-top: 4px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 9.5px 14px;
+            border-radius: 10px;
+            color: #334155;
+            font-size: 13.5px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-bottom: 3px;
+        }
+
+        .nav-svg-icon {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            stroke: #64748B;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .nav-link.active {
+            color: #FFFFFF;
+            background: linear-gradient(135deg, #0D5C46 0%, #107558 100%);
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(13, 92, 70, 0.22);
+        }
+
+        .nav-link.active .nav-svg-icon {
+            stroke: #FFFFFF;
+        }
+
+        .sidebar-footer {
+            padding: 12px 14px;
+            border-top: 1px solid #E2E8F0;
+            background: #FFFFFF;
+        }
+
+        .user-profile-widget {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            padding: 9px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar-initial {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0D5C46 0%, #10B981 100%);
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(13, 92, 70, 0.2);
+        }
+
+        .avatar-status-dot {
+            position: absolute;
+            bottom: -1px;
+            right: -1px;
+            width: 9px;
+            height: 9px;
+            background: #10B981;
+            border: 2px solid #FFFFFF;
+            border-radius: 50%;
+        }
+
+        .user-meta-name {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #0F172A;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+        }
+
+        .user-meta-role {
+            font-size: 10.5px;
+            color: #0D5C46;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-top: 2px;
+        }
+
+        /* ── MAIN AREA & TOPBAR ── */
+        .app-main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            position: relative;
+        }
+
+        .app-topbar {
+            height: 64px;
+            background: #FFFFFF;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            flex-shrink: 0;
+        }
+
+        .topbar-breadcrumbs {
+            font-size: 13px;
+            color: #64748B;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .topbar-breadcrumbs .separator {
+            color: #94A3B8;
+            font-size: 11px;
+        }
+
+        .topbar-breadcrumbs .current {
+            color: #0F172A;
+            font-weight: 700;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .topbar-date-card {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 6px 14px;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 9999px;
+        }
+
+        .date-icon-box {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #ECFDF5;
+            color: #0D5C46;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .date-text-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            line-height: 1.1;
+        }
+
+        .topbar-clock-row {
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+        }
+
+        .topbar-live-clock {
+            font-size: 13px;
+            font-weight: 800;
+            font-family: 'IBM Plex Sans', ui-monospace, SFMono-Regular, Consolas, monospace;
+            color: #0D5C46;
+            letter-spacing: 0.04em;
+        }
+
+        .topbar-clock-tz {
+            font-size: 9.5px;
+            font-weight: 800;
+            color: #0D5C46;
+            background: #ECFDF5;
+            padding: 1px 4px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+        }
+
+        .date-full {
+            font-size: 11px;
+            font-weight: 500;
+            color: #64748B;
+        }
+
+        .topbar-notif-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0F172A;
+            position: relative;
+        }
+
+        .topbar-notif-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            min-width: 17px;
+            height: 17px;
+            padding: 0 4px;
+            border-radius: 10px;
+            background: #EF4444;
+            color: #FFFFFF;
+            font-size: 10px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #FFFFFF;
+        }
+
+        .topbar-profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 12px 4px 5px;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 9999px;
+        }
+
+        .topbar-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0D5C46 0%, #10B981 100%);
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .topbar-avatar .avatar-status-dot {
+            width: 8px;
+            height: 8px;
+            bottom: 0;
+            right: 0;
+        }
+
+        .topbar-user-info {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            line-height: 1.2;
+        }
+
+        .topbar-user-name {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #0F172A;
+        }
+
+        .topbar-user-role {
+            font-size: 10.5px;
+            color: #0D5C46;
+            font-weight: 600;
+        }
+
+        .dropdown-chevron {
+            color: #64748B;
+        }
+
+        /* ── CONTENT BODY ── */
+        .app-content {
+            padding: 28px 32px 48px;
+            flex: 1;
+        }
+
+        .content-card {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.03);
+            overflow: hidden;
+        }
+
+        .badge-pill {
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-pill.green {
+            background: #ECFDF5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+
+        .btn-ui {
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            border: 1px solid transparent;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-ui-primary {
+            background: #0D5C46;
+            color: #FFFFFF;
+            box-shadow: 0 1px 3px rgba(13, 92, 70, 0.2);
+        }
+
+        .btn-ui-outline {
+            background: #FFFFFF;
+            border-color: #CBD5E1;
+            color: #334155;
+        }
+
+        /* ── FORM SPECIFIC CONTROLS ── */
+        .chip-btn {
+            border: 1px solid #CBD5E1;
+            background: #FFFFFF;
+            color: #0F172A;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .chip-btn.active {
+            border-color: #0D5C46;
+            background: #ECFDF5;
+            color: #0D5C46;
+        }
+
+        .tenor-pill {
+            cursor: pointer;
+            text-align: center;
+            border: 1.5px solid #CBD5E1;
+            border-radius: 8px;
+            padding: 10px 4px;
+            font-weight: 700;
+            font-size: 13px;
+            color: #334155;
+            background: #FFFFFF;
+            display: block;
+        }
+
+        .tenor-pill.active {
+            background: #0D5C46;
+            border-color: #0D5C46;
+            color: #FFFFFF;
+        }
+
+        .form-input-nominal {
+            width: 100%;
+            padding: 12px 14px 12px 46px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 700;
+            border: 1.5px solid #CBD5E1;
+            border-radius: 8px;
+            color: #0F172A;
+            background: #FFFFFF;
+            letter-spacing: 0.02em;
+        }
+
+        .form-input-tenor {
+            padding: 6px 46px 6px 12px;
+            font-family: inherit;
+            font-size: 13.5px;
+            font-weight: 700;
+            border: 1px solid #CBD5E1;
+            border-radius: 6px;
+            width: 100%;
+            color: #0F172A;
+            background: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── SIDEBAR NASABAH PEGAWAI ── -->
+    <aside class="app-sidebar">
+        <div>
+            <div class="sidebar-brand-wrapper">
+                <div class="sidebar-logo-box">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="9.5" stroke="#FCD34D" stroke-width="1.8"/>
+                        <path d="M9 7.5H13.2C14.7 7.5 15.8 8.3 15.8 9.6C15.8 10.6 15.1 11.3 14.1 11.6C15.3 11.9 16.2 12.8 16.2 14C16.2 15.5 15 16.5 13.3 16.5H9V7.5Z" stroke="#FFFFFF" stroke-width="1.8" stroke-linejoin="round"/>
+                        <path d="M9 11.8H13.4" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>
+                        <circle cx="17.5" cy="6.5" r="2" fill="#FCD34D"/>
+                    </svg>
+                </div>
+                <div class="sidebar-brand-info">
+                    <div class="sidebar-brand-title">SIP<span>INTAR</span></div>
+                    <div class="sidebar-brand-caption">BANK MINI SEKOLAH</div>
+                </div>
+                <div class="sidebar-collapse-toggle">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Rekening Mandiri</div>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    <span>Informasi Rekening</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                    <span>Riwayat Mutasi</span>
+                </a>
+
+                <div class="nav-section-title">Pinjaman Pegawai</div>
+                <a href="#" class="nav-link active">
+                    <svg class="nav-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    <span>Ajukan Pinjaman</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    <span>Info Pinjaman</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span>Jadwal Angsuran</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-profile-widget">
+                <div class="user-avatar-initial">
+                    IE
+                    <span class="avatar-status-dot"></span>
+                </div>
+                <div style="min-width: 0; flex: 1;">
+                    <div class="user-meta-name">Ibu Endang Purwanti, S.Pd</div>
+                    <div class="user-meta-role">NASABAH PEGAWAI</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── MAIN AREA ── -->
+    <div class="app-main-area">
+        <header class="app-topbar">
+            <div class="topbar-breadcrumbs">
+                <span>SIPINTAR</span>
+                <span class="separator">/</span>
+                <span class="current">Pengajuan Pinjaman</span>
+            </div>
+
+            <div class="topbar-right">
+                <div class="topbar-date-card">
+                    <div class="date-icon-box">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="date-text-wrap">
+                        <div class="topbar-clock-row">
+                            <span class="topbar-live-clock">09 : 42 : 18</span>
+                            <span class="topbar-clock-tz">WIB</span>
+                        </div>
+                        <span class="date-full">Selasa, 10 November 2026</span>
+                    </div>
+                </div>
+
+                <div class="topbar-notif-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span class="topbar-notif-badge">2</span>
+                </div>
+
+                <div class="topbar-profile-btn">
+                    <div class="topbar-avatar">
+                        IE
+                        <span class="avatar-status-dot"></span>
+                    </div>
+                    <div class="topbar-user-info">
+                        <span class="topbar-user-name">Ibu Endang Purwanti, S.Pd</span>
+                        <span class="topbar-user-role">Nasabah Pegawai</span>
+                    </div>
+                    <svg class="dropdown-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+            </div>
+        </header>
+
+        <main class="app-content">
+            <div style="max-width: 860px; margin: 0 auto;">
+
+                <!-- Header Halaman Bersih -->
+                <div style="margin-bottom: 24px;">
+                    <h1 style="font-size: 22px; font-weight: 800; color: #0F172A; margin-bottom: 4px; letter-spacing: -0.02em;">
+                        Form Permohonan Pinjaman Pegawai
+                    </h1>
+                    <p style="font-size: 13.5px; color: #64748B; margin: 0;">
+                        Fasilitas pembiayaan lunak mandiri untuk Guru dan Tenaga Kependidikan SMK Negeri 1 Lemahabang
+                    </p>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 22px;">
+
+                    <!-- KARTU 1: IDENTITAS PEGAWAI PEMINJAM -->
+                    <div class="content-card" style="padding: 24px;">
+                        <div style="font-size: 14px; font-weight: 700; color: #0F172A; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #ECFDF5; color: #0D5C46; font-size: 12px; font-weight: 800;">1</span>
+                            Identitas Pegawai Peminjam
+                        </div>
+
+                        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 18px;">
+                            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+                                <div style="width: 46px; height: 46px; border-radius: 50%; background: #0D5C46; color: #FFFFFF; font-weight: 800; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    IE
+                                </div>
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-size: 15px; font-weight: 700; color: #0F172A;">
+                                        Ibu Endang Purwanti, S.Pd
+                                    </div>
+                                    <div style="font-size: 12.5px; color: #64748B; margin-top: 2px;">
+                                        Unit Kerja: Guru Bahasa Indonesia &bull; NIP: 198204122009022003
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;">
+                                <div>
+                                    <div style="font-size: 11px; color: #64748B; font-weight: 600; text-transform: uppercase;">Gaji Pokok</div>
+                                    <div class="tabular-numbers" style="font-size: 13.5px; font-weight: 700; color: #0F172A; margin-top: 2px;">
+                                        Rp 4.200.000
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; color: #64748B; font-weight: 600; text-transform: uppercase;">Tunjangan Rutin</div>
+                                    <div class="tabular-numbers" style="font-size: 13.5px; font-weight: 700; color: #0F172A; margin-top: 2px;">
+                                        Rp 1.800.000
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; color: #64748B; font-weight: 600; text-transform: uppercase;">Total Penghasilan</div>
+                                    <div class="tabular-numbers" style="font-size: 13.5px; font-weight: 800; color: #0D5C46; margin-top: 2px;">
+                                        Rp 6.000.000
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #334155; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 6px; padding: 8px 12px;">
+                                <span>Kapasitas Angsuran Aman (Batas 40%):</span>
+                                <strong class="tabular-numbers" style="color: #065F46; font-size: 13px;">Rp 2.400.000 / bln</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KARTU 2: NOMINAL & TENOR PINJAMAN -->
+                    <div class="content-card" style="padding: 24px;">
+                        <div style="font-size: 14px; font-weight: 700; color: #0F172A; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #ECFDF5; color: #0D5C46; font-size: 12px; font-weight: 800;">2</span>
+                            Nominal &amp; Tenor Pinjaman
+                        </div>
+
+                        <!-- Plafon Pinjaman -->
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-size: 13px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">
+                                Plafon Pinjaman yang Diajukan (Rp) <span style="color: #DC2626;">*</span>
+                            </label>
+                            <div style="position: relative;">
+                                <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-weight: 800; font-size: 15px; color: #64748B;">Rp</span>
+                                <input type="number" class="form-input-nominal tabular-numbers" value="3000000" readonly>
+                            </div>
+                            <div style="font-size: 11.5px; color: #64748B; margin-top: 6px;">Minimal pinjaman Rp 500.000 &bull; Maksimal Rp 30.000.000</div>
+
+                            <!-- Quick Chips -->
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+                                <button type="button" class="chip-btn">Rp 1 Jt</button>
+                                <button type="button" class="chip-btn active">Rp 3 Jt</button>
+                                <button type="button" class="chip-btn">Rp 5 Jt</button>
+                                <button type="button" class="chip-btn">Rp 10 Jt</button>
+                                <button type="button" class="chip-btn">Rp 15 Jt</button>
+                                <button type="button" class="chip-btn">Rp 20 Jt</button>
+                            </div>
+                        </div>
+
+                        <!-- Tenor Pinjaman -->
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-size: 13px; font-weight: 700; color: #0F172A; margin-bottom: 8px;">
+                                Jangka Waktu Cicilan (Tenor) <span style="color: #DC2626;">*</span>
+                            </label>
+
+                            <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 12px;">
+                                <span class="tenor-pill">3 Bln</span>
+                                <span class="tenor-pill">5 Bln</span>
+                                <span class="tenor-pill active">6 Bln</span>
+                                <span class="tenor-pill">10 Bln</span>
+                                <span class="tenor-pill">12 Bln</span>
+                                <span class="tenor-pill">20 Bln</span>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 12px; color: #64748B;">Atau tentukan tenor kustom:</span>
+                                <div style="position: relative; width: 140px;">
+                                    <input type="number" class="form-input-tenor tabular-numbers" value="6" readonly>
+                                    <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #64748B; font-weight: 600;">Bulan</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SIMULASI MENYATU -->
+                        <div style="background: #F0FDF4; border: 1.5px solid #A7F3D0; border-radius: 12px; padding: 18px 20px; margin-top: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 8px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 28px; height: 28px; border-radius: 6px; background: #0D5C46; color: #FFFFFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 13.5px; font-weight: 800; color: #065F46;">Simulasi Cicilan Bulanan</div>
+                                        <div style="font-size: 11.5px; color: #047857;">Jasa Flat 2% per bulan dari nominal pinjaman</div>
+                                    </div>
+                                </div>
+                                <span style="background: #0D5C46; color: #FFFFFF; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 9999px;">
+                                    Jasa Flat 2,0% / Bln
+                                </span>
+                            </div>
+
+                            <!-- 3-Box Breakdown -->
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: #FFFFFF; border: 1px solid #A7F3D0; border-radius: 10px; padding: 14px; margin-bottom: 14px;">
+                                <div>
+                                    <div style="font-size: 11px; color: #64748B; font-weight: 700; text-transform: uppercase;">Angsuran Pokok / Bln</div>
+                                    <div class="tabular-numbers" style="font-size: 15px; font-weight: 800; color: #0F172A; margin-top: 3px;">Rp 500.000</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; color: #64748B; font-weight: 700; text-transform: uppercase;">Jasa 2% / Bln</div>
+                                    <div class="tabular-numbers" style="font-size: 15px; font-weight: 800; color: #047857; margin-top: 3px;">Rp 60.000</div>
+                                </div>
+                                <div style="background: #ECFDF5; border-radius: 6px; padding: 6px 10px; border: 1px solid #A7F3D0;">
+                                    <div style="font-size: 11px; color: #065F46; font-weight: 800; text-transform: uppercase;">Total Tagihan / Bln</div>
+                                    <div class="tabular-numbers" style="font-size: 17px; font-weight: 800; color: #0D5C46; margin-top: 2px;">Rp 560.000</div>
+                                </div>
+                            </div>
+
+                            <!-- DSR Capacity Meter -->
+                            <div style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px 14px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <span style="font-size: 12px; font-weight: 700; color: #0F172A;">Perkiraan Rasio Beban Angsuran (DSR):</span>
+                                    <span style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: #DCFCE7; color: #166534;">
+                                        9,3% (Sangat Aman)
+                                    </span>
+                                </div>
+                                <div style="width: 100%; height: 8px; background: #E2E8F0; border-radius: 999px; overflow: hidden; margin-bottom: 6px;">
+                                    <div style="width: 9.3%; height: 100%; background: #0D5C46; border-radius: 999px;"></div>
+                                </div>
+                                <div style="font-size: 11px; color: #64748B;">
+                                    Rasio beban angsuran bulanan terhadap kapasitas penghasilan rutin Anda.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KARTU 3: METODE PENGEMBALIAN & TANGGAL PENGAJUAN -->
+                    <div class="content-card" style="padding: 24px;">
+                        <div style="font-size: 14px; font-weight: 700; color: #0F172A; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #ECFDF5; color: #0D5C46; font-size: 12px; font-weight: 800;">3</span>
+                            Metode Pengembalian Angsuran &amp; Tanggal Pengajuan
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px;">
+                            <span style="font-size: 12.5px; color: #64748B;">Tanggal Pengajuan Permohonan:</span>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span class="badge-pill green" style="font-size: 11.5px;">Hari Ini</span>
+                                <strong style="color: #0F172A; font-size: 13px;">10 November 2026</strong>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                            <!-- Option 1: Potong Payroll (Selected) -->
+                            <label style="border: 1.5px solid #0D5C46; background: #F0FDF4; border-radius: 10px; padding: 16px; display: flex; gap: 12px; align-items: flex-start;">
+                                <input type="radio" name="metode_bayar" value="potong_gaji" checked style="margin-top: 3px; accent-color: #0D5C46; width: 16px; height: 16px; flex-shrink: 0;">
+                                <div>
+                                    <div style="font-weight: 700; font-size: 14px; color: #0F172A;">Potong Tunjangan / Payroll</div>
+                                    <div style="font-size: 11.5px; color: #64748B; margin-top: 4px; line-height: 1.4;">
+                                        Dipotong otomatis setiap bulan oleh Bendahara Sekolah dari slip tunjangan/gaji mitra.
+                                    </div>
+                                    <span style="display: inline-block; font-size: 10.5px; font-weight: 700; color: #065F46; background: #D1FAE5; padding: 2px 8px; border-radius: 4px; margin-top: 8px;">Direkomendasikan</span>
+                                </div>
+                            </label>
+
+                            <!-- Option 2: Setor Tunai -->
+                            <label style="border: 1.5px solid #CBD5E1; background: #FFFFFF; border-radius: 10px; padding: 16px; display: flex; gap: 12px; align-items: flex-start;">
+                                <input type="radio" name="metode_bayar" value="tunai" style="margin-top: 3px; accent-color: #0D5C46; width: 16px; height: 16px; flex-shrink: 0;">
+                                <div>
+                                    <div style="font-weight: 700; font-size: 14px; color: #0F172A;">Setor Langsung di Loket</div>
+                                    <div style="font-size: 11.5px; color: #64748B; margin-top: 4px; line-height: 1.4;">
+                                        Dibayar mandiri tunai di loket kasir Bank Mini sebelum tanggal jatuh tempo.
+                                    </div>
+                                    <span style="display: inline-block; font-size: 10.5px; font-weight: 700; color: #475569; background: #F1F5F9; padding: 2px 8px; border-radius: 4px; margin-top: 8px;">Mandiri</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- FOOTER SUBMIT -->
+                    <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; padding: 20px 0 4px; border-top: 1px solid #E2E8F0;">
+                        <a href="#" class="btn-ui btn-ui-outline" style="padding: 10px 22px; font-weight: 600; font-size: 14px;">
+                            Batal
+                        </a>
+                        <button type="button" class="btn-ui btn-ui-primary" style="padding: 11px 28px; font-weight: 800; font-size: 14.5px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                            Kirim Permohonan Pinjaman
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>

@@ -65,9 +65,11 @@ class ManagerDashboardController extends Controller
                 'tblREKENING.no_rek',
                 'tblJENIS_TRANSAKSI.nama_jenis as nama_jenis_transaksi'
             )
-            ->orderByRaw(
-                'GREATEST("tblTRANSAKSI"."debit", "tblTRANSAKSI"."kredit") DESC'
-            )
+            ->orderByRaw(match (DB::getDriverName()) {
+                'sqlite' => 'MAX(tblTRANSAKSI.debit, tblTRANSAKSI.kredit) DESC',
+                'pgsql'  => 'GREATEST("tblTRANSAKSI"."debit", "tblTRANSAKSI"."kredit") DESC',
+                default  => 'GREATEST(tblTRANSAKSI.debit, tblTRANSAKSI.kredit) DESC',
+            })
             ->limit(5)
             ->get();
 

@@ -160,8 +160,6 @@ class PinjamanBbmController extends Controller
             'status_pinjaman'  => 'diajukan',
         ], 'pinjaman_id');
 
-
-
         AuditLogService::log(
             aksi: 'PENGAJUAN_PINJAMAN',
             entitas: 'tblPINJAMAN',

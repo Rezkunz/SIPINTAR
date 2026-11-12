@@ -14,10 +14,20 @@ return new class extends Migration
     {
         // Pastikan unique index di tblMUTASI_KAS pada angsuran_id diubah menjadi index biasa
         // agar transaksi pembalik (koreksi/reversal) bisa merujuk ke angsuran_id yang sama tanpa duplicate key error.
-        try {
-            DB::statement('ALTER TABLE tblMUTASI_KAS DROP INDEX tblmutasi_kas_angsuran_id_unique, ADD INDEX tblmutasi_kas_angsuran_id_index (angsuran_id)');
-        } catch (\Throwable $e) {
-            // Index mungkin sudah diubah secara manual
+        $indexes = collect(Schema::getIndexes('tblMUTASI_KAS'));
+        $hasRegularIndex = $indexes->contains(fn (array $idx) => !$idx['unique'] && $idx['columns'] === ['angsuran_id']);
+        $uniqueIndex = $indexes->first(fn (array $idx) => $idx['unique'] && $idx['columns'] === ['angsuran_id']);
+
+        if (!$hasRegularIndex) {
+            Schema::table('tblMUTASI_KAS', function (Blueprint $table) {
+                $table->index('angsuran_id');
+            });
+        }
+
+        if ($uniqueIndex) {
+            Schema::table('tblMUTASI_KAS', function (Blueprint $table) use ($uniqueIndex) {
+                $table->dropUnique($uniqueIndex['name']);
+            });
         }
     }
 
@@ -26,10 +36,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        try {
+        $indexes = collect(Schema::getIndexes('tblMUTASI_KAS'));
+        $hasUniqueIndex = $indexes->contains(fn (array $idx) => $idx['unique'] && $idx['columns'] === ['angsuran_id']);
+
+        if (!$hasUniqueIndex && DB::getDriverName() === 'mysql') {
             DB::statement('ALTER TABLE tblMUTASI_KAS DROP INDEX tblmutasi_kas_angsuran_id_index, ADD UNIQUE tblmutasi_kas_angsuran_id_unique (angsuran_id)');
-        } catch (\Throwable $e) {
-            // Ignore
         }
     }
 };

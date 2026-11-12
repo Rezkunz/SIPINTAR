@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup — Portal Nasabah Siswa — SIPINTAR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+:root {
+    --brand-primary: #0D5C46;
+    --brand-primary-hover: #083E2F;
+    --brand-accent: #D97706;
+    --bg-app: #F8FAFC;
+    --border-color: #E2E8F0;
+    --border-subtle: #F1F5F9;
+    --text-heading: #0F172A;
+    --text-body: #334155;
+    --text-muted: #64748B;
+    --radius-sm: 8px;
+    --radius-pill: 9999px;
+    --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-app);
+    color: var(--text-body);
+    display: flex;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+}
+
+.app-sidebar {
+    width: 260px;
+    background: #FFFFFF;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-shrink: 0;
+    min-height: 100vh;
+}
+
+.sidebar-brand-wrapper {
+    padding: 20px 22px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-brand-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.sidebar-logo-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: var(--brand-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    flex-shrink: 0;
+}
+
+.sidebar-brand-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--brand-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.sidebar-brand-title span {
+    color: var(--brand-accent);
+}
+
+.sidebar-brand-caption {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.sidebar-nav {
+    padding: 16px 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.nav-section-title {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 12px 12px 6px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    color: var(--text-body);
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 600;
+    transition: all 0.15s ease;
+}
+
+.nav-link:hover {
+    background: #F1F5F9;
+    color: var(--brand-primary);
+}
+
+.nav-link.active {
+    background: linear-gradient(135deg, #0D5C46 0%, #107558 100%);
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(13, 92, 70, 0.2);
+}
+
+.nav-svg-icon {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    flex-shrink: 0;
+}
+
+.sidebar-user-section {
+    padding: 16px 14px;
+    border-top: 1px solid var(--border-color);
+}
+
+.sidebar-user-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    background: #F8FAFC;
+    border: 1px solid var(--border-color);
+}
+
+.sidebar-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--brand-primary);
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sidebar-user-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-heading);
+}
+
+.sidebar-user-role {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.app-main-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.app-topbar {
+    height: 64px;
+    background: #FFFFFF;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    flex-shrink: 0;
+}
+
+.topbar-breadcrumb {
+    font-size: 13.5px;
+    color: var(--text-muted);
+}
+
+.topbar-breadcrumb .current {
+    color: var(--text-heading);
+    font-weight: 700;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.topbar-badge-role {
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    background: #ECFDF5;
+    color: #047857;
+}
+
+.app-content-body {
+    padding: 28px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.dashboard-welcome-banner {
+    background: linear-gradient(135deg, #094736 0%, #0D5C46 50%, #10B981 100%);
+    border-radius: 20px;
+    padding: 26px 32px;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 10px 25px -5px rgba(13, 92, 70, 0.25);
+    margin-bottom: 24px;
+}
+
+.welcome-badge-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.15);
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.welcome-content h1 {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.welcome-content p {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.btn-banner-white {
+    background: #FFFFFF;
+    color: var(--brand-primary);
+    padding: 10px 18px;
+    border-radius: var(--radius-pill);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.nasabah-showcase-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.passbook-card {
+    background: linear-gradient(135deg, #0A1628 0%, #1E293B 60%, #064E3B 100%);
+    border-radius: 18px;
+    padding: 24px 28px;
+    color: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 220px;
+    box-shadow: 0 12px 28px -6px rgba(10, 22, 40, 0.35);
+}
+
+.passbook-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.passbook-bank-name {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #FFFFFF;
+    text-transform: uppercase;
+}
+
+.passbook-chip {
+    width: 38px;
+    height: 28px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #FDE68A 0%, #D97706 70%, #B45309 100%);
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6);
+}
+
+.passbook-rek-label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+
+.passbook-rek-number {
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    font-family: monospace;
+}
+
+.passbook-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.passbook-holder-name {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.passbook-holder-sub {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.75);
+    margin-top: 2px;
+}
+
+.passbook-balance-amount {
+    font-size: 20px;
+    font-weight: 800;
+    color: #34D399;
+}
+
+.table-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+}
+
+.table-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.table-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-heading);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 13px;
+}
+
+th {
+    background: #F8FAFC;
+    color: #475569;
+    padding: 12px 20px;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border-color);
+}
+
+td {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.badge-success {
+    background: #ECFDF5;
+    color: #059669;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 11px;
+}
+
+.badge-danger {
+    background: #FEF2F2;
+    color: #DC2626;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 11px;
+}
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="app-sidebar">
+        <div>
+            <div class="sidebar-brand-wrapper">
+                <div class="sidebar-brand-btn">
+                    <div class="sidebar-logo-badge">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v4M12 14v4M16 14v4"/></svg>
+                    </div>
+                    <div>
+                        <div class="sidebar-brand-title">SIP<span>INTAR</span></div>
+                        <div class="sidebar-brand-caption">Bank Mini Sekolah</div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">PORTAL SISWA</div>
+                <a href="#" class="nav-link active">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
+                    <span>Rekening Tabungan</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                    <span>Riwayat Mutasi</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span>Asisten AI Siswa</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-user-section">
+            <div class="sidebar-user-card">
+                <div class="sidebar-avatar">AF</div>
+                <div>
+                    <div class="sidebar-user-name">Ahmad Fauzi</div>
+                    <div class="sidebar-user-role">Siswa &bull; XII AKL 1</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="app-main-wrapper">
+        <header class="app-topbar">
+            <div class="topbar-breadcrumb">
+                <span>Portal Nasabah</span> / <span class="current">Rekening Tabungan Siswa</span>
+            </div>
+            <div class="topbar-right">
+                <div class="topbar-badge-role">NASABAH SISWA</div>
+            </div>
+        </header>
+
+        <main class="app-content-body">
+            <!-- HERO BANNER -->
+            <div class="dashboard-welcome-banner">
+                <div class="welcome-content">
+                    <div class="welcome-badge-tag">Portal Siswa Nasabah</div>
+                    <h1>Selamat Datang, Ahmad Fauzi Pratama</h1>
+                    <p>Tabungan pelajar Bank Mini Sekolah Terpadu &bull; Kelas: <strong>XII AKL 1</strong></p>
+                </div>
+                <div class="welcome-actions">
+                    <a href="#" class="btn-banner-white">
+                        <span>Unduh Rekening Koran</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- VIRTUAL PASSBOOK & STATS -->
+            <div class="nasabah-showcase-grid">
+                <div class="passbook-card">
+                    <div class="passbook-top">
+                        <span class="passbook-bank-name">SIPINTAR BANK MINI</span>
+                        <div class="passbook-chip"></div>
+                    </div>
+                    <div>
+                        <div class="passbook-rek-label">Nomor Rekening Tabungan</div>
+                        <div class="passbook-rek-number">1001-2026-00452</div>
+                    </div>
+                    <div class="passbook-bottom">
+                        <div>
+                            <div class="passbook-rek-label">Pemegang Rekening</div>
+                            <div class="passbook-holder-name">Ahmad Fauzi Pratama</div>
+                            <div class="passbook-holder-sub">Siswa &bull; XII AKL 1</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="passbook-rek-label">Total Saldo</div>
+                            <div class="passbook-balance-amount">Rp 1.750.000</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: white; border: 1px solid var(--border-color); border-radius: 18px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <h3 style="font-size: 16px; font-weight: 700; color: #0F172A; margin-bottom: 6px;">Status Buku Tabungan</h3>
+                        <p style="font-size: 13px; color: #64748B;">Rekening tabungan aktif dan tercatat resmi pada sistem Bank Mini Sekolah.</p>
+
+                        <div style="margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div style="padding: 14px; background: #F8FAFC; border-radius: 12px; border: 1px solid var(--border-color);">
+                                <div style="font-size: 11px; color: #64748B; font-weight: 700;">TOTAL SETORAN</div>
+                                <div style="font-size: 18px; font-weight: 800; color: #059669; margin-top: 4px;">Rp 2.100.000</div>
+                            </div>
+                            <div style="padding: 14px; background: #F8FAFC; border-radius: 12px; border: 1px solid var(--border-color);">
+                                <div style="font-size: 11px; color: #64748B; font-weight: 700;">TOTAL PENARIKAN</div>
+                                <div style="font-size: 18px; font-weight: 800; color: #DC2626; margin-top: 4px;">Rp 350.000</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="padding: 12px 14px; background: #EFF6FF; border-radius: 10px; border-left: 4px solid #2563EB;">
+                        <div style="font-size: 12px; font-weight: 700; color: #1E40AF;">Tips Menabung Cerdas</div>
+                        <div style="font-size: 12px; color: #3B82F6; margin-top: 2px;">Setoran rutin setiap hari Senin di loket teller tanpa biaya administrasi bulanan.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLE MUTASI -->
+            <div class="table-card">
+                <div class="table-header">
+                    <div>
+                        <h3 class="table-title">5 Transaksi Terakhir</h3>
+                        <p class="table-subtitle">Diperbarui otomatis oleh loket teller</p>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>No. Transaksi</th>
+                            <th>Jenis</th>
+                            <th>Nominal</th>
+                            <th>Saldo Akhir</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: 600;">22 Okt 2026</td>
+                            <td style="color: #64748B;">TRX-TBG-2026-0941</td>
+                            <td><span class="badge-success">SETORAN</span></td>
+                            <td style="font-weight: 800; color: #059669;">+ Rp 150.000</td>
+                            <td style="font-weight: 700;">Rp 1.750.000</td>
+                            <td><span style="color: #059669; font-weight: 700;">Berhasil</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600;">15 Okt 2026</td>
+                            <td style="color: #64748B;">TRX-TBG-2026-0812</td>
+                            <td><span class="badge-danger">PENARIKAN</span></td>
+                            <td style="font-weight: 800; color: #DC2626;">- Rp 100.000</td>
+                            <td style="font-weight: 700;">Rp 1.600.000</td>
+                            <td><span style="color: #059669; font-weight: 700;">Berhasil</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 600;">08 Okt 2026</td>
+                            <td style="color: #64748B;">TRX-TBG-2026-0701</td>
+                            <td><span class="badge-success">SETORAN</span></td>
+                            <td style="font-weight: 800; color: #059669;">+ Rp 200.000</td>
+                            <td style="font-weight: 700;">Rp 1.700.000</td>
+                            <td><span style="color: #059669; font-weight: 700;">Berhasil</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>

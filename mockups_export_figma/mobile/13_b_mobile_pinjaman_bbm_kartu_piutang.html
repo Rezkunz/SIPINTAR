@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup Mobile — Kartu Piutang Digital (BBM) — SIPINTAR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-primary: #0D5C46;
+            --brand-primary-dark: #064030;
+            --brand-accent: #D97706;
+            --bg-app: #F8FAFC;
+            --border-color: #E2E8F0;
+            --text-heading: #0F172A;
+            --text-body: #334155;
+            --text-muted: #64748B;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #E2E8F0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px 0;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            color: #334155;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .tabular-numbers {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
+
+        .mobile-device-screen {
+            width: 390px;
+            min-height: 844px;
+            background: #F8FAFC;
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.3), 0 0 0 10px #0F172A;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .mobile-status-bar {
+            height: 44px;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            color: #0F172A;
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .mobile-app-header {
+            background: #FFFFFF;
+            padding: 12px 20px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #E2E8F0;
+            flex-shrink: 0;
+        }
+
+        .user-profile-header {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .avatar-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--brand-primary);
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .user-greeting-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-heading);
+            line-height: 1.2;
+        }
+
+        .user-role-tag {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .btn-switch-debtor {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #FFFFFF;
+            border: 1px solid #CBD5E1;
+            color: var(--text-heading);
+            border-radius: 9999px;
+            padding: 5px 10px;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .mobile-scroll-content {
+            flex: 1;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .mini-hero-banner {
+            background: linear-gradient(135deg, #0D5C46 0%, #064030 100%);
+            border-radius: 14px;
+            padding: 12px 15px;
+            color: #FFFFFF;
+        }
+
+        .mini-hero-banner h1 {
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #FFFFFF;
+        }
+
+        .mini-hero-banner p {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.85);
+            margin-top: 2px;
+        }
+
+        /* Passbook-style Debitur Card */
+        .passbook-debtor-card {
+            background: linear-gradient(135deg, #0D5C46 0%, #064030 100%);
+            border-radius: 18px;
+            padding: 16px;
+            color: #FFFFFF;
+            box-shadow: 0 10px 22px -6px rgba(13, 92, 70, 0.35);
+        }
+
+        .passbook-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .loan-code-pill {
+            font-family: monospace;
+            font-size: 11.5px;
+            font-weight: 800;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            color: #FFFFFF;
+            padding: 3px 9px;
+            border-radius: 6px;
+        }
+
+        .status-active-pill {
+            background: rgba(16, 185, 129, 0.22);
+            border: 1px solid rgba(167, 243, 208, 0.45);
+            color: #A7F3D0;
+            font-size: 10.5px;
+            font-weight: 800;
+            padding: 3px 9px;
+            border-radius: 9999px;
+        }
+
+        .debtor-card-name {
+            font-size: 16px;
+            font-weight: 800;
+            color: #FFFFFF;
+            letter-spacing: -0.01em;
+        }
+
+        .debtor-card-unit {
+            font-size: 11.5px;
+            color: rgba(255, 255, 255, 0.82);
+            margin-top: 2px;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 7px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 99px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 17%;
+            height: 100%;
+            background: #34D399;
+            border-radius: 99px;
+        }
+
+        .progress-meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 6px;
+        }
+
+        /* 2x2 Metric Grid */
+        .mobile-metric-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .metric-card-sm {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 11px 12px;
+        }
+
+        .metric-title-sm {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .metric-val-sm {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-heading);
+            margin-top: 4px;
+        }
+
+        /* Matriks Jadwal Card */
+        .schedule-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .schedule-card-header {
+            padding: 10px 14px;
+            background: #FAFAFA;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .schedule-card-title {
+            font-size: 12.5px;
+            font-weight: 800;
+            color: var(--text-heading);
+        }
+
+        .schedule-card-sub {
+            font-size: 10.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .schedule-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 14px;
+            border-bottom: 1px solid #F1F5F9;
+            gap: 8px;
+        }
+
+        .schedule-row:last-child {
+            border-bottom: none;
+        }
+
+        .schedule-row.paid {
+            background: #F0FDF4;
+        }
+
+        .schedule-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .installment-tag {
+            font-size: 11.5px;
+            font-weight: 800;
+            color: var(--text-heading);
+            min-width: 44px;
+        }
+
+        .installment-date {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .schedule-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .installment-amount {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-heading);
+        }
+
+        .badge-status-green {
+            background: #ECFDF5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        .badge-status-amber {
+            background: #FFFBEB;
+            color: #92400E;
+            border: 1px solid #FDE68A;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        .mobile-bottom-nav {
+            height: 64px;
+            background: #FFFFFF;
+            border-top: 1px solid #E2E8F0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px;
+            flex-shrink: 0;
+        }
+
+        .nav-tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            color: #94A3B8;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .nav-tab-item.active {
+            color: var(--brand-primary);
+        }
+
+        .mobile-home-indicator {
+            width: 134px;
+            height: 5px;
+            background: #0F172A;
+            border-radius: 99px;
+            margin: 4px auto 8px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-device-screen">
+        <!-- STATUS BAR -->
+        <div class="mobile-status-bar">
+            <span>09:41</span>
+            <div style="display: flex; gap: 6px; align-items: center;">
+                <span>5G</span>
+                <span>100%</span>
+            </div>
+        </div>
+
+        <!-- ROLE HEADER -->
+        <header class="mobile-app-header">
+            <div class="user-profile-header">
+                <div class="avatar-badge">HW</div>
+                <div>
+                    <div class="user-greeting-name">Hendra Wijaya</div>
+                    <div class="user-role-tag">Bendahara Bank Mini</div>
+                </div>
+            </div>
+            <button type="button" class="btn-switch-debtor">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0D5C46" stroke-width="2.2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                <span>Ganti Debitur</span>
+            </button>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <div class="mobile-scroll-content">
+            <!-- 1. MINI BANNER -->
+            <div class="mini-hero-banner">
+                <h1>Kartu Piutang Digital</h1>
+                <p>Kendali riwayat cicilan &amp; jatuh tempo debitur</p>
+            </div>
+
+            <!-- 2. KARTU DEBITUR TERPILIH -->
+            <div class="passbook-debtor-card">
+                <div class="passbook-top-row">
+                    <span class="loan-code-pill tabular-numbers">#PINJ-0010</span>
+                    <span class="status-active-pill">Aktif Berjalan</span>
+                </div>
+                <div class="debtor-card-name">Ibu Endang Purwanti, S.Pd</div>
+                <div class="debtor-card-unit">Guru Bahasa Indonesia &bull; Potong Payroll</div>
+                <div class="progress-track">
+                    <div class="progress-fill"></div>
+                </div>
+                <div class="progress-meta-row">
+                    <span class="tabular-numbers">1 dari 6 Bulan Lunas (17%)</span>
+                    <span class="tabular-numbers">10 Nov 2026</span>
+                </div>
+            </div>
+
+            <!-- 3. 2x2 METRIC GRID -->
+            <div class="mobile-metric-grid">
+                <div class="metric-card-sm">
+                    <div class="metric-title-sm">Plafon Awal</div>
+                    <div class="metric-val-sm tabular-numbers">Rp 3.000.000</div>
+                </div>
+                <div class="metric-card-sm">
+                    <div class="metric-title-sm">Pokok Terbayar</div>
+                    <div class="metric-val-sm tabular-numbers" style="color: #059669;">Rp 500.000</div>
+                </div>
+                <div class="metric-card-sm">
+                    <div class="metric-title-sm">Sisa Pokok Piutang</div>
+                    <div class="metric-val-sm tabular-numbers" style="color: #D97706;">Rp 2.500.000</div>
+                </div>
+                <div class="metric-card-sm">
+                    <div class="metric-title-sm">Jasa Masuk (2%)</div>
+                    <div class="metric-val-sm tabular-numbers" style="color: #0284C7;">Rp 60.000</div>
+                </div>
+            </div>
+
+            <!-- 4. MATRIKS JADWAL TAGIHAN -->
+            <div class="schedule-card">
+                <div class="schedule-card-header">
+                    <span class="schedule-card-title">Matriks Jadwal Tagihan</span>
+                    <span class="schedule-card-sub">6 Bulan &bull; 2% Flat</span>
+                </div>
+
+                <!-- Ke-1 -->
+                <div class="schedule-row paid">
+                    <div class="schedule-left">
+                        <span class="installment-tag">Ke-1</span>
+                        <span class="installment-date tabular-numbers">01/12/2026</span>
+                    </div>
+                    <div class="schedule-right">
+                        <span class="installment-amount tabular-numbers">Rp 560.000</span>
+                        <span class="badge-status-green">Lunas</span>
+                    </div>
+                </div>
+
+                <!-- Ke-2 -->
+                <div class="schedule-row">
+                    <div class="schedule-left">
+                        <span class="installment-tag">Ke-2</span>
+                        <span class="installment-date tabular-numbers">01/01/2027</span>
+                    </div>
+                    <div class="schedule-right">
+                        <span class="installment-amount tabular-numbers">Rp 560.000</span>
+                        <span class="badge-status-amber">Belum Bayar</span>
+                    </div>
+                </div>
+
+                <!-- Ke-3 -->
+                <div class="schedule-row">
+                    <div class="schedule-left">
+                        <span class="installment-tag">Ke-3</span>
+                        <span class="installment-date tabular-numbers">01/02/2027</span>
+                    </div>
+                    <div class="schedule-right">
+                        <span class="installment-amount tabular-numbers">Rp 560.000</span>
+                        <span class="badge-status-amber">Belum Bayar</span>
+                    </div>
+                </div>
+
+                <!-- Ke-4 -->
+                <div class="schedule-row">
+                    <div class="schedule-left">
+                        <span class="installment-tag">Ke-4</span>
+                        <span class="installment-date tabular-numbers">01/03/2027</span>
+                    </div>
+                    <div class="schedule-right">
+                        <span class="installment-amount tabular-numbers">Rp 560.000</span>
+                        <span class="badge-status-amber">Belum Bayar</span>
+                    </div>
+                </div>
+
+                <!-- Ke-5..6 Ringkas -->
+                <div class="schedule-row">
+                    <div class="schedule-left">
+                        <span class="installment-tag">Ke-5..6</span>
+                        <span class="installment-date tabular-numbers">01/04 &amp; 01/05/2027</span>
+                    </div>
+                    <div class="schedule-right">
+                        <span class="badge-status-amber">Belum Bayar</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM NAV BBM -->
+        <nav class="mobile-bottom-nav">
+            <a href="#" class="nav-tab-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/></svg>
+                <span>Kelayakan</span>
+            </a>
+            <a href="#" class="nav-tab-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/></svg>
+                <span>Potongan</span>
+            </a>
+            <a href="#" class="nav-tab-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <span>Angsuran</span>
+            </a>
+            <a href="#" class="nav-tab-item active">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><line x1="15" y1="8" x2="17" y2="8"/><line x1="15" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="17" y2="16"/></svg>
+                <span>Piutang</span>
+            </a>
+        </nav>
+        <div class="mobile-home-indicator"></div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup — Masuk (Login) — SIPINTAR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+/* ==========================================================================
+   SIPINTAR Authentication Stylesheet (Login & Register)
+   Brand Colors: SIPINTAR Emerald Green (#0D5C46 / #10B981)
+   ========================================================================== */
+:root {
+    --brand-primary: #0D5C46;
+    --brand-primary-hover: #094736;
+    --brand-primary-light: #E8F5E9;
+    --brand-emerald: #10B981;
+    --brand-emerald-dark: #059669;
+    --brand-accent: #D97706;
+
+    --bg-page: #EEF2F6;
+    --bg-card: #FFFFFF;
+    --text-heading: #0F172A;
+    --text-body: #334155;
+    --text-muted: #64748B;
+    --text-faint: #94A3B8;
+
+    --border-subtle: #E2E8F0;
+    --border-medium: #CBD5E1;
+
+    --radius-pill: 9999px;
+    --radius-card: 36px;
+    --radius-inner: 24px;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body.auth-page-body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: #F8FAFC;
+    background-image: 
+        radial-gradient(circle at 10% 15%, rgba(13, 92, 70, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 90% 85%, rgba(16, 185, 129, 0.09) 0%, transparent 50%),
+        radial-gradient(circle at 50% 10%, rgba(251, 191, 36, 0.035) 0%, transparent 35%),
+        linear-gradient(to right, rgba(15, 23, 42, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 23, 42, 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+    color: var(--text-body);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    position: relative;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+.auth-ambient-orb {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(90px);
+}
+
+.auth-ambient-orb-1 {
+    width: 480px;
+    height: 480px;
+    top: -120px;
+    left: -100px;
+    background: radial-gradient(circle, rgba(13, 92, 70, 0.22) 0%, rgba(16, 185, 129, 0.05) 70%, transparent 100%);
+}
+
+.auth-ambient-orb-2 {
+    width: 520px;
+    height: 520px;
+    bottom: -150px;
+    right: -120px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.20) 0%, rgba(251, 191, 36, 0.08) 60%, transparent 100%);
+}
+
+.auth-card-container {
+    width: 100%;
+    max-width: 940px;
+    background: #FFFFFF;
+    border-radius: var(--radius-card);
+    box-shadow: 
+        0 20px 50px -10px rgba(13, 92, 70, 0.12),
+        0 30px 60px -15px rgba(15, 23, 42, 0.08),
+        0 0 0 1px rgba(15, 23, 42, 0.05);
+    display: flex;
+    overflow: hidden;
+    min-height: 540px;
+    position: relative;
+    z-index: 1;
+}
+
+.auth-artwork-panel {
+    flex: 1;
+    position: relative;
+    background: linear-gradient(145deg, #094736 0%, #0D5C46 40%, #10B981 100%);
+    color: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 38px 34px;
+    overflow: hidden;
+    border-top-left-radius: var(--radius-card);
+    border-bottom-left-radius: var(--radius-card);
+}
+
+.auth-artwork-waves {
+    position: absolute;
+    inset: -20px;
+    width: calc(100% + 40px);
+    height: calc(100% + 40px);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.auth-brand-content {
+    position: relative;
+    z-index: 2;
+    margin: auto 0;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.auth-brand-logo-badge {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    background: #FFFFFF;
+    padding: 12px;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.16), 0 0 20px rgba(255, 255, 255, 0.25);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-brand-title {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #FFFFFF;
+    line-height: 1.2;
+}
+
+.auth-brand-title span {
+    color: #FBBF24;
+}
+
+.auth-brand-sub {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    margin-top: 4px;
+    letter-spacing: 0.02em;
+}
+
+.auth-brand-slogan {
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.5;
+    margin-top: 14px;
+    max-width: 300px;
+}
+
+.auth-artwork-footer {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.65);
+    letter-spacing: 0.02em;
+}
+
+.auth-form-panel {
+    flex: 1.15;
+    background: #FFFFFF;
+    padding: 44px 42px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+}
+
+.auth-form-container {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+.auth-intro {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.auth-heading {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--brand-primary);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+}
+
+.auth-subheading {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.auth-form-group {
+    margin-bottom: 16px;
+}
+
+.auth-form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin-bottom: 6px;
+    padding-left: 14px;
+}
+
+.auth-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.auth-form-input, .auth-form-select {
+    width: 100%;
+    height: 48px;
+    padding: 0 20px;
+    background: #F0FDF4;
+    border: 1.5px solid #DCFCE7;
+    border-radius: var(--radius-pill);
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--text-heading);
+    outline: none;
+    box-sizing: border-box;
+}
+
+.auth-input-password {
+    padding-right: 48px;
+}
+
+.auth-btn-toggle-pwd {
+    position: absolute;
+    right: 14px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-links-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+    font-size: 12.5px;
+}
+
+.auth-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-btn-submit {
+    width: 100%;
+    height: 48px;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(135deg, #0D5C46 0%, #10B981 100%);
+    color: #FFFFFF;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(13, 92, 70, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-footer-prompt {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 24px;
+}
+
+.auth-footer-prompt a {
+    color: var(--brand-primary);
+    font-weight: 700;
+    text-decoration: none;
+    margin-left: 4px;
+}
+    </style>
+</head>
+<body class="auth-page-body">
+
+    <div class="auth-ambient-orb auth-ambient-orb-1" aria-hidden="true"></div>
+    <div class="auth-ambient-orb auth-ambient-orb-2" aria-hidden="true"></div>
+
+    <div class="auth-card-container">
+        <!-- LEFT ARTWORK PANEL -->
+        <aside class="auth-artwork-panel" aria-hidden="true">
+            <svg class="auth-artwork-waves" viewBox="0 0 500 700" preserveAspectRatio="none" fill="none">
+                <path class="wave-layer wave-layer-1" d="M -60 -80 L 560 -80 L 560 210 C 350 90 150 140 -60 230 Z" fill="rgba(255,255,255,0.07)"/>
+                <path class="wave-layer wave-layer-2" d="M -60 -80 L 560 -80 L 560 380 C 330 240 170 310 -60 300 Z" fill="rgba(255,255,255,0.05)"/>
+                <path class="wave-layer wave-layer-3" d="M -60 780 L 560 780 L 560 440 C 310 590 150 510 -60 630 Z" fill="rgba(16,185,129,0.28)"/>
+                <path class="wave-layer wave-layer-1" d="M -60 780 L 560 780 L 560 560 C 340 460 130 580 -60 510 Z" fill="rgba(255,255,255,0.06)"/>
+            </svg>
+
+            <div class="auth-brand-content">
+                <div class="auth-brand-logo-badge">
+                    <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#0D5C46" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v4M12 14v4M16 14v4"/>
+                    </svg>
+                </div>
+                <h1 class="auth-brand-title">SIP<span>INTAR</span></h1>
+                <div class="auth-brand-sub">Bank Mini Sekolah</div>
+                <p class="auth-brand-slogan">Layanan perbankan dan koperasi sekolah yang transparan, cerdas, dan akuntabel.</p>
+            </div>
+
+            <div class="auth-artwork-footer">
+                SIPINTAR &copy; 2026 &bull; Sistem Perbankan Sekolah
+            </div>
+        </aside>
+
+        <!-- RIGHT FORM PANEL -->
+        <main class="auth-form-panel">
+            <div class="auth-form-container">
+                <div class="auth-intro">
+                    <h2 class="auth-heading">Selamat Datang</h2>
+                    <p class="auth-subheading">Masuk ke akun Anda untuk melanjutkan transaksi.</p>
+                </div>
+
+                <form onsubmit="return false;" autocomplete="off">
+                    <!-- 1. Input Nomor Telepon / WhatsApp / NISN -->
+                    <div class="auth-form-group">
+                        <label class="auth-form-label" for="login">Nomor Telepon / WhatsApp / NISN</label>
+                        <div class="auth-input-wrapper">
+                            <input
+                                id="login"
+                                name="login"
+                                type="text"
+                                class="auth-form-input"
+                                placeholder="Contoh: 081234567890 atau NISN"
+                                value="081234567890"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- 2. Input Kata Sandi -->
+                    <div class="auth-form-group">
+                        <label class="auth-form-label" for="password">Kata Sandi</label>
+                        <div class="auth-input-wrapper">
+                            <input
+                                id="password"
+                                name="password"
+                                type="password"
+                                class="auth-form-input auth-input-password"
+                                placeholder="Masukkan kata sandi"
+                                value="••••••••••••"
+                            >
+                            <button
+                                type="button"
+                                class="auth-btn-toggle-pwd"
+                                title="Lihat kata sandi"
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="auth-links-row">
+                        <a href="#" class="auth-link">
+                            Lupa kata sandi?
+                        </a>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="button" class="auth-btn-submit" id="btn-submit">
+                        <span>MASUK KE AKUN</span>
+                    </button>
+
+                    <div class="auth-footer-prompt">
+                        Belum memiliki rekening nasabah?
+                        <a href="02_auth_register.html">Buka Rekening</a>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>

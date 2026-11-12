@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1440, initial-scale=1.0">
+    <title>Mockup — Monitoring & Hasil Potongan Payroll (Bendahara Sekolah) — SIPINTAR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-primary: #0D5C46;
+            --brand-primary-hover: #083E2F;
+            --brand-primary-light: #ECFDF5;
+            --brand-accent: #D97706;
+            --bg-app: #F8FAFC;
+            --surface-card: #FFFFFF;
+            --surface-subtle: #F1F5F9;
+            --border-subtle: #E2E8F0;
+            --border-medium: #CBD5E1;
+            --text-heading: #0F172A;
+            --text-body: #334155;
+            --text-muted: #64748B;
+            --text-faint: #94A3B8;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 18px;
+            --radius-pill: 9999px;
+            --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.03);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            width: 1440px;
+            min-height: 980px;
+            display: flex;
+            background: #F8FAFC;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 13.5px;
+            color: #334155;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .tabular-numbers,
+        .financial-table td,
+        .financial-table th {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
+
+        /* ── SIDEBAR ── */
+        .app-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            background: #FFFFFF;
+            border-right: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 1px 0 3px rgba(15, 23, 42, 0.03);
+        }
+
+        .sidebar-brand-wrapper {
+            height: 64px;
+            border-bottom: 1px solid #E2E8F0;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #FFFFFF;
+        }
+
+        .sidebar-logo-mark {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            padding: 2px;
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand-info {
+            min-width: 0;
+            flex: 1;
+            white-space: nowrap;
+        }
+
+        .sidebar-brand-title {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #0D5C46;
+            line-height: 1.1;
+        }
+
+        .sidebar-brand-title span {
+            color: #D97706;
+        }
+
+        .sidebar-brand-caption {
+            font-size: 10.5px;
+            color: #0D5C46;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            margin-top: 1px;
+        }
+
+        .sidebar-collapse-toggle {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748B;
+            background: #F1F5F9;
+            border: 1px solid #E2E8F0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+        }
+
+        .nav-section-title {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #94A3B8;
+            padding: 6px 12px 6px;
+            white-space: nowrap;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            padding: 9.5px 14px;
+            border-radius: 10px;
+            color: #334155;
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            white-space: nowrap;
+        }
+
+        .nav-link.active {
+            color: #FFFFFF;
+            background: linear-gradient(135deg, #0D5C46 0%, #107558 100%);
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(13, 92, 70, 0.22);
+            border-radius: 10px;
+        }
+
+        .nav-svg-icon {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            stroke: #64748B;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .nav-link.active .nav-svg-icon {
+            stroke: #FFFFFF;
+        }
+
+        .sidebar-footer {
+            padding: 12px 14px;
+            border-top: 1px solid #E2E8F0;
+            background: #FFFFFF;
+        }
+
+        .user-profile-widget {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+        }
+
+        .user-avatar-initial {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%);
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 13.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(217, 119, 6, 0.25);
+            position: relative;
+        }
+
+        .user-avatar-initial::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            right: -1px;
+            width: 9px;
+            height: 9px;
+            background-color: #10B981;
+            border: 2px solid #FFFFFF;
+            border-radius: 50%;
+        }
+
+        .user-meta-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0F172A;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+        }
+
+        .user-meta-role {
+            font-size: 10.5px;
+            color: #D97706;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-top: 2px;
+        }
+
+        /* ── MAIN AREA & TOPBAR ── */
+        .app-main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            position: relative;
+        }
+
+        .app-topbar {
+            height: 64px;
+            background: #FFFFFF;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            flex-shrink: 0;
+        }
+
+        .topbar-breadcrumbs {
+            font-size: 13px;
+            color: #64748B;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .topbar-breadcrumbs .separator {
+            color: #94A3B8;
+            font-size: 11px;
+        }
+
+        .topbar-breadcrumbs .current {
+            color: #0F172A;
+            font-weight: 700;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .topbar-date-card {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 6px 14px;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 9999px;
+        }
+
+        .date-icon-box {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #ECFDF5;
+            color: #0D5C46;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .date-text-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            line-height: 1.1;
+        }
+
+        .topbar-clock-row {
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+        }
+
+        .topbar-live-clock {
+            font-size: 13px;
+            font-weight: 800;
+            font-family: ui-monospace, SFMono-Regular, "Roboto Mono", Menlo, Consolas, monospace;
+            color: #0D5C46;
+            letter-spacing: 0.04em;
+        }
+
+        .topbar-clock-tz {
+            font-size: 9.5px;
+            font-weight: 800;
+            color: #0D5C46;
+            background: #ECFDF5;
+            padding: 1px 4px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+        }
+
+        .date-full {
+            font-size: 11px;
+            font-weight: 500;
+            color: #64748B;
+        }
+
+        .topbar-notif-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0F172A;
+            position: relative;
+        }
+
+        .topbar-notif-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            min-width: 17px;
+            height: 17px;
+            padding: 0 4px;
+            border-radius: 10px;
+            background: #EF4444;
+            color: #FFFFFF;
+            font-size: 10px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4);
+            border: 2px solid #FFFFFF;
+        }
+
+        .topbar-profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 12px 4px 5px;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 9999px;
+        }
+
+        .topbar-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #D97706;
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .avatar-status-dot {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            background-color: #10B981;
+            border: 2px solid #FFFFFF;
+            border-radius: 50%;
+        }
+
+        .topbar-user-info {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            line-height: 1.2;
+        }
+
+        .topbar-user-name {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #0F172A;
+        }
+
+        .topbar-user-role {
+            font-size: 10.5px;
+            color: #D97706;
+            font-weight: 600;
+        }
+
+        /* ── CONTENT BODY & CARDS ── */
+        .app-content-body {
+            padding: 28px 32px 48px;
+            flex: 1;
+        }
+
+        .dashboard-welcome-banner {
+            background: linear-gradient(135deg, #0D5C46 0%, #064030 100%);
+            border-radius: 18px;
+            padding: 24px 28px;
+            color: #FFFFFF;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 14px rgba(13, 92, 70, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-content h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+            color: #FFFFFF;
+        }
+
+        .welcome-content p {
+            font-size: 13.5px;
+            color: rgba(255, 255, 255, 0.85);
+            max-width: 780px;
+            line-height: 1.5;
+        }
+
+        .content-card {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            box-shadow: var(--shadow-card);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .card-header-bar {
+            padding: 16px 20px;
+            border-bottom: 1px solid #E2E8F0;
+            background: #FAFAFA;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-heading {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0F172A;
+            letter-spacing: -0.01em;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .financial-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            text-align: left;
+        }
+
+        .financial-table th {
+            background-color: #F8FAFC;
+            color: #475569;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 12px 18px;
+            border-bottom: 1px solid #E2E8F0;
+            white-space: nowrap;
+        }
+
+        .financial-table td {
+            padding: 13px 18px;
+            border-bottom: 1px solid #E2E8F0;
+            color: #334155;
+        }
+
+        .financial-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .badge-pill.green  { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
+        .badge-pill.blue   { background: #F0F9FF; color: #0369A1; border: 1px solid #BAE6FD; }
+        .badge-pill.amber  { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
+        .badge-pill.red    { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
+        .badge-pill.purple { background: #EEF2FF; color: #4F46E5; border: 1px solid #C7D2FE; }
+        .badge-pill.gray   { background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; }
+
+        .action-icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        .action-btn-view {
+            background-color: #ECFDF5;
+            border: 1px solid #A7F3D0;
+            color: #047857;
+        }
+
+        .action-btn-view.btn-waiting {
+            background-color: #FFFBEB;
+            border: 1px solid #FCD34D;
+            color: #B45309;
+        }
+
+        .pulse-badge-dot {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 9px;
+            height: 9px;
+            background-color: #EF4444;
+            border: 2px solid #FFFFFF;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35);
+        }
+
+        .action-btn-download {
+            background-color: #F8FAFC;
+            border: 1px solid #CBD5E1;
+            color: #334155;
+        }
+
+        .action-btn-bast {
+            background-color: #F0F9FF;
+            border: 1px solid #BAE6FD;
+            color: #0284C7;
+        }
+
+        .btn-ui {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .btn-ui-primary {
+            background-color: #0D5C46;
+            color: #FFFFFF;
+            box-shadow: 0 1px 3px rgba(13, 92, 70, 0.2);
+        }
+
+        .btn-ui-outline {
+            background-color: #FFFFFF;
+            border-color: #CBD5E1;
+            color: #334155;
+        }
+
+        .form-input {
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            font-family: inherit;
+            font-size: 13px;
+            color: #0F172A;
+            background-color: #FFFFFF;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+        }
+
+        /* ── OVERLAY FLOATING POPUP BANNER MODAL ── */
+        .modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 60;
+            padding: 24px;
+        }
+
+        .sipintar-modal-card {
+            max-width: 1020px;
+            width: 100%;
+            border-radius: 18px;
+            background: #FFFFFF;
+            overflow: hidden;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .banner-top-bar {
+            background: linear-gradient(135deg, #0D5C46 0%, #064030 100%);
+            padding: 18px 24px;
+            color: #FFFFFF;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .modal-close-icon-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #FFFFFF;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .modal-scrollable-body {
+            padding: 22px 24px;
+        }
+
+        .banner-metric-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .banner-metric-box {
+            background-color: #F8FAFC;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .banner-metric-box .label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748B;
+            letter-spacing: 0.05em;
+            margin-bottom: 5px;
+        }
+
+        .banner-metric-box .value {
+            font-size: 17px;
+            font-weight: 800;
+            color: #0F172A;
+            letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .modal-method-btn {
+            border: 1px solid #CBD5E1;
+            background-color: #FFFFFF;
+            border-radius: 8px;
+            padding: 7px 14px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .modal-method-btn.active-tunai {
+            background-color: #ECFDF5;
+            border-color: #059669;
+            color: #047857;
+            box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.15);
+        }
+
+        .row-failed {
+            background-color: #FFF5F5 !important;
+        }
+
+        .modal-table th {
+            padding: 11px 12px;
+        }
+
+        .modal-table td {
+            padding: 11px 12px;
+        }
+
+        .modal-toggle-pill-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #F1F5F9;
+            padding: 3px;
+            border-radius: 8px;
+            border: 1px solid #E2E8F0;
+        }
+
+        .modal-toggle-label {
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 5px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #64748B;
+            white-space: nowrap;
+            border: 1px solid transparent;
+        }
+
+        .modal-toggle-label.active-berhasil {
+            background-color: #ECFDF5;
+            color: #047857;
+            border-color: #A7F3D0;
+            box-shadow: 0 1px 2px rgba(4, 120, 87, 0.12);
+        }
+
+        .modal-toggle-label.active-gagal {
+            background-color: #FEF2F2;
+            color: #B91C1C;
+            border-color: #FECACA;
+            box-shadow: 0 1px 2px rgba(185, 28, 28, 0.12);
+        }
+
+        .modal-footer-bar {
+            padding: 14px 24px;
+            background-color: #F8FAFC;
+            border-top: 1px solid #E2E8F0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── SIDEBAR BENDAHARA SEKOLAH ── -->
+    <aside class="app-sidebar">
+        <div>
+            <div class="sidebar-brand-wrapper">
+                <div class="sidebar-logo-mark">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                        <rect x="2" y="2" width="20" height="20" rx="5" fill="#0D5C46"/>
+                        <path d="M5 9.5L12 6L19 9.5" stroke="#FBBF24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6.5 10.5V16.5M10 10.5V16.5M14 10.5V16.5M17.5 10.5V16.5" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"/>
+                        <path d="M5 17.5H19" stroke="#FBBF24" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="sidebar-brand-info">
+                    <div class="sidebar-brand-title">SIP<span>INTAR</span></div>
+                    <div class="sidebar-brand-caption">Bank Mini Sekolah</div>
+                </div>
+                <div class="sidebar-collapse-toggle">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Potongan Pegawai</div>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-link active">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    <span>Rencana &amp; Hasil Potongan</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-profile-widget">
+                <div class="user-avatar-initial">D</div>
+                <div style="min-width: 0; flex: 1;">
+                    <div class="user-meta-name">Dra. Sri Mulyani</div>
+                    <div class="user-meta-role">BENDAHARA SEKOLAH</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── MAIN AREA ── -->
+    <div class="app-main-area">
+        <header class="app-topbar">
+            <div class="topbar-breadcrumbs">
+                <span>SIPINTAR</span>
+                <span class="separator">/</span>
+                <span class="current">Rencana &amp; Hasil Potongan</span>
+            </div>
+
+            <div class="topbar-right">
+                <div class="topbar-date-card">
+                    <div class="date-icon-box">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="date-text-wrap">
+                        <div class="topbar-clock-row">
+                            <span class="topbar-live-clock">09:42:18</span>
+                            <span class="topbar-clock-tz">WIB</span>
+                        </div>
+                        <span class="date-full">Selasa, 10 November 2026</span>
+                    </div>
+                </div>
+
+                <div class="topbar-notif-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span class="topbar-notif-badge">2</span>
+                </div>
+
+                <div class="topbar-profile-btn">
+                    <div class="topbar-avatar">
+                        D
+                        <span class="avatar-status-dot"></span>
+                    </div>
+                    <div class="topbar-user-info">
+                        <span class="topbar-user-name">Dra. Sri Mulyani</span>
+                        <span class="topbar-user-role">Bendahara Sekolah</span>
+                    </div>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+            </div>
+        </header>
+
+        <!-- UNDERLYING PAGE CONTENT -->
+        <main class="app-content-body">
+            <div class="dashboard-welcome-banner">
+                <div class="welcome-content">
+                    <h1>Monitoring Rencana Potongan Pegawai</h1>
+                    <p>Pantau paket rencana potongan angsuran pinjaman guru dan staf dari Bank Mini, unduh format untuk bank mitra payroll, dan catat hasil eksekusi potong gaji.</p>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="card-header-bar">
+                    <div>
+                        <h2 class="card-heading">Daftar Paket Rencana Potongan Bulanan</h2>
+                        <div style="font-size:12px; color:#64748B; margin-top:2px;">Paket potongan berkala yang telah diterbitkan oleh Bendahara Bank Mini</div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="financial-table">
+                        <thead>
+                            <tr>
+                                <th>ID Paket</th>
+                                <th>Periode Pemotongan</th>
+                                <th style="text-align: right;">Rencana Tagihan</th>
+                                <th style="text-align: right;">Realisasi Sukses</th>
+                                <th style="text-align: center;">Status Paket</th>
+                                <th style="text-align: center; width: 200px;">Aksi &amp; Dokumen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span style="font-weight:700; font-family:monospace; color:#0F172A;">#RP-0005</span></td>
+                                <td>
+                                    <div style="font-weight:600; color:#0F172A;">Desember 2026</div>
+                                    <div style="font-size:11px; color:#64748B;">Penyusun: Hendra Wijaya</div>
+                                </td>
+                                <td style="text-align: right; font-weight:700; color:#0F172A;">Rp 3.880.000</td>
+                                <td style="text-align: right; color:#64748B;">-</td>
+                                <td style="text-align: center;"><span class="badge-pill blue">Siap Dipotong Payroll</span></td>
+                                <td style="text-align: center;">
+                                    <div style="display:inline-flex; align-items:center; gap:8px; justify-content:center;">
+                                        <span class="action-icon-btn action-btn-view btn-waiting">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                            <span class="pulse-badge-dot"></span>
+                                        </span>
+                                        <span class="action-icon-btn action-btn-download">
+                                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span style="font-weight:700; font-family:monospace; color:#0F172A;">#RP-0004</span></td>
+                                <td>
+                                    <div style="font-weight:600; color:#0F172A;">November 2026</div>
+                                    <div style="font-size:11px; color:#64748B;">Penyusun: Hendra Wijaya</div>
+                                </td>
+                                <td style="text-align: right; font-weight:700; color:#0F172A;">Rp 2.200.000</td>
+                                <td style="text-align: right; font-weight:800; color:#166534;">Rp 2.200.000</td>
+                                <td style="text-align: center;"><span class="badge-pill green">Selesai Dibukukan</span></td>
+                                <td style="text-align: center;">
+                                    <div style="display:inline-flex; align-items:center; gap:8px; justify-content:center;">
+                                        <span class="action-icon-btn action-btn-view">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        </span>
+                                        <span class="action-icon-btn action-btn-download">
+                                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                        </span>
+                                        <span class="action-icon-btn action-btn-bast">
+                                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span style="font-weight:700; font-family:monospace; color:#0F172A;">#RP-0003</span></td>
+                                <td>
+                                    <div style="font-weight:600; color:#0F172A;">Oktober 2026</div>
+                                    <div style="font-size:11px; color:#64748B;">Penyusun: Hendra Wijaya</div>
+                                </td>
+                                <td style="text-align: right; font-weight:700; color:#0F172A;">Rp 1.680.000</td>
+                                <td style="text-align: right; font-weight:800; color:#166534;">Rp 1.680.000</td>
+                                <td style="text-align: center;"><span class="badge-pill green">Selesai Dibukukan</span></td>
+                                <td style="text-align: center;">
+                                    <div style="display:inline-flex; align-items:center; gap:8px; justify-content:center;">
+                                        <span class="action-icon-btn action-btn-view">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        </span>
+                                        <span class="action-icon-btn action-btn-download">
+                                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                        </span>
+                                        <span class="action-icon-btn action-btn-bast">
+                                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <!-- ── OVERLAY FLOATING POPUP BANNER MODAL (#paketDetailBanner) ── -->
+        <div id="paketDetailBanner" class="modal-overlay">
+            <div class="sipintar-modal-card">
+                <!-- Header Gradient -->
+                <div class="banner-top-bar">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <h2 style="font-size:20px; font-weight:800; margin:0; letter-spacing:-0.02em; color:#FFFFFF;">Paket #RP-0005</h2>
+                            <span class="badge-pill blue">Siap Dipotong Payroll</span>
+                        </div>
+                        <div style="font-size:12px; color:rgba(255,255,255,0.85); margin-top:4px;">
+                            Periode: Desember 2026 &bull; Diterbitkan oleh Hendra Wijaya (Bendahara Bank Mini)
+                        </div>
+                    </div>
+
+                    <button type="button" class="modal-close-icon-btn" title="Tutup">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+
+                <!-- Scrollable Body -->
+                <div class="modal-scrollable-body">
+                    <!-- 4 Banner Metric Strip -->
+                    <div class="banner-metric-strip">
+                        <div class="banner-metric-box">
+                            <div class="label">Total Rencana Potongan</div>
+                            <div class="value">Rp 3.880.000</div>
+                        </div>
+                        <div class="banner-metric-box">
+                            <div class="label">Dana Realisasi Dipotong</div>
+                            <div class="value" style="color:#059669;">Rp 2.760.000</div>
+                        </div>
+                        <div class="banner-metric-box">
+                            <div class="label">Jumlah Pegawai Terdaftar</div>
+                            <div class="value">4 Orang</div>
+                        </div>
+                        <div class="banner-metric-box">
+                            <div class="label">Metode Penyerahan Dana</div>
+                            <div class="value" style="font-size:15px; text-transform:uppercase;">SETOR TUNAI FISIK</div>
+                        </div>
+                    </div>
+
+                    <!-- Box Serah Terima Dana ke Bank Mini -->
+                    <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:12px; padding:16px 20px; margin-bottom:18px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #E2E8F0;">
+                            <div>
+                                <h3 style="font-size:14px; font-weight:800; color:#0F172A; margin:0 0 2px 0;">
+                                    Serah Terima Dana ke Bank Mini
+                                </h3>
+                                <div style="font-size:12px; color:#64748B;">
+                                    Total dana diserahkan: <strong class="tabular-numbers" style="color:#166534; font-size:13px;">Rp 2.760.000</strong>
+                                </div>
+                            </div>
+
+                            <div style="display:inline-flex; align-items:center; gap:8px;">
+                                <span style="font-size:11px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:0.04em;">Metode Penyerahan:</span>
+                                <div style="display:flex; gap:6px;">
+                                    <button type="button" class="modal-method-btn active-tunai">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+                                        <span>Setor Tunai (Cash)</span>
+                                    </button>
+                                    <button type="button" class="modal-method-btn">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v4M12 14v4M16 14v4"/></svg>
+                                        <span>Transfer ke Bank Bendahara</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: 200px 1fr; gap:14px;">
+                            <div>
+                                <label style="display:block; font-size:11px; font-weight:700; text-transform:uppercase; color:#64748B; letter-spacing:0.04em; margin-bottom:5px;">Tanggal Eksekusi *</label>
+                                <div class="form-input" style="display:flex; align-items:center; justify-content:space-between; font-weight:600;">
+                                    <span>2026-12-01</span>
+                                    <svg style="color:#64748B; flex-shrink:0;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                </div>
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:11px; font-weight:700; text-transform:uppercase; color:#64748B; letter-spacing:0.04em; margin-bottom:5px;">Catatan Serah Terima (Opsional)</label>
+                                <div class="form-input">3 pegawai terpotong payroll, 1 pegawai dialihkan ke setor tunai loket</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabel Daftar Pegawai dalam Paket -->
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px;">
+                            <h4 style="font-size:13px; font-weight:700; text-transform:uppercase; color:#64748B; letter-spacing:0.04em; margin:0;">Daftar Pegawai dalam Paket</h4>
+                            <div style="width:220px;">
+                                <input type="text" class="form-input" placeholder="Cari nama guru / unit..." style="padding:5px 10px; font-size:12px; border-radius:6px;">
+                            </div>
+                        </div>
+
+                        <div style="border:1px solid #E2E8F0; border-radius:10px; overflow:hidden;">
+                            <table class="financial-table modal-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:38px; text-align:center;">No</th>
+                                        <th>Nama Pegawai / Unit</th>
+                                        <th style="text-align:center; white-space:nowrap;">Angsuran</th>
+                                        <th style="text-align:right; white-space:nowrap;">Nominal Rencana</th>
+                                        <th style="text-align:center; white-space:nowrap;">Hasil Potongan</th>
+                                        <th style="white-space:nowrap;">Keterangan / Alasan</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align:center; font-weight:600; color:#64748B;">1</td>
+                                        <td>
+                                            <div style="font-weight:700; color:#0F172A; font-size:13px;">Ibu Endang Purwanti, S.Pd</div>
+                                            <div style="font-size:11px; color:#64748B;">Guru Bahasa Indonesia</div>
+                                        </td>
+                                        <td style="text-align:center;"><span class="badge-pill blue">Ke-1/6</span></td>
+                                        <td style="text-align:right; font-weight:700; color:#0F172A; white-space:nowrap;">Rp 560.000</td>
+                                        <td style="text-align:center;">
+                                            <div class="modal-toggle-pill-group">
+                                                <span class="modal-toggle-label active-berhasil">&#10003; Berhasil (Terpotong)</span>
+                                                <span class="modal-toggle-label">&#10005; Gagal</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="form-input" style="padding:6px 10px; font-size:12px; border-radius:6px;">Terpotong gaji Des</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align:center; font-weight:600; color:#64748B;">2</td>
+                                        <td>
+                                            <div style="font-weight:700; color:#0F172A; font-size:13px;">Bpk. Bambang Irawan, S.T</div>
+                                            <div style="font-size:11px; color:#64748B;">Guru Produktif TKJ</div>
+                                        </td>
+                                        <td style="text-align:center;"><span class="badge-pill blue">Ke-2/6</span></td>
+                                        <td style="text-align:right; font-weight:700; color:#0F172A; white-space:nowrap;">Rp 1.120.000</td>
+                                        <td style="text-align:center;">
+                                            <div class="modal-toggle-pill-group">
+                                                <span class="modal-toggle-label active-berhasil">&#10003; Berhasil (Terpotong)</span>
+                                                <span class="modal-toggle-label">&#10005; Gagal</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="form-input" style="padding:6px 10px; font-size:12px; border-radius:6px;">Terpotong gaji Des</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align:center; font-weight:600; color:#64748B;">3</td>
+                                        <td>
+                                            <div style="font-weight:700; color:#0F172A; font-size:13px;">Ibu Dewi Sartika, S.E</div>
+                                            <div style="font-size:11px; color:#64748B;">Guru Akuntansi</div>
+                                        </td>
+                                        <td style="text-align:center;"><span class="badge-pill blue">Ke-2/4</span></td>
+                                        <td style="text-align:right; font-weight:700; color:#0F172A; white-space:nowrap;">Rp 1.080.000</td>
+                                        <td style="text-align:center;">
+                                            <div class="modal-toggle-pill-group">
+                                                <span class="modal-toggle-label active-berhasil">&#10003; Berhasil (Terpotong)</span>
+                                                <span class="modal-toggle-label">&#10005; Gagal</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="form-input" style="padding:6px 10px; font-size:12px; border-radius:6px;">Terpotong gaji Des</div>
+                                        </td>
+                                    </tr>
+                                    <tr class="row-failed">
+                                        <td style="text-align:center; font-weight:600; color:#991B1B;">4</td>
+                                        <td>
+                                            <div style="font-weight:700; color:#0F172A; font-size:13px;">Ibu Hj. Ratna Sari, M.Pd</div>
+                                            <div style="font-size:11px; color:#64748B;">Guru Matematika</div>
+                                        </td>
+                                        <td style="text-align:center;"><span class="badge-pill blue">Ke-1/6</span></td>
+                                        <td style="text-align:right; font-weight:700; color:#991B1B; white-space:nowrap;">Rp 1.120.000</td>
+                                        <td style="text-align:center;">
+                                            <div class="modal-toggle-pill-group">
+                                                <span class="modal-toggle-label">&#10003; Berhasil</span>
+                                                <span class="modal-toggle-label active-gagal">&#10005; Gagal (Tidak Terpotong)</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="form-input" style="padding:6px 10px; font-size:12px; border-radius:6px; border-color:#FCA5A5; color:#991B1B;">Tunjangan ditangguhkan, bayar tunai di loket</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer Bar -->
+                <div class="modal-footer-bar">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button type="button" class="btn-ui btn-ui-outline">Tutup</button>
+                        <button type="button" class="btn-ui btn-ui-outline">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Unduh CSV Bank</span>
+                        </button>
+                    </div>
+
+                    <button type="button" class="btn-ui btn-ui-primary" style="padding:10px 20px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Simpan &amp; Serahkan ke Bank Mini</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

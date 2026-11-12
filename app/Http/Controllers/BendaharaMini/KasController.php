@@ -22,7 +22,7 @@ class KasController extends Controller
                 'nama_kas'  => 'Kas Tunai Bank Mini',
                 'jenis_kas' => 'kas',
                 'saldo'     => 0,
-            ]);
+            ], 'kas_id');
             $kasFisik = DB::table('tblKAS')->where('kas_id', $kasId)->first();
         }
 
@@ -96,7 +96,7 @@ class KasController extends Controller
                 'arah'         => $request->arah,
                 'nominal'      => $request->nominal,
                 'uraian'       => $request->uraian,
-            ]);
+            ], 'mutasi_kas_id');
 
             if ($request->arah === 'masuk') {
                 DB::table('tblKAS')->where('kas_id', $kasFisik->kas_id)->increment('saldo', $request->nominal);
@@ -131,7 +131,7 @@ class KasController extends Controller
                 'nama_kas'  => 'Bank Jabar Banten (BJB)',
                 'jenis_kas' => 'bank',
                 'saldo'     => 0,
-            ]);
+            ], 'kas_id');
             $kasBank = DB::table('tblKAS')->where('kas_id', $kasId)->first();
         }
 

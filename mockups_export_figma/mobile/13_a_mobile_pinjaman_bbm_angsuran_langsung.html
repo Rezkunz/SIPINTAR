@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup Mobile — Angsuran Langsung Tunai (BBM) — SIPINTAR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-primary: #0D5C46;
+            --brand-primary-dark: #064030;
+            --brand-accent: #D97706;
+            --bg-app: #F8FAFC;
+            --border-color: #E2E8F0;
+            --text-heading: #0F172A;
+            --text-body: #334155;
+            --text-muted: #64748B;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #E2E8F0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px 0;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            color: #334155;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .tabular-numbers {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
+
+        .mobile-device-screen {
+            width: 390px;
+            min-height: 844px;
+            background: #F8FAFC;
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.3), 0 0 0 10px #0F172A;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .mobile-status-bar {
+            height: 44px;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            color: #0F172A;
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .mobile-app-header {
+            background: #FFFFFF;
+            padding: 12px 20px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #E2E8F0;
+            flex-shrink: 0;
+        }
+
+        .user-profile-header {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .avatar-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--brand-primary);
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .user-greeting-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-heading);
+            line-height: 1.2;
+        }
+
+        .user-role-tag {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .badge-green-kasir {
+            background: #ECFDF5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+            font-size: 10.5px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            white-space: nowrap;
+        }
+
+        .mobile-scroll-content {
+            flex: 1;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .mini-hero-banner {
+            background: linear-gradient(135deg, #0D5C46 0%, #064030 100%);
+            border-radius: 16px;
+            padding: 14px 16px;
+            color: #FFFFFF;
+        }
+
+        .mini-hero-banner h1 {
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #FFFFFF;
+        }
+
+        .mini-hero-banner p {
+            font-size: 11.5px;
+            color: rgba(255, 255, 255, 0.85);
+            margin-top: 2px;
+        }
+
+        .bg-loan-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bg-loan-id {
+            font-size: 11px;
+            font-weight: 800;
+            font-family: monospace;
+            color: var(--brand-primary);
+        }
+
+        .bg-loan-name {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-heading);
+            margin-top: 1px;
+        }
+
+        .bg-loan-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .bg-loan-right {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .bg-loan-bill {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #0284C7;
+        }
+
+        .badge-blue-sm {
+            display: inline-block;
+            background: #DBEAFE;
+            color: #1E40AF;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 6px;
+            margin-top: 4px;
+        }
+
+        /* ── BOTTOM-SHEET OVERLAY ── */
+        .bottom-sheet-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.56);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            z-index: 40;
+        }
+
+        .bottom-sheet-panel {
+            background: #FFFFFF;
+            border-radius: 24px 24px 0 0;
+            overflow: hidden;
+            box-shadow: 0 -12px 32px rgba(15, 23, 42, 0.28);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sheet-header-emerald {
+            background: linear-gradient(135deg, #0D5C46 0%, #064030 100%);
+            padding: 8px 18px 14px;
+            color: #FFFFFF;
+        }
+
+        .sheet-handle-pill {
+            width: 36px;
+            height: 4px;
+            border-radius: 99px;
+            background: rgba(255, 255, 255, 0.35);
+            margin: 0 auto 10px;
+        }
+
+        .sheet-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .sheet-eyebrow {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #A7F3D0;
+        }
+
+        .sheet-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: #FFFFFF;
+            margin-top: 2px;
+            letter-spacing: -0.02em;
+        }
+
+        .sheet-sub {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.88);
+            margin-top: 2px;
+        }
+
+        .sheet-close-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .sheet-body {
+            padding: 16px 18px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .borrower-summary-box {
+            background: #F8FAFC;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 14px;
+        }
+
+        .borrower-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+        }
+
+        .borrower-name {
+            font-size: 14.5px;
+            font-weight: 800;
+            color: var(--text-heading);
+            margin-top: 2px;
+        }
+
+        .borrower-unit-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+            font-size: 11.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .borrower-due-chip {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #CBD5E1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11.5px;
+        }
+
+        .breakdown-box {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12.5px;
+        }
+
+        .breakdown-label {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .breakdown-val {
+            font-weight: 700;
+            color: var(--text-heading);
+        }
+
+        .total-cash-box {
+            background: #ECFDF5;
+            border: 1.5px solid #A7F3D0;
+            border-radius: 14px;
+            padding: 14px 16px;
+            text-align: center;
+        }
+
+        .total-cash-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #065F46;
+        }
+
+        .total-cash-amount {
+            font-size: 23px;
+            font-weight: 800;
+            color: var(--brand-primary);
+            margin: 4px 0 3px;
+            letter-spacing: -0.02em;
+        }
+
+        .total-cash-note {
+            font-size: 11px;
+            font-weight: 600;
+            color: #047857;
+        }
+
+        .sheet-action-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 10px;
+            padding-top: 2px;
+        }
+
+        .btn-outline-action {
+            background: #FFFFFF;
+            border: 1px solid #CBD5E1;
+            color: #334155;
+            border-radius: 10px;
+            padding: 11px 12px;
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 700;
+        }
+
+        .btn-primary-action {
+            background: var(--brand-primary);
+            border: none;
+            color: #FFFFFF;
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 2px 6px rgba(13, 92, 70, 0.24);
+        }
+
+        .mobile-home-indicator {
+            width: 134px;
+            height: 5px;
+            background: #0F172A;
+            border-radius: 99px;
+            margin: 8px auto 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-device-screen">
+        <!-- STATUS BAR -->
+        <div class="mobile-status-bar">
+            <span>09:41</span>
+            <div style="display: flex; gap: 6px; align-items: center;">
+                <span>5G</span>
+                <span>100%</span>
+            </div>
+        </div>
+
+        <!-- ROLE HEADER -->
+        <header class="mobile-app-header">
+            <div class="user-profile-header">
+                <div class="avatar-badge">HW</div>
+                <div>
+                    <div class="user-greeting-name">Hendra Wijaya</div>
+                    <div class="user-role-tag">Bendahara Bank Mini</div>
+                </div>
+            </div>
+            <span class="badge-green-kasir">Loket Kasir</span>
+        </header>
+
+        <!-- UNDERLYING BACKGROUND CONTENT -->
+        <div class="mobile-scroll-content">
+            <div class="mini-hero-banner">
+                <h1>Angsuran Langsung (Tunai)</h1>
+                <p>Penerimaan pembayaran kasir angsuran tunai di loket</p>
+            </div>
+
+            <div class="bg-loan-card">
+                <div>
+                    <div class="bg-loan-id">#PINJ-0014</div>
+                    <div class="bg-loan-name">Ibu Hj. Ratna Sari, M.Pd</div>
+                    <div class="bg-loan-meta">Guru Matematika &bull; Tenor 6 Bln</div>
+                </div>
+                <div class="bg-loan-right">
+                    <div class="bg-loan-bill tabular-numbers">Rp 1.120.000</div>
+                    <span class="badge-blue-sm tabular-numbers">0/6 Lunas</span>
+                </div>
+            </div>
+
+            <div class="bg-loan-card">
+                <div>
+                    <div class="bg-loan-id">#PINJ-0016</div>
+                    <div class="bg-loan-name">Ibu Sri Wahyuni, S.Pd</div>
+                    <div class="bg-loan-meta">Staf Kurikulum &bull; Tenor 6 Bln</div>
+                </div>
+                <div class="bg-loan-right">
+                    <div class="bg-loan-bill tabular-numbers">Rp 560.000</div>
+                    <span class="badge-blue-sm tabular-numbers">3/6 Lunas</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MOBILE BOTTOM-SHEET OVERLAY -->
+        <div class="bottom-sheet-backdrop">
+            <div class="bottom-sheet-panel">
+                <!-- Header Emerald -->
+                <div class="sheet-header-emerald">
+                    <div class="sheet-handle-pill"></div>
+                    <div class="sheet-header-row">
+                        <div>
+                            <div class="sheet-eyebrow">Loket Kasir Bank Mini</div>
+                            <h2 class="sheet-title">Penerimaan Angsuran Tunai</h2>
+                            <div class="sheet-sub tabular-numbers">#PINJ-0014 &bull; Angs Ke-1/6</div>
+                        </div>
+                        <button type="button" class="sheet-close-btn" title="Tutup">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sheet Body -->
+                <div class="sheet-body">
+                    <!-- Ringkasan Peminjam -->
+                    <div class="borrower-summary-box">
+                        <div class="borrower-label">Peminjam</div>
+                        <div class="borrower-name">Ibu Hj. Ratna Sari, M.Pd</div>
+                        <div class="borrower-unit-row">
+                            <span>Guru Matematika</span>
+                            <span style="color: #0284C7; font-weight: 700;">#PINJ-0014</span>
+                        </div>
+                        <div class="borrower-due-chip">
+                            <span style="color: #64748B;">Jatuh Tempo Cicilan</span>
+                            <strong class="tabular-numbers" style="color: #0F172A;">01/12/2026</strong>
+                        </div>
+                    </div>
+
+                    <!-- Rincian Pokok + Jasa -->
+                    <div class="breakdown-box">
+                        <div class="breakdown-row">
+                            <span class="breakdown-label">Tanggal Transaksi</span>
+                            <span class="breakdown-val tabular-numbers">10 November 2026</span>
+                        </div>
+                        <div class="breakdown-row" style="padding-top: 8px; border-top: 1px dashed #CBD5E1;">
+                            <span class="breakdown-label">Pokok Angsuran</span>
+                            <span class="breakdown-val tabular-numbers">Rp 1.000.000</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span class="breakdown-label">Jasa 2% Flat</span>
+                            <span class="breakdown-val tabular-numbers" style="color: #047857;">Rp 120.000</span>
+                        </div>
+                    </div>
+
+                    <!-- Kotak Total Kasir -->
+                    <div class="total-cash-box">
+                        <div class="total-cash-label">Total Uang Diterima di Kasir</div>
+                        <div class="total-cash-amount tabular-numbers">Rp 1.120.000</div>
+                        <div class="total-cash-note">Saldo Kas Tunai bertambah otomatis</div>
+                    </div>
+
+                    <!-- Tombol 2 Kolom -->
+                    <div class="sheet-action-grid">
+                        <button type="button" class="btn-outline-action">Batal</button>
+                        <button type="button" class="btn-primary-action">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            <span>Konfirmasi Terima Kas</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mobile-home-indicator"></div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

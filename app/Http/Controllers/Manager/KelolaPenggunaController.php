@@ -41,15 +41,16 @@ class KelolaPenggunaController extends Controller
         $filterStatus = in_array($request->query('status'), ['aktif', 'nonaktif'], true) ? $request->query('status') : null;
         $cari         = trim((string) $request->query('cari', ''));
 
+        $likeOp = DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
         $pengguna = User::query()
             ->with('nasabah')
             ->when($filterRole, fn ($q) => $q->where('role_id', self::ROLE[$filterRole]['id']))
             ->when($filterStatus, fn ($q) => $q->where('status_akun', $filterStatus))
             ->when($cari !== '', fn ($q) => $q->where(fn ($q) => $q
-                ->where('nama_user', 'like', "%{$cari}%")
-                ->orWhere('no_induk', 'like', "%{$cari}%")
-                ->orWhere('no_hp', 'like', "%{$cari}%")
-                ->orWhere('email', 'like', "%{$cari}%")))
+                ->where('nama_user', $likeOp, "%{$cari}%")
+                ->orWhere('no_induk', $likeOp, "%{$cari}%")
+                ->orWhere('no_hp', $likeOp, "%{$cari}%")
+                ->orWhere('email', $likeOp, "%{$cari}%")))
             ->orderBy('role_id')
             ->orderBy('nama_user')
             ->paginate(15)

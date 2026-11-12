@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1440, initial-scale=1.0">
+    <title>Mockup — Rencana Potongan Angsuran Bulanan (Bendahara Bank Mini) — SIPINTAR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-primary: #0D5C46;
+            --brand-primary-hover: #083E2F;
+            --brand-primary-light: #ECFDF5;
+            --brand-accent: #D97706;
+            --bg-app: #F8FAFC;
+            --surface-card: #FFFFFF;
+            --surface-subtle: #F1F5F9;
+            --border-subtle: #E2E8F0;
+            --border-medium: #CBD5E1;
+            --text-heading: #0F172A;
+            --text-body: #334155;
+            --text-muted: #64748B;
+            --text-faint: #94A3B8;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 18px;
+            --radius-pill: 9999px;
+            --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.03);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            width: 1440px;
+            min-height: 100vh;
+            display: flex;
+            background: #F8FAFC;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 13.5px;
+            color: #334155;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .tabular-numbers,
+        .financial-table td,
+        .financial-table th {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
+
+        /* ── SIDEBAR ── */
+        .app-sidebar {
+            width: 260px;
+            flex-shrink: 0;
+            background: #FFFFFF;
+            border-right: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 1px 0 3px rgba(15, 23, 42, 0.03);
+        }
+
+        .sidebar-brand-wrapper {
+            height: 64px;
+            border-bottom: 1px solid #E2E8F0;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #FFFFFF;
+        }
+
+        .sidebar-logo-mark {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            padding: 2px;
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand-info {
+            min-width: 0;
+            flex: 1;
+            white-space: nowrap;
+        }
+
+        .sidebar-brand-title {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #0D5C46;
+            line-height: 1.1;
+        }
+
+        .sidebar-brand-title span {
+            color: #D97706;
+        }
+
+        .sidebar-brand-caption {
+            font-size: 10.5px;
+            color: #0D5C46;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            margin-top: 1px;
+        }
+
+        .sidebar-collapse-toggle {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748B;
+            background: #F1F5F9;
+            border: 1px solid #E2E8F0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+        }
+
+        .nav-section-title {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #94A3B8;
+            padding: 16px 12px 6px;
+            white-space: nowrap;
+        }
+
+        .nav-section-title:first-child {
+            padding-top: 6px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            padding: 9.5px 14px;
+            border-radius: 10px;
+            color: #334155;
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            white-space: nowrap;
+        }
+
+        .nav-link.active {
+            color: #FFFFFF;
+            background: linear-gradient(135deg, #0D5C46 0%, #107558 100%);
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(13, 92, 70, 0.22);
+            border-radius: 10px;
+        }
+
+        .nav-svg-icon {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            stroke: #64748B;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .nav-link.active .nav-svg-icon {
+            stroke: #FFFFFF;
+        }
+
+        .sidebar-footer {
+            padding: 12px 14px;
+            border-top: 1px solid #E2E8F0;
+            background: #FFFFFF;
+        }
+
+        .user-profile-widget {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+        }
+
+        .user-avatar-initial {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0D5C46 0%, #10B981 100%);
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 13.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(13, 92, 70, 0.2);
+            position: relative;
+        }
+
+        .user-avatar-initial::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            right: -1px;
+            width: 9px;
+            height: 9px;
+            background-color: #10B981;
+            border: 2px solid #FFFFFF;
+            border-radius: 50%;
+        }
+
+        .user-meta-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0F172A;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+        }
+
+        .user-meta-role {
+            font-size: 10.5px;
+            color: #0D5C46;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-top: 2px;
+        }
+
+        /* ── MAIN AREA & TOPBAR ── */
+        .app-main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            position: relative;
+        }
+
+        .app-topbar {
+            height: 64px;
+            background: #FFFFFF;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            flex-shrink: 0;
+        }
+
+        .topbar-breadcrumbs {
+            font-size: 13px;
+            color: #64748B;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .topbar-breadcrumbs .separator {
+            color: #94A3B8;
+            font-size: 11px;
+        }
+
+        .topbar-breadcrumbs .current {
+            color: #0F172A;
+            font-weight: 700;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .topbar-date-card {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 6px 14px;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 9999px;
+        }
+
+        .date-icon-box {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #ECFDF5;
+            color: #0D5C46;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .date-text-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            line-height: 1.1;
+        }
+
+        .topbar-clock-row {
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+        }
+
+        .topbar-live-clock {
+            font-size: 13px;
+            font-weight: 800;
+            font-family: ui-monospace, SFMono-Regular, "Roboto Mono", Menlo, Consolas, monospace;
+            color: #0D5C46;
+            letter-spacing: 0.04em;
+        }
+
+        .topbar-clock-tz {
+            font-size: 9.5px;
+            font-weight: 800;
+            color: #0D5C46;
+            background: #ECFDF5;
+            padding: 1px 4px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+        }
+
+        .date-full {
+            font-size: 11px;
+            font-weight: 500;
+            color: #64748B;
+        }
+
+        .topbar-notif-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0F172A;
+            position: relative;
+        }
+
+        .topbar-notif-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            min-width: 17px;
+            height: 17px;
+            padding: 0 4px;
+            border-radius: 10px;
+            background: #EF4444;
+            color: #FFFFFF;
+            font-size: 10px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4);
+            border: 2px solid #FFFFFF;
+        }
+
+        .topbar-profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 12px 4px 5px;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 9999px;
+        }
+
+        .topbar-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0D5C46 0%, #10B981 100%);
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .avatar-status-dot {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            background-color: #10B981;
+            border: 2px solid #FFFFFF;
+            border-radius: 50%;
+        }
+
+        .topbar-user-info {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            line-height: 1.2;
+        }
+
+        .topbar-user-name {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #0F172A;
+        }
+
+        .topbar-user-role {
+            font-size: 10.5px;
+            color: #0D5C46;
+            font-weight: 600;
+        }
+
+        /* ── CONTENT BODY & COMPONENTS ── */
+        .app-content-body {
+            padding: 28px 32px 48px;
+            flex: 1;
+        }
+
+        .dashboard-welcome-banner {
+            background: linear-gradient(135deg, #0D5C46 0%, #064030 100%);
+            border-radius: 18px;
+            padding: 24px 28px;
+            color: #FFFFFF;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 14px rgba(13, 92, 70, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-welcome-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .welcome-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-content h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+            color: #FFFFFF;
+        }
+
+        .welcome-content p {
+            font-size: 13.5px;
+            color: rgba(255, 255, 255, 0.85);
+            max-width: 780px;
+            line-height: 1.5;
+        }
+
+        .content-card {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            box-shadow: var(--shadow-card);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .card-header-bar {
+            padding: 16px 20px;
+            border-bottom: 1px solid #E2E8F0;
+            background: #FAFAFA;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .card-heading {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0F172A;
+            letter-spacing: -0.01em;
+        }
+
+        .period-filter-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #F8FAFC;
+            padding: 4px 10px;
+            border-radius: 10px;
+            border: 1px solid #E2E8F0;
+        }
+
+        .period-filter-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748B;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding-right: 4px;
+        }
+
+        .select-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .sipintar-select {
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            color: #0F172A;
+            background-color: #FFFFFF;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            padding: 6px 30px 6px 12px;
+            appearance: none;
+            -webkit-appearance: none;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            cursor: pointer;
+        }
+
+        .select-chevron {
+            position: absolute;
+            right: 10px;
+            pointer-events: none;
+            color: #0D5C46;
+        }
+
+        .form-select {
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: #0F172A;
+            background-color: #FFFFFF;
+            border: 1.5px solid #CBD5E1;
+            border-radius: 6px;
+            padding: 6px 28px 6px 10px;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .financial-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            text-align: left;
+        }
+
+        .financial-table th {
+            background-color: #F8FAFC;
+            color: #475569;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 12px 18px;
+            border-bottom: 1px solid #E2E8F0;
+            white-space: nowrap;
+        }
+
+        .financial-table td {
+            padding: 13px 18px;
+            border-bottom: 1px solid #E2E8F0;
+            color: #334155;
+        }
+
+        .financial-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Custom Vector Checkbox */
+        .checkbox-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            background: #0D5C46;
+            border: 1.5px solid #0D5C46;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+        }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .badge-pill.green  { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
+        .badge-pill.blue   { background: #F0F9FF; color: #0369A1; border: 1px solid #BAE6FD; }
+        .badge-pill.amber  { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
+        .badge-pill.red    { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
+        .badge-pill.purple { background: #EEF2FF; color: #4F46E5; border: 1px solid #C7D2FE; }
+        .badge-pill.gray   { background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; }
+
+        .btn-ui {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .btn-ui-primary {
+            background-color: #0D5C46;
+            color: #FFFFFF;
+            box-shadow: 0 1px 3px rgba(13, 92, 70, 0.2);
+        }
+
+        .action-icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        .action-btn-view {
+            background-color: #ECFDF5;
+            border: 1px solid #A7F3D0;
+            color: #047857;
+        }
+
+        .action-btn-bast {
+            background-color: #F0F9FF;
+            border: 1px solid #BAE6FD;
+            color: #0284C7;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── SIDEBAR BENDAHARA BANK MINI ── -->
+    <aside class="app-sidebar">
+        <div>
+            <div class="sidebar-brand-wrapper">
+                <div class="sidebar-logo-mark">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                        <rect x="2" y="2" width="20" height="20" rx="5" fill="#0D5C46"/>
+                        <path d="M5 9.5L12 6L19 9.5" stroke="#FBBF24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6.5 10.5V16.5M10 10.5V16.5M14 10.5V16.5M17.5 10.5V16.5" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"/>
+                        <path d="M5 17.5H19" stroke="#FBBF24" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="sidebar-brand-info">
+                    <div class="sidebar-brand-title">SIP<span>INTAR</span></div>
+                    <div class="sidebar-brand-caption">Bank Mini Sekolah</div>
+                </div>
+                <div class="sidebar-collapse-toggle">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Pinjaman Pegawai</div>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                    <span>Daftar Pinjaman</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                    <span>Pengajuan Pinjaman</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/></svg>
+                    <span>Penilaian Kelayakan</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+                    <span>Pencairan Pinjaman</span>
+                </a>
+
+                <div class="nav-section-title">Angsuran &amp; Potongan</div>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <span>Angsuran Langsung</span>
+                </a>
+                <a href="#" class="nav-link active">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/></svg>
+                    <span>Rencana Potongan</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                    <span>Koreksi Angsuran</span>
+                </a>
+
+                <div class="nav-section-title">Piutang &amp; Kas</div>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><line x1="15" y1="8" x2="17" y2="8"/><line x1="15" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="17" y2="16"/></svg>
+                    <span>Kartu Piutang</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+                    <span>Kas Tunai (Cash)</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v4M12 14v4M16 14v4"/></svg>
+                    <span>Kas Bank Bendahara</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-profile-widget">
+                <div class="user-avatar-initial">H</div>
+                <div style="min-width: 0; flex: 1;">
+                    <div class="user-meta-name">Hendra Wijaya</div>
+                    <div class="user-meta-role">BENDAHARA BANK MINI</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── MAIN AREA ── -->
+    <div class="app-main-area">
+        <header class="app-topbar">
+            <div class="topbar-breadcrumbs">
+                <span>SIPINTAR</span>
+                <span class="separator">/</span>
+                <span class="current">Rencana Potongan</span>
+            </div>
+
+            <div class="topbar-right">
+                <div class="topbar-date-card">
+                    <div class="date-icon-box">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="date-text-wrap">
+                        <div class="topbar-clock-row">
+                            <span class="topbar-live-clock">09:42:18</span>
+                            <span class="topbar-clock-tz">WIB</span>
+                        </div>
+                        <span class="date-full">Selasa, 10 November 2026</span>
+                    </div>
+                </div>
+
+                <div class="topbar-notif-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span class="topbar-notif-badge">2</span>
+                </div>
+
+                <div class="topbar-profile-btn">
+                    <div class="topbar-avatar">
+                        H
+                        <span class="avatar-status-dot"></span>
+                    </div>
+                    <div class="topbar-user-info">
+                        <span class="topbar-user-name">Hendra Wijaya</span>
+                        <span class="topbar-user-role">Bendahara Bank Mini</span>
+                    </div>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+            </div>
+        </header>
+
+        <main class="app-content-body">
+            <!-- HERO BANNER -->
+            <div class="dashboard-welcome-banner">
+                <div class="welcome-content">
+                    <h1>Penyusunan Rencana Potongan Tunjangan</h1>
+                    <p>Himpun daftar tagihan angsuran pinjaman bulanan pegawai untuk diserahkan ke Bendahara Sekolah sebagai dasar pemotongan tunjangan.</p>
+                </div>
+            </div>
+
+            <!-- CARD 1: DAFTAR TAGIHAN JATUH TEMPO -->
+            <div class="content-card">
+                <div class="card-header-bar">
+                    <div>
+                        <h2 class="card-heading">Daftar Tagihan Jatuh Tempo (Metode Potong Gaji)</h2>
+                        <div style="font-size:12px; color:#64748B; margin-top:2px;">Pilih pegawai yang akan diajukan ke Bendahara Sekolah untuk pemotongan periode Desember 2026</div>
+                    </div>
+
+                    <div class="period-filter-toolbar">
+                        <div class="period-filter-label">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0D5C46" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span>Periode Tagihan:</span>
+                        </div>
+                        <div class="select-wrap">
+                            <select class="sipintar-select" aria-label="Pilih Bulan">
+                                <option selected>Desember</option>
+                                <option>November</option>
+                            </select>
+                            <svg class="select-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <div class="select-wrap">
+                            <select class="sipintar-select" aria-label="Pilih Tahun">
+                                <option selected>2026</option>
+                                <option>2027</option>
+                            </select>
+                            <svg class="select-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="financial-table">
+                        <thead>
+                            <tr>
+                                <th style="width:48px; text-align:center;">
+                                    <span class="checkbox-box" aria-label="Pilih semua">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.2"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </span>
+                                </th>
+                                <th>Jatuh Tempo</th>
+                                <th>Nama Pegawai / Unit</th>
+                                <th>Tenor Ke</th>
+                                <th style="text-align: right;">Pokok</th>
+                                <th style="text-align: right;">Jasa 2%</th>
+                                <th style="text-align: right;">Total Potongan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="text-align:center;">
+                                    <span class="checkbox-box">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.2"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </span>
+                                </td>
+                                <td>01/12/2026</td>
+                                <td>
+                                    <div style="font-weight:700; color:#0F172A;">Ibu Endang Purwanti, S.Pd</div>
+                                    <div style="font-size:11px; color:#64748B;">Guru Bahasa Indonesia</div>
+                                </td>
+                                <td><span class="badge-pill blue">Ke-1/6</span></td>
+                                <td style="text-align: right;">Rp 500.000</td>
+                                <td style="text-align: right;">Rp 60.000</td>
+                                <td style="text-align: right; font-weight:700; color:#0F172A;">Rp 560.000</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align:center;">
+                                    <span class="checkbox-box">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.2"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </span>
+                                </td>
+                                <td>01/12/2026</td>
+                                <td>
+                                    <div style="font-weight:700; color:#0F172A;">Bpk. Bambang Irawan, S.T</div>
+                                    <div style="font-size:11px; color:#64748B;">Guru Produktif TKJ</div>
+                                </td>
+                                <td><span class="badge-pill blue">Ke-2/6</span></td>
+                                <td style="text-align: right;">Rp 1.000.000</td>
+                                <td style="text-align: right;">Rp 120.000</td>
+                                <td style="text-align: right; font-weight:700; color:#0F172A;">Rp 1.120.000</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align:center;">
+                                    <span class="checkbox-box">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.2"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </span>
+                                </td>
+                                <td>01/12/2026</td>
+                                <td>
+                                    <div style="font-weight:700; color:#0F172A;">Ibu Dewi Sartika, S.E</div>
+                                    <div style="font-size:11px; color:#64748B;">Guru Akuntansi</div>
+                                </td>
+                                <td><span class="badge-pill blue">Ke-2/4</span></td>
+                                <td style="text-align: right;">Rp 1.000.000</td>
+                                <td style="text-align: right;">Rp 80.000</td>
+                                <td style="text-align: right; font-weight:700; color:#0F172A;">Rp 1.080.000</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align:center;">
+                                    <span class="checkbox-box">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.2"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </span>
+                                </td>
+                                <td>01/12/2026</td>
+                                <td>
+                                    <div style="font-weight:700; color:#0F172A;">Ibu Hj. Ratna Sari, M.Pd</div>
+                                    <div style="font-size:11px; color:#64748B;">Guru Matematika</div>
+                                </td>
+                                <td><span class="badge-pill blue">Ke-1/6</span></td>
+                                <td style="text-align: right;">Rp 1.000.000</td>
+                                <td style="text-align: right;">Rp 120.000</td>
+                                <td style="text-align: right; font-weight:700; color:#0F172A;">Rp 1.120.000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="padding:18px 24px; border-top:1px solid #E2E8F0; display:flex; justify-content:space-between; align-items:center; gap:16px; background:#FFFFFF;">
+                    <div>
+                        <span style="font-size:13px; color:#64748B;">Total Rencana Potongan Terpilih:</span>
+                        <span class="tabular-numbers" style="font-size:18px; font-weight:800; color:#166534; margin-left:8px;">Rp 3.880.000</span>
+                    </div>
+                    <button type="button" class="btn-ui btn-ui-primary">
+                        Terbitkan Rencana ke Bendahara Sekolah
+                    </button>
+                </div>
+            </div>
+
+            <!-- CARD 2: RIWAYAT PAKET RENCANA POTONGAN -->
+            <div class="content-card">
+                <div class="card-header-bar">
+                    <div>
+                        <h2 class="card-heading">Daftar Paket Rencana Potongan Tunjangan</h2>
+                        <div style="font-size:12px; color:#64748B; margin-top:2px;">Riwayat serah terima pemotongan payroll ke Bendahara Sekolah (maksimal 10 baris per halaman)</div>
+                    </div>
+
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="select-wrap">
+                            <select class="form-select" style="min-width:132px;">
+                                <option selected>-- Semua Bulan --</option>
+                            </select>
+                            <svg style="position:absolute; right:9px; pointer-events:none; color:#64748B;" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <div class="select-wrap">
+                            <select class="form-select" style="min-width:96px;">
+                                <option selected>-- Tahun --</option>
+                            </select>
+                            <svg style="position:absolute; right:9px; pointer-events:none; color:#64748B;" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                        <div class="select-wrap">
+                            <select class="form-select" style="min-width:146px;">
+                                <option selected>-- Semua Status --</option>
+                            </select>
+                            <svg style="position:absolute; right:9px; pointer-events:none; color:#64748B;" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="financial-table">
+                        <thead>
+                            <tr>
+                                <th>ID Paket</th>
+                                <th>Periode</th>
+                                <th style="text-align: right;">Total Rencana</th>
+                                <th style="text-align: right;">Dana Diterima</th>
+                                <th style="text-align: center;">Status Verifikasi</th>
+                                <th style="text-align: center; width:120px;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span style="font-weight:700; font-family:monospace; color:#0F172A;">#RP-0005</span></td>
+                                <td>
+                                    <div style="font-weight:600; color:#0F172A;">Desember 2026</div>
+                                    <div style="font-size:11px; color:#64748B;">Bulan 12/2026</div>
+                                </td>
+                                <td style="text-align: right; font-weight:700; color:#0F172A;">Rp 3.880.000</td>
+                                <td style="text-align: right; color:#64748B;">-</td>
+                                <td style="text-align: center;"><span class="badge-pill blue">Diproses Sekolah</span></td>
+                                <td style="text-align: center;">
+                                    <div style="display:flex; gap:8px; justify-content:center; align-items:center;">
+                                        <span class="action-icon-btn action-btn-view" title="Lihat Rincian Paket #RP-0005">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span style="font-weight:700; font-family:monospace; color:#0F172A;">#RP-0004</span></td>
+                                <td>
+                                    <div style="font-weight:600; color:#0F172A;">November 2026</div>
+                                    <div style="font-size:11px; color:#64748B;">Bulan 11/2026</div>
+                                </td>
+                                <td style="text-align: right; font-weight:700; color:#0F172A;">Rp 2.200.000</td>
+                                <td style="text-align: right; font-weight:800; color:#166534;">Rp 2.200.000</td>
+                                <td style="text-align: center;"><span class="badge-pill green">Selesai Dibukukan</span></td>
+                                <td style="text-align: center;">
+                                    <div style="display:flex; gap:8px; justify-content:center; align-items:center;">
+                                        <span class="action-icon-btn action-btn-view" title="Lihat Rincian Paket #RP-0004">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        </span>
+                                        <span class="action-icon-btn action-btn-bast" title="Cetak Berita Acara Serah Terima (BAST)">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span style="font-weight:700; font-family:monospace; color:#0F172A;">#RP-0003</span></td>
+                                <td>
+                                    <div style="font-weight:600; color:#0F172A;">Oktober 2026</div>
+                                    <div style="font-size:11px; color:#64748B;">Bulan 10/2026</div>
+                                </td>
+                                <td style="text-align: right; font-weight:700; color:#0F172A;">Rp 1.680.000</td>
+                                <td style="text-align: right; font-weight:800; color:#166534;">Rp 1.680.000</td>
+                                <td style="text-align: center;"><span class="badge-pill green">Selesai Dibukukan</span></td>
+                                <td style="text-align: center;">
+                                    <div style="display:flex; gap:8px; justify-content:center; align-items:center;">
+                                        <span class="action-icon-btn action-btn-view" title="Lihat Rincian Paket #RP-0003">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        </span>
+                                        <span class="action-icon-btn action-btn-bast" title="Cetak Berita Acara Serah Terima (BAST)">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>
