@@ -204,7 +204,7 @@ class TellerTransactionService
             'kredit' => $jenis === 'setoran' ? $nominal : 0,
             'saldo_akhir' => $saldoAkhir,
             'tgl_transaksi' => now(),
-        ]);
+        ], 'transaksi_id');
     }
 
     private function recordCashMutation(object $kas, int $periodeId, int $tellerId, int $transaksiId, float $nominal, string $jenis): void
@@ -240,6 +240,6 @@ class TellerTransactionService
             'user_id' => $tellerId,
             'no_bukti' => 'TLL-' . now()->format('Ymd') . '-' . str_pad((string) $transaksiId, 8, '0', STR_PAD_LEFT),
             'tgl_cetak' => now(),
-        ]);
+        ],  'bukti_id'); 
     }
 }
