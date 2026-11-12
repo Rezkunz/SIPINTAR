@@ -121,7 +121,7 @@ class AngsuranBbmController extends Controller
                 'jenis_bayar'        => 'angsuran',
                 'bayar_pokok'        => $request->bayar_pokok,
                 'bayar_bunga'        => $request->bayar_bunga,
-            ]);
+            ], 'angsuran_id');
 
             // 2. Update status jadwal menjadi lunas
             DB::table('tblJADWAL_ANGSURAN')
@@ -333,7 +333,7 @@ class AngsuranBbmController extends Controller
                 'user_id'         => auth()->id(),
                 'total_potongan'  => $totalRencana,
                 'status_potongan' => 'dikirim',
-            ]);
+            ], 'rencana_potongan_id');
 
             foreach ($jadwals as $j) {
                 DB::table('tblDETAIL_POTONGAN')->insert([
@@ -472,7 +472,7 @@ class AngsuranBbmController extends Controller
                     'jenis_bayar'        => 'angsuran',
                     'bayar_pokok'        => $detail->pokok,
                     'bayar_bunga'        => $detail->bunga,
-                ]);
+                ], 'angsuran_id');
 
                 // 2. Tandai jadwal angsuran lunas
                 DB::table('tblJADWAL_ANGSURAN')
@@ -688,7 +688,7 @@ class AngsuranBbmController extends Controller
                 'nominal_bunga'  => $angsuran->bayar_bunga,
                 'nominal_total'  => $totalNominal,
                 'status_koreksi' => 'selesai',
-            ]);
+            ], 'koreksi_id');
 
             // 2. Kembalikan status jadwal angsuran menjadi 'belum'
             DB::table('tblJADWAL_ANGSURAN')

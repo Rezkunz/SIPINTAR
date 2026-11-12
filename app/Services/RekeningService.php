@@ -142,7 +142,7 @@ class RekeningService
                 'kredit' => $setoranAwal,
                 'saldo_akhir' => $setoranAwal,
                 'tgl_transaksi' => now(),
-            ]);
+            ], 'transaksi_id');
 
             DB::table('tblMUTASI_KAS')->insert([
                 'kas_id' => $kas->kas_id,

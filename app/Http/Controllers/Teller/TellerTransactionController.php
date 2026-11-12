@@ -10,6 +10,7 @@ use App\Services\TellerTransactionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class TellerTransactionController extends Controller
@@ -62,11 +63,12 @@ class TellerTransactionController extends Controller
             return response()->json([]);
         }
 
+        $likeOp = DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
         $results = Rekening::with('nasabah')
             ->where('status_rekening', 'aktif')
-            ->where(function ($builder) use ($query) {
-                $builder->where('no_rek', 'like', "%{$query}%")
-                    ->orWhereHas('nasabah', fn ($nasabah) => $nasabah->where('nama_nasabah', 'like', "%{$query}%"));
+            ->where(function ($builder) use ($query, $likeOp) {
+                $builder->where('no_rek', $likeOp, "%{$query}%")
+                    ->orWhereHas('nasabah', fn ($nasabah) => $nasabah->where('nama_nasabah', $likeOp, "%{$query}%"));
             })
             ->limit(10)
             ->get()

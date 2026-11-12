@@ -28,7 +28,10 @@ class TellerCorrectionService
             $isReversal = DB::table('tblAUDIT_LOG')
                 ->where('aksi', 'KOREKSI_TRANSAKSI')
                 ->where('entitas', 'tblTRANSAKSI')
-                ->where('data_baru', 'like', '%"reversal_id":' . $transactionId . '%')
+                ->whereRaw(
+                    DB::getDriverName() === 'pgsql' ? 'CAST(data_baru AS TEXT) LIKE ?' : 'data_baru LIKE ?',
+                    ['%"reversal_id":' . $transactionId . '%']
+                )
                 ->exists();
 
             if ($alreadyCorrected || $isReversal) {
@@ -106,7 +109,7 @@ class TellerCorrectionService
                 'kredit' => $debit,
                 'saldo_akhir' => $saldoAkhir,
                 'tgl_transaksi' => now(),
-            ]);
+            ], 'transaksi_id');
 
             DB::table('tblREKENING')->where('rekening_id', $rekening->rekening_id)->update(['saldo' => $saldoAkhir]);
 
@@ -126,7 +129,7 @@ class TellerCorrectionService
                 'kredit' => $correctedKredit,
                 'saldo_akhir' => $saldoAkhir,
                 'tgl_transaksi' => now(),
-            ]);
+            ], 'transaksi_id');
 
             if ($correctedIsCash) {
                 $this->recordCashMutation(

@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup Mobile — Rencana Potongan Angsuran (BBM) — SIPINTAR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-primary: #0D5C46;
+            --brand-primary-dark: #064030;
+            --brand-accent: #D97706;
+            --bg-app: #F8FAFC;
+            --border-color: #E2E8F0;
+            --text-heading: #0F172A;
+            --text-body: #334155;
+            --text-muted: #64748B;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #E2E8F0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px 0;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            color: #334155;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .tabular-numbers {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
+
+        .mobile-device-screen {
+            width: 390px;
+            min-height: 844px;
+            background: #F8FAFC;
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.3), 0 0 0 10px #0F172A;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .mobile-status-bar {
+            height: 44px;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            color: #0F172A;
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .mobile-app-header {
+            background: #FFFFFF;
+            padding: 12px 20px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #E2E8F0;
+            flex-shrink: 0;
+        }
+
+        .user-profile-header {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .avatar-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--brand-primary);
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .user-greeting-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-heading);
+            line-height: 1.2;
+        }
+
+        .user-role-tag {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .header-period-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #ECFDF5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 9999px;
+            flex-shrink: 0;
+        }
+
+        .mobile-scroll-content {
+            flex: 1;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .mini-hero-banner {
+            background: linear-gradient(135deg, #0D5C46 0%, #064030 100%);
+            border-radius: 16px;
+            padding: 14px 16px;
+            color: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(13, 92, 70, 0.2);
+        }
+
+        .mini-hero-banner h1 {
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.25;
+            color: #FFFFFF;
+        }
+
+        .mini-hero-banner p {
+            font-size: 11.5px;
+            color: rgba(255, 255, 255, 0.85);
+            margin-top: 3px;
+            line-height: 1.35;
+        }
+
+        .period-filter-bar {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .filter-select-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .select-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .mobile-select {
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-heading);
+            background: #F8FAFC;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            padding: 5px 24px 5px 10px;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .select-chevron {
+            position: absolute;
+            right: 8px;
+            pointer-events: none;
+            color: var(--brand-primary);
+        }
+
+        .badge-count-pegawai {
+            background: #F0F9FF;
+            color: #0369A1;
+            border: 1px solid #BAE6FD;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 9px;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+
+        .section-heading-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: -4px;
+        }
+
+        .section-heading-label {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-heading);
+            letter-spacing: -0.01em;
+        }
+
+        .section-heading-meta {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--brand-primary);
+        }
+
+        .check-card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .check-card-item {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-left: 3px solid var(--brand-primary);
+            border-radius: 12px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+        }
+
+        .check-card-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .checkbox-box {
+            width: 18px;
+            height: 18px;
+            border-radius: 5px;
+            background: var(--brand-primary);
+            border: 1.5px solid var(--brand-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .debitor-name {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--text-heading);
+            line-height: 1.25;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .debitor-sub {
+            font-size: 10.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .check-card-right {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .amount-total {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-heading);
+            line-height: 1.2;
+        }
+
+        .amount-breakdown {
+            font-size: 10px;
+            font-weight: 600;
+            color: #047857;
+            margin-top: 2px;
+        }
+
+        .summary-action-card {
+            background: #FFFFFF;
+            border: 1px solid #A7F3D0;
+            border-radius: 14px;
+            padding: 12px 14px;
+            box-shadow: 0 2px 6px rgba(13, 92, 70, 0.06);
+        }
+
+        .summary-total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .summary-value {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--brand-primary);
+        }
+
+        .btn-primary-full {
+            width: 100%;
+            background: var(--brand-primary);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            box-shadow: 0 2px 6px rgba(13, 92, 70, 0.22);
+        }
+
+        .history-compact-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+
+        .history-compact-title {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .history-compact-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .history-id-text {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-heading);
+        }
+
+        .history-amount-text {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-heading);
+        }
+
+        .badge-blue {
+            background: #F0F9FF;
+            color: #0369A1;
+            border: 1px solid #BAE6FD;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        .mobile-bottom-nav {
+            height: 64px;
+            background: #FFFFFF;
+            border-top: 1px solid #E2E8F0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px;
+            flex-shrink: 0;
+        }
+
+        .nav-tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            color: #94A3B8;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .nav-tab-item.active {
+            color: var(--brand-primary);
+        }
+
+        .mobile-home-indicator {
+            width: 134px;
+            height: 5px;
+            background: #0F172A;
+            border-radius: 99px;
+            margin: 4px auto 8px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-device-screen">
+        <!-- STATUS BAR -->
+        <div class="mobile-status-bar">
+            <span>09:41</span>
+            <div style="display: flex; gap: 6px; align-items: center;">
+                <span>5G</span>
+                <span>100%</span>
+            </div>
+        </div>
+
+        <!-- ROLE HEADER -->
+        <header class="mobile-app-header">
+            <div class="user-profile-header">
+                <div class="avatar-badge">HW</div>
+                <div>
+                    <div class="user-greeting-name">Hendra Wijaya</div>
+                    <div class="user-role-tag">Bendahara Bank Mini</div>
+                </div>
+            </div>
+            <div class="header-period-chip">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>Des 2026</span>
+            </div>
+        </header>
+
+        <!-- MAIN SCROLL CONTENT -->
+        <div class="mobile-scroll-content">
+            <!-- 1. MINI BANNER -->
+            <div class="mini-hero-banner">
+                <h1>Rencana Potongan Tunjangan</h1>
+                <p>Tagihan jatuh tempo metode potong gaji</p>
+            </div>
+
+            <!-- 2. FILTER PERIODE BAR -->
+            <div class="period-filter-bar">
+                <div class="filter-select-group">
+                    <div class="select-wrap">
+                        <select class="mobile-select" aria-label="Pilih Bulan">
+                            <option selected>Desember</option>
+                            <option>November</option>
+                        </select>
+                        <svg class="select-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                    <div class="select-wrap">
+                        <select class="mobile-select" aria-label="Pilih Tahun">
+                            <option selected>2026</option>
+                            <option>2027</option>
+                        </select>
+                        <svg class="select-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                </div>
+                <span class="badge-count-pegawai">4 Pegawai</span>
+            </div>
+
+            <!-- 3. DAFTAR TAGIHAN TERPILIH -->
+            <div class="section-heading-row">
+                <span class="section-heading-label">Daftar Tagihan Terpilih</span>
+                <span class="section-heading-meta">4/4 Dipilih</span>
+            </div>
+
+            <div class="check-card-list">
+                <!-- Card 1 -->
+                <div class="check-card-item">
+                    <div class="check-card-left">
+                        <span class="checkbox-box" aria-label="Terpilih">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.2"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                        <div style="min-width: 0;">
+                            <div class="debitor-name">Ibu Endang Purwanti, S.Pd</div>
+                            <div class="debitor-sub tabular-numbers">Ke-1/6 &bull; 01/12/2026</div>
+                        </div>
+                    </div>
+                    <div class="check-card-right">
+                        <div class="amount-total tabular-numbers">Rp 560.000</div>
+                        <div class="amount-breakdown tabular-numbers">Pokok 500rb + Jasa 60rb</div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="check-card-item">
+                    <div class="check-card-left">
+                        <span class="checkbox-box" aria-label="Terpilih">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.2"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                        <div style="min-width: 0;">
+                            <div class="debitor-name">Bpk. Bambang Irawan, S.T</div>
+                            <div class="debitor-sub tabular-numbers">Ke-2/6 &bull; 01/12/2026</div>
+                        </div>
+                    </div>
+                    <div class="check-card-right">
+                        <div class="amount-total tabular-numbers">Rp 1.120.000</div>
+                        <div class="amount-breakdown tabular-numbers">Pokok 1jt + Jasa 120rb</div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="check-card-item">
+                    <div class="check-card-left">
+                        <span class="checkbox-box" aria-label="Terpilih">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.2"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                        <div style="min-width: 0;">
+                            <div class="debitor-name">Ibu Dewi Sartika, S.E</div>
+                            <div class="debitor-sub tabular-numbers">Ke-2/4 &bull; 01/12/2026</div>
+                        </div>
+                    </div>
+                    <div class="check-card-right">
+                        <div class="amount-total tabular-numbers">Rp 1.080.000</div>
+                        <div class="amount-breakdown tabular-numbers">Pokok 1jt + Jasa 80rb</div>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="check-card-item">
+                    <div class="check-card-left">
+                        <span class="checkbox-box" aria-label="Terpilih">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.2"><polyline points="20 6 9 17 4 12"/></svg>
+                        </span>
+                        <div style="min-width: 0;">
+                            <div class="debitor-name">Ibu Hj. Ratna Sari, M.Pd</div>
+                            <div class="debitor-sub tabular-numbers">Ke-1/6 &bull; 01/12/2026</div>
+                        </div>
+                    </div>
+                    <div class="check-card-right">
+                        <div class="amount-total tabular-numbers">Rp 1.120.000</div>
+                        <div class="amount-breakdown tabular-numbers">Pokok 1jt + Jasa 120rb</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. SUMMARY ACTION CARD -->
+            <div class="summary-action-card">
+                <div class="summary-total-row">
+                    <span class="summary-label">Total Rencana Terpilih:</span>
+                    <span class="summary-value tabular-numbers">Rp 3.880.000</span>
+                </div>
+                <button type="button" class="btn-primary-full">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    <span>Terbitkan ke Bendahara Sekolah</span>
+                </button>
+            </div>
+
+            <!-- 5. RIWAYAT PAKET TERAKHIR -->
+            <div class="history-compact-card">
+                <div class="history-compact-title">Riwayat Paket Terakhir</div>
+                <div class="history-compact-row">
+                    <span class="history-id-text tabular-numbers">#RP-0005 (Des 2026)</span>
+                    <span class="history-amount-text tabular-numbers">Rp 3.880.000</span>
+                    <span class="badge-blue">Diproses Sekolah</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM NAV BBM -->
+        <nav class="mobile-bottom-nav">
+            <a href="#" class="nav-tab-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/></svg>
+                <span>Kelayakan</span>
+            </a>
+            <a href="#" class="nav-tab-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+                <span>Cairkan</span>
+            </a>
+            <a href="#" class="nav-tab-item active">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/></svg>
+                <span>Potongan</span>
+            </a>
+            <a href="#" class="nav-tab-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <span>Kasir</span>
+            </a>
+        </nav>
+        <div class="mobile-home-indicator"></div>
+    </div>
+
+</body>
+</html>

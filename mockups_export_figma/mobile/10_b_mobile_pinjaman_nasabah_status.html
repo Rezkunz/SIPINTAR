@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mockup Mobile — Informasi &amp; Status Pinjaman — SIPINTAR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-primary: #0D5C46;
+            --brand-accent: #D97706;
+            --bg-app: #F8FAFC;
+            --border-color: #E2E8F0;
+            --text-heading: #0F172A;
+            --text-body: #334155;
+            --text-muted: #64748B;
+            --radius-pill: 9999px;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #E2E8F0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px 0;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            color: #334155;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .tabular-numbers {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
+
+        .mobile-device-screen {
+            width: 390px;
+            min-height: 844px;
+            background: #F8FAFC;
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.3), 0 0 0 10px #0F172A;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .mobile-status-bar {
+            height: 44px;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            color: #0F172A;
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .status-icons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mobile-app-header {
+            background: #FFFFFF;
+            padding: 12px 20px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .user-profile-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .avatar-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--brand-primary);
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 13.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .user-greeting-name {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: var(--text-heading);
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+        }
+
+        .user-class-tag {
+            font-size: 10.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 9px;
+            border-radius: 9999px;
+            font-size: 10px;
+            font-weight: 800;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .badge-pill.green {
+            background: #ECFDF5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+
+        .badge-pill.amber {
+            background: #FFFBEB;
+            color: #92400E;
+            border: 1px solid #FDE68A;
+        }
+
+        .badge-pill.blue {
+            background: #F0F9FF;
+            color: #0369A1;
+            border: 1px solid #BAE6FD;
+        }
+
+        .badge-pill.red {
+            background: #FEF2F2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+
+        .mobile-scroll-content {
+            flex: 1;
+            padding: 13px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+        }
+
+        .hero-mini-banner {
+            background: linear-gradient(135deg, #0D5C46 0%, #064030 100%);
+            border-radius: 16px;
+            padding: 13px 16px;
+            color: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(13, 92, 70, 0.18);
+        }
+
+        .hero-mini-banner h1 {
+            font-size: 15.5px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.25;
+        }
+
+        .hero-mini-banner p {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.85);
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .status-active-card {
+            background: linear-gradient(135deg, #FFFBEB 0%, #FFFFFF 100%);
+            border: 1px solid #FDE68A;
+            border-left: 4px solid #F59E0B;
+            border-radius: 16px;
+            padding: 12px 14px;
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.08);
+        }
+
+        .status-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 9px;
+        }
+
+        .pinj-id-tag {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-heading);
+            letter-spacing: -0.01em;
+        }
+
+        .grid-2x2-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 12px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid #FDE68A;
+            border-radius: 11px;
+            padding: 9px 11px;
+            margin-bottom: 10px;
+        }
+
+        .meta-item-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .meta-item-val {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-heading);
+            margin-top: 2px;
+        }
+
+        .layak-guide-box {
+            border: 1px solid #BBF7D0;
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.06);
+        }
+
+        .layak-header {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 8px;
+        }
+
+        .layak-check-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: #DCFCE7;
+            color: #166534;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .method-pick-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .method-pick-card {
+            background: #F8FAFC;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            padding: 8px 9px;
+        }
+
+        .mobile-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 12px 14px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        }
+
+        .section-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .section-heading {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: var(--text-heading);
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #F8FAFC;
+            border: 1px solid var(--border-color);
+            border-radius: 11px;
+            padding: 8px 11px;
+            gap: 8px;
+        }
+
+        .bottom-nav-wrapper {
+            background: #FFFFFF;
+            flex-shrink: 0;
+        }
+
+        .mobile-bottom-nav {
+            height: 64px;
+            background: #FFFFFF;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px;
+            flex-shrink: 0;
+        }
+
+        .nav-tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            color: #94A3B8;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .nav-tab-item.active {
+            color: var(--brand-primary);
+        }
+
+        .mobile-home-indicator {
+            width: 134px;
+            height: 5px;
+            background: #0F172A;
+            border-radius: 99px;
+            margin: 4px auto 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-device-screen">
+        <!-- STATUS BAR -->
+        <div class="mobile-status-bar">
+            <span>09:41</span>
+            <div class="status-icons">
+                <svg width="15" height="11" viewBox="0 0 15 11" fill="none">
+                    <rect x="0" y="7" width="2.5" height="4" rx="0.8" fill="#0F172A"/>
+                    <rect x="4" y="5" width="2.5" height="6" rx="0.8" fill="#0F172A"/>
+                    <rect x="8" y="2.5" width="2.5" height="8.5" rx="0.8" fill="#0F172A"/>
+                    <rect x="12" y="0" width="2.5" height="11" rx="0.8" fill="#0F172A"/>
+                </svg>
+                <span>5G</span>
+                <span>100%</span>
+                <svg width="20" height="11" viewBox="0 0 20 11" fill="none">
+                    <rect x="0.75" y="0.75" width="16.5" height="9.5" rx="2.2" stroke="#0F172A" stroke-width="1.3"/>
+                    <rect x="2.2" y="2.2" width="13.6" height="6.6" rx="1.2" fill="#0F172A"/>
+                    <path d="M18.5 3.5V7.5C19.2 7.2 19.6 6.4 19.6 5.5C19.6 4.6 19.2 3.8 18.5 3.5Z" fill="#0F172A"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- APP HEADER -->
+        <header class="mobile-app-header">
+            <div class="user-profile-header">
+                <div class="avatar-badge">IE</div>
+                <div>
+                    <div class="user-greeting-name">Ibu Endang Purwanti, S.Pd</div>
+                    <div class="user-class-tag">Nasabah Pegawai &bull; Guru B. Indonesia</div>
+                </div>
+            </div>
+            <span class="badge-pill green">AKTIF</span>
+        </header>
+
+        <!-- CONTENT -->
+        <div class="mobile-scroll-content">
+            <!-- MINI BANNER -->
+            <div class="hero-mini-banner">
+                <h1>Informasi &amp; Status Pinjaman</h1>
+                <p>Layanan fasilitas pembiayaan &amp; riwayat pengajuan pegawai</p>
+            </div>
+
+            <!-- CARD STATUS AKTIF -->
+            <div class="status-active-card">
+                <div class="status-card-top">
+                    <div>
+                        <div class="pinj-id-tag tabular-numbers">#PINJ-0010</div>
+                        <div style="font-size: 10.5px; color: #64748B; font-weight: 600;">Permohonan Sedang Diproses</div>
+                    </div>
+                    <span class="badge-pill amber">Menunggu Pencairan</span>
+                </div>
+
+                <!-- GRID 2x2 -->
+                <div class="grid-2x2-meta">
+                    <div>
+                        <div class="meta-item-label">Nominal</div>
+                        <div class="meta-item-val tabular-numbers" style="color: #0D5C46; font-size: 14px;">Rp 3.000.000</div>
+                    </div>
+                    <div>
+                        <div class="meta-item-label">Tenor</div>
+                        <div class="meta-item-val">6 Bulan</div>
+                    </div>
+                    <div>
+                        <div class="meta-item-label">Tgl Ajukan</div>
+                        <div class="meta-item-val">10 Nov 2026</div>
+                    </div>
+                    <div>
+                        <div class="meta-item-label">Metode</div>
+                        <div class="meta-item-val">Potong Tunjangan</div>
+                    </div>
+                </div>
+
+                <!-- BOX PANDUAN STATUS: LAYAK -->
+                <div class="layak-guide-box">
+                    <div class="layak-header">
+                        <div class="layak-check-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <div>
+                            <div style="font-size: 12.5px; font-weight: 800; color: #166534;">Status: LAYAK (Disetujui)</div>
+                            <div style="font-size: 10.5px; color: #64748B;">Siap dicairkan oleh petugas Bank Mini</div>
+                        </div>
+                    </div>
+
+                    <p style="font-size: 11px; color: #334155; line-height: 1.45;">
+                        Kunjungi loket Bank Mini Sekolah (Senin&ndash;Jumat, 07.30&ndash;14.00 WIB) dengan kartu identitas pegawai, lalu pilih metode pencairan:
+                    </p>
+
+                    <div class="method-pick-grid">
+                        <div class="method-pick-card">
+                            <div style="font-size: 11.5px; font-weight: 800; color: #065F46;">&#128181; Tunai Cash</div>
+                            <div style="font-size: 10px; color: #64748B; margin-top: 2px;">Terima fisik di loket</div>
+                        </div>
+                        <div class="method-pick-card">
+                            <div style="font-size: 11.5px; font-weight: 800; color: #0369A1;">&#128179; Transfer Bank</div>
+                            <div style="font-size: 10px; color: #64748B; margin-top: 2px;">Masuk rekening / e-wallet</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 9px; padding-top: 8px; border-top: 1px dashed #E2E8F0; font-size: 10.5px; color: #64748B; display: flex; align-items: center; gap: 5px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0D5C46" stroke-width="2.2" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <span>Angsuran aktif otomatis <strong class="tabular-numbers" style="color: #0F172A;">Rp 560.000/bln</strong> setelah tanda tangan berita acara.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIWAYAT PINJAMAN SAYA -->
+            <div class="mobile-card">
+                <div class="section-header-row">
+                    <div class="section-heading">Riwayat Pinjaman Saya</div>
+                    <span style="font-size: 10.5px; font-weight: 700; color: #64748B;">2 Fasilitas</span>
+                </div>
+
+                <div class="history-list">
+                    <div class="history-item">
+                        <div>
+                            <div class="tabular-numbers" style="font-size: 10.5px; color: #64748B; font-weight: 600;">10/11/2026</div>
+                            <div class="tabular-numbers" style="font-size: 14px; font-weight: 800; color: #0F172A; margin-top: 1px;">Rp 3.000.000</div>
+                            <div style="font-size: 11px; color: #64748B; margin-top: 1px;">6 Bln &bull; Potong Gaji</div>
+                        </div>
+                        <span class="badge-pill green">Disetujui</span>
+                    </div>
+
+                    <div class="history-item">
+                        <div>
+                            <div class="tabular-numbers" style="font-size: 10.5px; color: #64748B; font-weight: 600;">12/05/2025</div>
+                            <div class="tabular-numbers" style="font-size: 14px; font-weight: 800; color: #0F172A; margin-top: 1px;">Rp 2.000.000</div>
+                            <div style="font-size: 11px; color: #64748B; margin-top: 1px;">4 Bln &bull; Potong Gaji</div>
+                        </div>
+                        <span class="badge-pill green">Lunas</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM NAV -->
+        <div class="bottom-nav-wrapper">
+            <nav class="mobile-bottom-nav">
+                <a href="#" class="nav-tab-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                    <span>Beranda</span>
+                </a>
+                <a href="#" class="nav-tab-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                    <span>Ajukan</span>
+                </a>
+                <a href="#" class="nav-tab-item active">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    <span>Pinjaman</span>
+                </a>
+                <a href="#" class="nav-tab-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span>Jadwal</span>
+                </a>
+            </nav>
+            <div class="mobile-home-indicator"></div>
+        </div>
+    </div>
+
+</body>
+</html>

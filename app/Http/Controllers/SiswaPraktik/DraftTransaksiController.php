@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class DraftTransaksiController extends Controller
@@ -57,15 +58,16 @@ class DraftTransaksiController extends Controller
             return response()->json([]);
         }
 
+        $likeOp = DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
         $rekening = Rekening::with('nasabah')
             ->where('status_rekening', 'aktif')
             ->whereHas('nasabah', function ($q) {
                 $q->where('status_nasabah', 'aktif');
             })
-            ->where(function ($q) use ($query) {
-                $q->where('no_rek', 'like', "%{$query}%")
-                  ->orWhereHas('nasabah', function ($sub) use ($query) {
-                      $sub->where('nama_nasabah', 'like', "%{$query}%");
+            ->where(function ($q) use ($query, $likeOp) {
+                $q->where('no_rek', $likeOp, "%{$query}%")
+                  ->orWhereHas('nasabah', function ($sub) use ($query, $likeOp) {
+                      $sub->where('nama_nasabah', $likeOp, "%{$query}%");
                   });
             })
             ->limit(10)

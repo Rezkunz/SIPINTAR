@@ -40,7 +40,7 @@ class PeriodeLockService
                 'bulan'          => $bulan,
                 'status_periode' => 'buka',
                 'tgl_tutup'      => null,
-            ]);
+            ], 'periode_id');
             $periode = DB::table('tblPERIODE')->where('periode_id', $periodeId)->first();
         }
 

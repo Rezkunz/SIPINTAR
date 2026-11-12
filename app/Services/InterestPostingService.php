@@ -182,7 +182,7 @@ class InterestPostingService
                 'kredit' => $nominalBunga,
                 'saldo_akhir' => $saldoAkhir,
                 'tgl_transaksi' => $transactionDate,
-            ]);
+            ], 'transaksi_id');
 
             DB::table('tblREKENING')
                 ->where('rekening_id', $rekening->rekening_id)

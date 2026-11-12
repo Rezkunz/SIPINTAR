@@ -172,5 +172,20 @@ class SipintarSeeder extends Seeder
         foreach ($users as $u) {
             DB::table('tblUSER')->updateOrInsert(['user_id' => $u['user_id']], $u);
         }
+
+        if (DB::getDriverName() === 'pgsql') {
+            $sequences = [
+                'tblROLE'            => 'role_id',
+                'tblJENIS_TRANSAKSI' => 'jenis_transaksi_id',
+                'tblKAS'             => 'kas_id',
+                'tblPERIODE'         => 'periode_id',
+                'tblNASABAH'         => 'nasabah_id',
+                'tblREKENING'        => 'rekening_id',
+                'tblUSER'            => 'user_id',
+            ];
+            foreach ($sequences as $table => $pk) {
+                DB::statement("SELECT setval(pg_get_serial_sequence('\"{$table}\"', '{$pk}'), COALESCE(MAX(\"{$pk}\"), 1), MAX(\"{$pk}\") IS NOT NULL) FROM \"{$table}\"");
+            }
+        }
     }
 }
