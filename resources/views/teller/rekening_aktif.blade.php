@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="page-header">
-    <h1 class="page-title">Daftar Rekening Aktif</h1>
+    <h1 class="page-title">Daftar Rekening Aktif </h1>
     <p class="page-subtitle">Rekening pada daftar ini sudah disetujui dan menerima setoran awal oleh Siswa Praktik.</p>
 </div>
 
