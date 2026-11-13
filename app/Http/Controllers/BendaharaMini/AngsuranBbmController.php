@@ -615,10 +615,12 @@ class AngsuranBbmController extends Controller
                     'ja.angsuran_ke',
                     'ja.jatuh_tempo',
                     'kor.koreksi_id',
+                    'kor.status_koreksi',
                     'kor.alasan_koreksi',
                     'kor.created_at as tgl_koreksi'
                 )
                 ->orderBy('ja.angsuran_ke')
+                ->orderBy('ang.angsuran_id')
                 ->get();
 
             $p->daftar_transaksi = $transaksi;
@@ -628,6 +630,8 @@ class AngsuranBbmController extends Controller
                 return (float)$t->bayar_pokok + (float)$t->bayar_bunga;
             });
         }
+
+        $daftarKas = DB::table('tblKAS')->orderBy('kas_id')->get();
 
         // Riwayat audit koreksi yang sudah pernah dilakukan (paginasi 10)
         $riwayatKoreksi = DB::table('tblKOREKSI_ANGSURAN as kor')
@@ -649,19 +653,26 @@ class AngsuranBbmController extends Controller
             ->orderByDesc('kor.koreksi_id')
             ->paginate(10);
 
-        return view('bendahara_mini.angsuran.koreksi', compact('paketPinjamanList', 'riwayatKoreksi'));
+        return view('bendahara_mini.angsuran.koreksi', compact('paketPinjamanList', 'riwayatKoreksi', 'daftarKas'));
     }
 
     /**
-     * Eksekusi transaksi pembalik koreksi angsuran tanpa menghapus baris lama.
+     * Eksekusi koreksi angsuran tanpa menghapus atau menimpa baris lama.
+     * Mode 'ganti': membalik mutasi lama, mencatat angsuran baru + mutasi baru (status tetap lunas).
+     * Mode 'batal': membalik mutasi lama, mengembalikan status jadwal menjadi 'belum'.
      */
     public function prosesKoreksi(Request $request, $angsuranId)
     {
         $request->validate([
-            'alasan_koreksi' => 'required|string|min:5|max:255',
+            'tipe_koreksi'    => 'required|in:ganti,batal',
+            'alasan_koreksi'  => 'required|string|min:5|max:255',
+            'tgl_bayar_baru'  => 'required_if:tipe_koreksi,ganti|nullable|date',
+            'kas_tujuan_id'   => 'required_if:tipe_koreksi,ganti|nullable|integer',
         ], [
-            'alasan_koreksi.required' => 'Alasan koreksi transaksi wajib dicantumkan sebagai bukti audit.',
-            'alasan_koreksi.min'      => 'Alasan koreksi minimal 5 karakter.',
+            'alasan_koreksi.required'    => 'Alasan koreksi transaksi wajib dicantumkan sebagai bukti audit.',
+            'alasan_koreksi.min'         => 'Alasan koreksi minimal 5 karakter.',
+            'tgl_bayar_baru.required_if' => 'Tanggal pembayaran baru wajib diisi untuk perbaikan data angsuran.',
+            'kas_tujuan_id.required_if'  => 'Rekening kas penerima wajib dipilih.',
         ]);
 
         $angsuran = DB::table('tblANGSURAN')->where('angsuran_id', $angsuranId)->first();
@@ -675,18 +686,29 @@ class AngsuranBbmController extends Controller
             return back()->with('error', 'Transaksi angsuran ini sudah pernah dikoreksi sebelumnya.');
         }
 
-        // Cek penguncian periode hari ini
+        // Cek penguncian periode
         try {
-            $periode = PeriodeLockService::assertPeriodeTerbuka(now()->toDateString());
+            $tglAksi = ($request->tipe_koreksi === 'ganti' && !empty($request->tgl_bayar_baru))
+                ? $request->tgl_bayar_baru
+                : now()->toDateString();
+            $periode = PeriodeLockService::assertPeriodeTerbuka($tglAksi);
         } catch (RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         }
 
-        $kasTunai = DB::table('tblKAS')->where('jenis_kas', 'kas')->first();
-        $totalNominal = $angsuran->bayar_pokok + $angsuran->bayar_bunga;
+        // Cari mutasi kas lama yang terhubung dengan angsuran ini
+        $mutasiLama = DB::table('tblMUTASI_KAS')->where('angsuran_id', $angsuranId)->first();
+        $kasLamaId = $mutasiLama ? $mutasiLama->kas_id : DB::table('tblKAS')->where('jenis_kas', 'kas')->value('kas_id');
+        $kasLama = DB::table('tblKAS')->where('kas_id', $kasLamaId)->first();
 
-        DB::transaction(function () use ($angsuran, $request, $periode, $kasTunai, $totalNominal) {
-            // 1. Catat berita acara koreksi
+        $totalNominal = (float)$angsuran->bayar_pokok + (float)$angsuran->bayar_bunga;
+
+        DB::transaction(function () use ($angsuran, $request, $periode, $kasLama, $totalNominal) {
+            $tipeKoreksi = $request->tipe_koreksi;
+            $jadwal = DB::table('tblJADWAL_ANGSURAN')->where('jadwal_angsuran_id', $angsuran->jadwal_angsuran_id)->first();
+
+            // 1. Catat berita acara koreksi untuk entri lama (tidak pernah menghapus entri lama)
+            $statusBaru = ($tipeKoreksi === 'ganti') ? 'diganti' : 'dibatalkan';
             $koreksiId = DB::table('tblKOREKSI_ANGSURAN')->insertGetId([
                 'angsuran_id'    => $angsuran->angsuran_id,
                 'user_id'        => auth()->id(),
@@ -695,17 +717,16 @@ class AngsuranBbmController extends Controller
                 'nominal_pokok'  => $angsuran->bayar_pokok,
                 'nominal_bunga'  => $angsuran->bayar_bunga,
                 'nominal_total'  => $totalNominal,
-                'status_koreksi' => 'selesai',
+                'status_koreksi' => $statusBaru,
             ], 'koreksi_id');
 
-            // 2. Kembalikan status jadwal angsuran menjadi 'belum'
-            DB::table('tblJADWAL_ANGSURAN')
-                ->where('jadwal_angsuran_id', $angsuran->jadwal_angsuran_id)
-                ->update(['status_bayar' => 'belum']);
+            // 2. Catat mutasi kas keluar pembalik (reversal) atas entri lama
+            $uraianPembalik = ($tipeKoreksi === 'ganti')
+                ? "Reversal/koreksi angsuran #ANG-{$angsuran->angsuran_id} (diganti): {$request->alasan_koreksi}"
+                : "Pembatalan/reversal angsuran #ANG-{$angsuran->angsuran_id}: {$request->alasan_koreksi}";
 
-            // 3. Catat mutasi kas keluar pembalik (reversal)
             DB::table('tblMUTASI_KAS')->insert([
-                'kas_id'       => $kasTunai->kas_id,
+                'kas_id'       => $kasLama->kas_id,
                 'periode_id'   => $periode->periode_id,
                 'user_id'      => auth()->id(),
                 'transaksi_id' => null,
@@ -714,34 +735,92 @@ class AngsuranBbmController extends Controller
                 'tgl_mutasi'   => now()->toDateString(),
                 'arah'         => 'keluar',
                 'nominal'      => $totalNominal,
-                'uraian'       => "Koreksi/reversal angsuran #ANG-{$angsuran->angsuran_id}: {$request->alasan_koreksi}",
+                'uraian'       => $uraianPembalik,
             ]);
 
-            // 4. Sesuaikan saldo kas tunai (berkurang kembali sebesar uang yang dibatalkan)
-            DB::table('tblKAS')->where('kas_id', $kasTunai->kas_id)->decrement('saldo', $totalNominal);
+            // Saldo kas lama dikurangi sebesar nominal yang dibalik
+            DB::table('tblKAS')->where('kas_id', $kasLama->kas_id)->decrement('saldo', $totalNominal);
 
-            // 5. Kembalikan status pinjaman menjadi 'cair' jika sebelumnya terlanjur 'lunas'
-            $jadwal = DB::table('tblJADWAL_ANGSURAN')->where('jadwal_angsuran_id', $angsuran->jadwal_angsuran_id)->first();
-            if ($jadwal) {
-                DB::table('tblPINJAMAN')
-                    ->where('pinjaman_id', $jadwal->pinjaman_id)
-                    ->update(['status_pinjaman' => 'cair']);
+            if ($tipeKoreksi === 'ganti') {
+                // 3a. Buat ENTRI ANGSURAN BARU (tidak menimpa baris lama)
+                $kasTujuanId = (int) $request->kas_tujuan_id;
+                $kasTujuan = DB::table('tblKAS')->where('kas_id', $kasTujuanId)->first() ?? $kasLama;
+
+                $newAngsuranId = DB::table('tblANGSURAN')->insertGetId([
+                    'jadwal_angsuran_id' => $angsuran->jadwal_angsuran_id,
+                    'detail_potongan_id' => null,
+                    'user_id'            => auth()->id(),
+                    'tgl_bayar'          => $request->tgl_bayar_baru,
+                    'jenis_bayar'        => $angsuran->jenis_bayar ?? 'angsuran',
+                    'bayar_pokok'        => $angsuran->bayar_pokok,
+                    'bayar_bunga'        => $angsuran->bayar_bunga,
+                ], 'angsuran_id');
+
+                // 3b. Catat MUTASI KAS MASUK BARU untuk entri baru
+                DB::table('tblMUTASI_KAS')->insert([
+                    'kas_id'       => $kasTujuan->kas_id,
+                    'periode_id'   => $periode->periode_id,
+                    'user_id'      => auth()->id(),
+                    'transaksi_id' => null,
+                    'angsuran_id'  => $newAngsuranId,
+                    'pencairan_id' => null,
+                    'tgl_mutasi'   => $request->tgl_bayar_baru,
+                    'arah'         => 'masuk',
+                    'nominal'      => $totalNominal,
+                    'uraian'       => "Penerimaan angsuran pengganti ke-{$jadwal->angsuran_ke} #PINJ-{$jadwal->pinjaman_id} (koreksi #ANG-{$angsuran->angsuran_id})",
+                ]);
+
+                // Saldo kas tujuan bertambah sebesar nominal
+                DB::table('tblKAS')->where('kas_id', $kasTujuan->kas_id)->increment('saldo', $totalNominal);
+
+                // Pastikan status jadwal angsuran tetap 'lunas'
+                DB::table('tblJADWAL_ANGSURAN')
+                    ->where('jadwal_angsuran_id', $angsuran->jadwal_angsuran_id)
+                    ->update(['status_bayar' => 'lunas']);
+
+                AuditLogService::log(
+                    aksi: 'KOREKSI_ANGSURAN_REPLACEMENT',
+                    entitas: 'tblANGSURAN',
+                    entitasId: $newAngsuranId,
+                    dataLama: ['angsuran_id_lama' => $angsuran->angsuran_id],
+                    dataBaru: [
+                        'angsuran_id_baru' => $newAngsuranId,
+                        'tgl_bayar_baru'   => $request->tgl_bayar_baru,
+                        'kas_id'           => $kasTujuan->kas_id,
+                        'alasan'           => $request->alasan_koreksi,
+                    ]
+                );
+            } else {
+                // 3c. Opsi Batal: Kembalikan status jadwal angsuran menjadi 'belum'
+                DB::table('tblJADWAL_ANGSURAN')
+                    ->where('jadwal_angsuran_id', $angsuran->jadwal_angsuran_id)
+                    ->update(['status_bayar' => 'belum']);
+
+                // Kembalikan status pinjaman menjadi 'cair' jika sebelumnya 'lunas'
+                if ($jadwal) {
+                    DB::table('tblPINJAMAN')
+                        ->where('pinjaman_id', $jadwal->pinjaman_id)
+                        ->update(['status_pinjaman' => 'cair']);
+                }
+
+                AuditLogService::log(
+                    aksi: 'KOREKSI_ANGSURAN_REVERSAL',
+                    entitas: 'tblKOREKSI_ANGSURAN',
+                    entitasId: $koreksiId,
+                    dataBaru: [
+                        'angsuran_id'    => $angsuran->angsuran_id,
+                        'alasan_koreksi' => $request->alasan_koreksi,
+                        'nominal_total'  => $totalNominal,
+                    ]
+                );
             }
-
-            AuditLogService::log(
-                aksi: 'KOREKSI_ANGSURAN_REVERSAL',
-                entitas: 'tblKOREKSI_ANGSURAN',
-                entitasId: $koreksiId,
-                dataBaru: [
-                    'angsuran_id'    => $angsuran->angsuran_id,
-                    'alasan_koreksi' => $request->alasan_koreksi,
-                    'nominal_total'  => $totalNominal,
-                ]
-            );
         });
 
-        return redirect()->route('bbm.angsuran.koreksi')
-            ->with('success', 'Transaksi angsuran berhasil dikoreksi melalui transaksi pembalik penyeimbang kas.');
+        $pesan = ($request->tipe_koreksi === 'ganti')
+            ? 'Data angsuran berhasil diperbaiki! Jurnal lama dibalik dan entri angsuran baru telah diterbitkan di pembukuan.'
+            : 'Transaksi angsuran berhasil dibatalkan melalui transaksi pembalik penyeimbang kas.';
+
+        return redirect()->route('bbm.angsuran.koreksi')->with('success', $pesan);
     }
 }
 

@@ -143,8 +143,15 @@
                             <div style="font-weight:700; font-family:monospace; color:var(--text-heading);">
                                 #ANG-{{ str_pad($rk->angsuran_id, 4, '0', STR_PAD_LEFT) }}
                             </div>
-                            <div style="font-size:11px; color:var(--text-muted);">
+                            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
                                 Cicilan Ke-{{ $rk->angsuran_ke }} (#PINJ-{{ $rk->pinjaman_id }})
+                            </div>
+                            <div style="margin-top:4px;">
+                                @if(($rk->status_koreksi ?? '') === 'diganti')
+                                    <span class="badge-pill amber" style="font-size:10px; padding:2px 6px;">Diganti (Entri Baru)</span>
+                                @else
+                                    <span class="badge-pill red" style="font-size:10px; padding:2px 6px;">Dibatalkan (Void)</span>
+                                @endif
                             </div>
                         </td>
                         <td>
@@ -209,11 +216,11 @@
 
 {{-- ── MODAL 2: FORM INPUT ALASAN KOREKSI / BERITA ACARA ── --}}
 <div id="modalFormKoreksi" class="sipintar-modal-backdrop" style="display:none; z-index:10000; align-items:center; justify-content:center;" onclick="tutupModalForm(event)">
-    <div class="sipintar-modal-card" style="max-width:480px; background:#FFFFFF; border-radius:14px; overflow:hidden; border:1px solid #E2E8F0; box-shadow:0 25px 50px -12px rgba(15,23,42,0.3);" onclick="event.stopPropagation()">
+    <div class="sipintar-modal-card" style="max-width:540px; background:#FFFFFF; border-radius:14px; overflow:hidden; border:1px solid #E2E8F0; box-shadow:0 25px 50px -12px rgba(15,23,42,0.3);" onclick="event.stopPropagation()">
         
-        <div style="padding:18px 22px; background:#DC2626; color:#FFFFFF; display:flex; justify-content:space-between; align-items:center;">
+        <div style="padding:18px 22px; background:linear-gradient(135deg, #0D5C46 0%, #15803D 100%); color:#FFFFFF; display:flex; justify-content:space-between; align-items:center;">
             <div>
-                <div style="font-size:11px; text-transform:uppercase; font-weight:700; color:#FECACA; letter-spacing:0.04em;">Audit Trail Pembukuan</div>
+                <div style="font-size:11px; text-transform:uppercase; font-weight:700; color:#A7F3D0; letter-spacing:0.04em;">Audit Trail Pembukuan Perbankan</div>
                 <h3 style="margin:2px 0 0 0; font-size:16px; font-weight:800; color:#FFFFFF;">Form Koreksi Transaksi Angsuran</h3>
             </div>
             <button type="button" onclick="tutupModalForm()" style="background:rgba(255,255,255,0.2); border:none; color:#FFFFFF; width:30px; height:30px; border-radius:6px; cursor:pointer; font-size:18px;">&times;</button>
@@ -223,28 +230,91 @@
             @csrf
 
             {{-- Ringkasan Item yang akan dikoreksi --}}
-            <div style="background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:14px 16px; margin-bottom:16px;">
-                <div style="font-weight:800; font-size:14.5px; color:#991B1B;" id="formKoreksiNama">Nama Peminjam</div>
-                <div style="font-size:12.5px; color:#B91C1C; margin-top:3px;" id="formKoreksiDetail">Angsuran Ke-N &bull; Total Rp 0</div>
+            <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:10px; padding:12px 16px; margin-bottom:16px;">
+                <div style="font-weight:800; font-size:14.5px; color:#14532D;" id="formKoreksiNama">Nama Peminjam</div>
+                <div style="font-size:12.5px; color:#166534; margin-top:2px;" id="formKoreksiDetail">Angsuran Ke-N &bull; Total Rp 0</div>
             </div>
 
-            <div style="font-size:12px; color:#64748B; line-height:1.45; margin-bottom:16px;">
-                <strong>Perhatian:</strong> Koreksi ini akan mengembalikan status tagihan jadwal angsuran menjadi <em>belum bayar</em>, mencatat mutasi pengeluaran kas pembalik, dan mengurangi saldo kas operasional.
+            {{-- Pilihan Mode Tindakan Koreksi --}}
+            <div class="form-group" style="margin-bottom:16px;">
+                <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-heading); margin-bottom:8px;">
+                    Pilih Tindakan Koreksi <span style="color:#DC2626;">*</span>
+                </label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <label style="display:flex; align-items:flex-start; gap:8px; padding:10px 12px; border:2px solid #0D5C46; border-radius:8px; background:#F0FDF4; cursor:pointer;" id="labelModeGanti">
+                        <input type="radio" name="tipe_koreksi" id="modeGanti" value="ganti" checked onchange="toggleModeKoreksi()" style="margin-top:2px;">
+                        <div>
+                            <div style="font-size:12.5px; font-weight:700; color:#0D5C46;">Edit / Ganti Data</div>
+                            <div style="font-size:11px; color:#64748B; margin-top:2px;">Terbitkan entri baru yang benar (jurnal lama dibalik)</div>
+                        </div>
+                    </label>
+                    <label style="display:flex; align-items:flex-start; gap:8px; padding:10px 12px; border:1px solid #CBD5E1; border-radius:8px; background:#F8FAFC; cursor:pointer;" id="labelModeBatal">
+                        <input type="radio" name="tipe_koreksi" id="modeBatal" value="batal" onchange="toggleModeKoreksi()" style="margin-top:2px;">
+                        <div>
+                            <div style="font-size:12.5px; font-weight:700; color:#991B1B;">Batalkan Saja (Void)</div>
+                            <div style="font-size:11px; color:#64748B; margin-top:2px;">Status kembali belum bayar &amp; kas ditarik</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            {{-- Form Input Khusus Mode Ganti / Edit --}}
+            <div id="sectionGantiData" style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:14px; margin-bottom:16px;">
+                <div style="font-size:11.5px; font-weight:700; color:#0D5C46; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    Data Pengganti yang Sah
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="form-group">
+                        <label class="form-label" for="tgl_bayar_baru" style="display:block; font-size:12px; font-weight:600; color:var(--text-heading); margin-bottom:4px;">
+                            Tanggal Bayar yang Benar <span style="color:#DC2626;">*</span>
+                        </label>
+                        <input type="date" name="tgl_bayar_baru" id="tgl_bayar_baru" class="form-input"
+                               value="{{ date('Y-m-d') }}"
+                               style="width:100%; padding:8px 10px; font-size:12.5px; border:1px solid #CBD5E1; border-radius:6px; box-sizing:border-box;">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="kas_tujuan_id" style="display:block; font-size:12px; font-weight:600; color:var(--text-heading); margin-bottom:4px;">
+                            Rekening Kas Penerima <span style="color:#DC2626;">*</span>
+                        </label>
+                        <select name="kas_tujuan_id" id="kas_tujuan_id" class="form-select"
+                                style="width:100%; padding:8px 10px; font-size:12.5px; border:1px solid #CBD5E1; border-radius:6px; box-sizing:border-box;">
+                            @if(isset($daftarKas))
+                                @foreach($daftarKas as $k)
+                                    <option value="{{ $k->kas_id }}">{{ $k->nama_kas }} (Saldo: Rp {{ number_format($k->saldo, 0, ',', '.') }})</option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+                </div>
+
+                <div style="font-size:11.5px; color:#475569; margin-top:10px; line-height:1.4;">
+                    ℹ️ <strong>Audit Trail:</strong> Baris data lama tetap diarsipkan sebagai bukti riwayat. Sistem mencatat transaksi pembalik kas lama dan otomatis membukukan transaksi angsuran baru.
+                </div>
+            </div>
+
+            {{-- Info Khusus Mode Batalkan Saja --}}
+            <div id="sectionBatalData" style="display:none; background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:12px 14px; margin-bottom:16px;">
+                <div style="font-size:12px; color:#991B1B; line-height:1.45;">
+                    ⚠️ <strong>Perhatian:</strong> Pembatalan (void) akan membalik jurnal kas dan mengembalikan status tagihan jadwal angsuran menjadi <strong>belum bayar</strong>.
+                </div>
             </div>
 
             <div class="form-group" style="margin-bottom:20px;">
                 <label class="form-label" for="alasan_koreksi" style="display:block; font-size:12.5px; font-weight:700; color:var(--text-heading); margin-bottom:6px;">
-                    Alasan Pembatalan / Koreksi <span style="color:#DC2626;">*</span>
+                    Alasan Koreksi / Catatan Berita Acara <span style="color:#DC2626;">*</span>
                 </label>
                 <textarea name="alasan_koreksi" id="alasan_koreksi" class="form-textarea" rows="3" required
-                          placeholder="Contoh: Salah pilih nama nasabah penyetor atau salah input nominal"
+                          placeholder="Contoh: Salah pilih tanggal pembayaran saat input transaksi"
                           style="width:100%; padding:10px 12px; font-size:13px; border:1px solid #CBD5E1; border-radius:8px; box-sizing:border-box;"></textarea>
             </div>
 
             <div style="display:flex; justify-content:flex-end; gap:10px;">
-                <button type="button" class="btn-ui btn-ui-outline" onclick="tutupModalForm()">Batal</button>
-                <button type="button" class="btn-ui btn-ui-danger" onclick="konfirmasiSubmitKoreksi()" style="background:#DC2626; border-color:#DC2626; font-weight:700;">
-                    Konfirmasi Koreksi
+                <button type="button" class="btn-ui btn-ui-outline" onclick="tutupModalForm()">Tutup</button>
+                <button type="button" id="btnSubmitKoreksi" class="btn-ui btn-ui-primary" onclick="konfirmasiSubmitKoreksi()" style="font-weight:700;">
+                    Simpan Koreksi
                 </button>
             </div>
         </form>
@@ -265,10 +335,12 @@
                     'angsuran_id' => $t->angsuran_id,
                     'angsuran_ke' => $t->angsuran_ke,
                     'tgl_bayar' => \Carbon\Carbon::parse($t->tgl_bayar)->format('d/m/Y'),
+                    'tgl_bayar_raw' => $t->tgl_bayar,
                     'pokok' => $t->bayar_pokok,
                     'bunga' => $t->bayar_bunga,
                     'total' => $t->bayar_pokok + $t->bayar_bunga,
                     'is_koreksi' => !empty($t->koreksi_id),
+                    'status_koreksi' => $t->status_koreksi ?? '',
                     'alasan_koreksi' => $t->alasan_koreksi ?? '',
                 ];
             })
@@ -308,23 +380,39 @@ function bukaModalPilihTransaksi(pinjamanId) {
         html += `<tr><td colspan="5" style="text-align:center; padding:20px; color:#94A3B8;">Belum ada angsuran yang dibukukan.</td></tr>`;
     } else {
         data.transaksi.forEach(t => {
+            let rowBg = '';
+            let badgeClass = 'green';
+            let badgeText = 'Sah (Aktif)';
+
+            if (t.is_koreksi) {
+                if (t.status_koreksi === 'diganti') {
+                    rowBg = 'background:#FEFCE8;';
+                    badgeClass = 'amber';
+                    badgeText = 'Terkoreksi (Diganti)';
+                } else {
+                    rowBg = 'background:#FEF2F2;';
+                    badgeClass = 'red';
+                    badgeText = 'Telah Dibatalkan';
+                }
+            }
+
             html += `
-                <tr style="${t.is_koreksi ? 'background:#FEF2F2;' : ''}">
+                <tr style="${rowBg}">
                     <td style="font-weight:700;">Ke-${t.angsuran_ke}</td>
                     <td>${t.tgl_bayar}</td>
-                    <td style="text-align:right; font-weight:800; color:${t.is_koreksi ? '#991B1B' : '#0D5C46'};">
+                    <td style="text-align:right; font-weight:800; color:${t.is_koreksi ? '#94A3B8' : '#0D5C46'};">
                         ${formatRupiah(t.total)}
                     </td>
                     <td style="text-align:center;">
-                        <span class="badge-pill ${t.is_koreksi ? 'red' : 'green'}" style="font-size:11px;">
-                            ${t.is_koreksi ? 'Telah Dibatalkan' : 'Sah (Aktif)'}
+                        <span class="badge-pill ${badgeClass}" style="font-size:11px;">
+                            ${badgeText}
                         </span>
                     </td>
                     <td style="text-align:center;">
                         ${t.is_koreksi 
-                            ? `<span style="font-size:11px; color:#94A3B8;">-</span>` 
-                            : `<button type="button" class="btn-ui btn-ui-sm btn-ui-danger" style="padding:4px 10px; font-size:11.5px;" 
-                                      onclick="siapkanFormKoreksi(${t.angsuran_id}, '${escapeHtml(data.nama)}', ${t.angsuran_ke}, ${t.total})">
+                            ? `<span style="font-size:11px; color:#94A3B8;" title="${escapeHtml(t.alasan_koreksi || '')}">Arsip</span>` 
+                            : `<button type="button" class="btn-ui btn-ui-sm btn-ui-primary" style="padding:4px 10px; font-size:11.5px;" 
+                                      onclick="siapkanFormKoreksi(${t.angsuran_id}, '${escapeHtml(data.nama)}', ${t.angsuran_ke}, ${t.total}, '${t.tgl_bayar_raw}')">
                                    Koreksi
                                </button>`
                         }
@@ -343,7 +431,7 @@ function bukaModalPilihTransaksi(pinjamanId) {
 }
 
 function escapeHtml(text) {
-    return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    return String(text || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 }
 
 function tutupModalPilih(event) {
@@ -353,7 +441,40 @@ function tutupModalPilih(event) {
     modal.classList.remove('open');
 }
 
-function siapkanFormKoreksi(angsuranId, nama, angsuranKe, total) {
+function toggleModeKoreksi() {
+    const isGanti = document.getElementById('modeGanti').checked;
+    const secGanti = document.getElementById('sectionGantiData');
+    const secBatal = document.getElementById('sectionBatalData');
+    const labelGanti = document.getElementById('labelModeGanti');
+    const labelBatal = document.getElementById('labelModeBatal');
+    const btnSubmit = document.getElementById('btnSubmitKoreksi');
+
+    if (isGanti) {
+        secGanti.style.display = 'block';
+        secBatal.style.display = 'none';
+        labelGanti.style.borderColor = '#0D5C46';
+        labelGanti.style.background = '#F0FDF4';
+        labelBatal.style.borderColor = '#CBD5E1';
+        labelBatal.style.background = '#F8FAFC';
+        btnSubmit.className = 'btn-ui btn-ui-primary';
+        btnSubmit.innerText = 'Simpan Perubahan & Terbitkan Entri Baru';
+        btnSubmit.style.background = '';
+        btnSubmit.style.borderColor = '';
+    } else {
+        secGanti.style.display = 'none';
+        secBatal.style.display = 'block';
+        labelBatal.style.borderColor = '#DC2626';
+        labelBatal.style.background = '#FEF2F2';
+        labelGanti.style.borderColor = '#CBD5E1';
+        labelGanti.style.background = '#F8FAFC';
+        btnSubmit.className = 'btn-ui btn-ui-danger';
+        btnSubmit.innerText = 'Konfirmasi Pembatalan (Void)';
+        btnSubmit.style.background = '#DC2626';
+        btnSubmit.style.borderColor = '#DC2626';
+    }
+}
+
+function siapkanFormKoreksi(angsuranId, nama, angsuranKe, total, tglBayarRaw) {
     // Tutup modal pemilih dulu
     const mPilih = document.getElementById('modalPilihTransaksi');
     mPilih.style.display = 'none';
@@ -366,6 +487,13 @@ function siapkanFormKoreksi(angsuranId, nama, angsuranKe, total) {
     document.getElementById('formKoreksiNama').innerText = nama;
     document.getElementById('formKoreksiDetail').innerText = `Angsuran Ke-${angsuranKe} • Total Nominal: ${formatRupiah(total)}`;
     document.getElementById('alasan_koreksi').value = '';
+
+    if (tglBayarRaw) {
+        document.getElementById('tgl_bayar_baru').value = tglBayarRaw;
+    }
+
+    document.getElementById('modeGanti').checked = true;
+    toggleModeKoreksi();
 
     const modal = document.getElementById('modalFormKoreksi');
     modal.style.display = 'flex';
@@ -380,22 +508,43 @@ function tutupModalForm(event) {
 }
 
 function konfirmasiSubmitKoreksi() {
+    const isGanti = document.getElementById('modeGanti').checked;
     const alasan = document.getElementById('alasan_koreksi').value.trim();
+
     if (alasan.length < 5) {
         alert('Mohon cantumkan alasan koreksi minimal 5 karakter sebagai bukti audit.');
         return;
     }
 
-    sipintarConfirm({
-        title: 'Batalkan & Koreksi Transaksi Angsuran?',
-        message: 'Tindakan ini akan membalik pembukuan kas dan mengembalikan status cicilan ini menjadi belum bayar. Lanjutkan?',
-        confirmText: 'Ya, Lakukan Koreksi',
-        cancelText: 'Batal',
-        confirmColor: '#DC2626',
-        onConfirm: () => {
-            document.getElementById('formKoreksiAction').submit();
+    if (isGanti) {
+        const tglBaru = document.getElementById('tgl_bayar_baru').value;
+        if (!tglBaru) {
+            alert('Mohon tentukan tanggal bayar yang benar.');
+            return;
         }
-    });
+
+        sipintarConfirm({
+            title: 'Simpan Perbaikan Data Angsuran?',
+            message: 'Sistem akan membalik jurnal lama dan menerbitkan entri angsuran baru dengan tanggal/kas yang baru tanpa menimpa data arsip lama. Lanjutkan?',
+            confirmText: 'Ya, Simpan Perbaikan',
+            cancelText: 'Batal',
+            confirmColor: '#0D5C46',
+            onConfirm: () => {
+                document.getElementById('formKoreksiAction').submit();
+            }
+        });
+    } else {
+        sipintarConfirm({
+            title: 'Batalkan Transaksi Angsuran (Void)?',
+            message: 'Tindakan ini akan membalik pembukuan kas dan mengembalikan status cicilan ini menjadi belum bayar. Lanjutkan?',
+            confirmText: 'Ya, Batalkan Transaksi',
+            cancelText: 'Batal',
+            confirmColor: '#DC2626',
+            onConfirm: () => {
+                document.getElementById('formKoreksiAction').submit();
+            }
+        });
+    }
 }
 </script>
 

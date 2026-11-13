@@ -27,6 +27,92 @@
     </div>
 @endif
 
+<style>
+.btn-filter-mode {
+    border: none;
+    background: transparent;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748B;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.btn-filter-mode:hover {
+    color: #0D5C46;
+}
+.btn-filter-mode.active {
+    background: #FFFFFF;
+    color: #0D5C46;
+    font-weight: 700;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+</style>
+
+{{-- ── FILTER PERIODE LAPORAN KAS BANK (HARIAN, BULANAN, TAHUNAN, SEMUA) ── --}}
+<div class="content-card" style="margin-bottom: 20px; padding: 12px 18px;">
+    <form method="GET" action="{{ route('kas.bank') }}" id="formFilterKasBank" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:6px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0D5C46" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span style="font-size:12.5px; font-weight:700; color:var(--text-heading);">Filter Periode:</span>
+            </div>
+            
+            {{-- Mode Switcher Pills --}}
+            <div style="display:flex; background:#F1F5F9; border-radius:8px; padding:3px; gap:2px;">
+                <button type="button" class="btn-filter-mode {{ ($filter['type'] ?? 'harian') === 'harian' ? 'active' : '' }}" onclick="pilihFilterModeBank('harian')">Per Hari</button>
+                <button type="button" class="btn-filter-mode {{ ($filter['type'] ?? '') === 'bulanan' ? 'active' : '' }}" onclick="pilihFilterModeBank('bulanan')">Per Bulan</button>
+                <button type="button" class="btn-filter-mode {{ ($filter['type'] ?? '') === 'tahunan' ? 'active' : '' }}" onclick="pilihFilterModeBank('tahunan')">Per Tahun</button>
+                <button type="button" class="btn-filter-mode {{ ($filter['type'] ?? '') === 'semua' ? 'active' : '' }}" onclick="pilihFilterModeBank('semua')">Semua</button>
+            </div>
+            <input type="hidden" name="filter_type" id="filter_type_bank" value="{{ $filter['type'] ?? 'harian' }}">
+
+            {{-- Input Form Harian (Pilih Tanggal) --}}
+            <div id="wrapperInputHarianBank" style="display: {{ ($filter['type'] ?? 'harian') === 'harian' ? 'inline-block' : 'none' }};">
+                <input type="date" name="tanggal" value="{{ $filter['tanggal'] ?? date('Y-m-d') }}" class="form-input" style="padding:5px 10px; font-size:12.5px; border-radius:6px; height:32px;" onchange="this.form.submit()">
+            </div>
+
+            {{-- Input Form Bulanan (Pilih Bulan & Tahun) --}}
+            <div id="wrapperInputBulananBank" style="display: {{ ($filter['type'] ?? '') === 'bulanan' ? 'flex' : 'none' }}; gap:6px; align-items:center;">
+                <select name="bulan" class="form-select" style="padding:5px 10px; font-size:12.5px; border-radius:6px; height:32px;" onchange="this.form.submit()">
+                    @for($m = 1; $m <= 12; $m++)
+                        @php $mStr = str_pad($m, 2, '0', STR_PAD_LEFT); @endphp
+                        <option value="{{ $mStr }}" {{ (int)($filter['bulan'] ?? date('m')) === $m ? 'selected' : '' }}>
+                            {{ \Carbon\Carbon::createFromDate(2026, $m, 1)->translatedFormat('F') }}
+                        </option>
+                    @endfor
+                </select>
+                <select name="tahun" id="selectTahunBulanBank" class="form-select" style="padding:5px 10px; font-size:12.5px; border-radius:6px; height:32px;" onchange="this.form.submit()">
+                    @foreach($availableYears as $y)
+                        <option value="{{ $y }}" {{ (int)($filter['tahun'] ?? date('Y')) === (int)$y ? 'selected' : '' }}>{{ $y }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- Input Form Tahunan (Pilih Tahun) --}}
+            <div id="wrapperInputTahunanBank" style="display: {{ ($filter['type'] ?? '') === 'tahunan' ? 'inline-block' : 'none' }};">
+                <select name="{{ ($filter['type'] ?? '') === 'tahunan' ? 'tahun' : 'tahun_tahunan' }}" id="selectTahunTahunanBank" class="form-select" style="padding:5px 10px; font-size:12.5px; border-radius:6px; height:32px;" onchange="syncTahunanBank(this)">
+                    @foreach($availableYears as $y)
+                        <option value="{{ $y }}" {{ (int)($filter['tahun'] ?? date('Y')) === (int)$y ? 'selected' : '' }}>Tahun {{ $y }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span class="badge-pill blue" style="font-size:12px; padding:4px 10px; font-weight:700;">
+                Periode: {{ $filter['label'] ?? 'Hari Ini' }}
+            </span>
+            @if(($filter['type'] ?? 'harian') !== 'harian' || ($filter['tanggal'] ?? '') !== date('Y-m-d'))
+                <a href="{{ route('kas.bank') }}" class="btn-ui btn-ui-outline btn-ui-sm" style="font-size:11.5px; padding:3px 8px;">
+                    Reset Hari Ini
+                </a>
+            @endif
+        </div>
+    </form>
+</div>
+
 {{-- ── 4 FINANCIAL METRICS ROW ── --}}
 <div class="metric-grid" style="margin-bottom: 24px;">
     <div class="metric-card card-emerald">
@@ -39,7 +125,7 @@
 
     <div class="metric-card card-blue">
         <div class="metric-header">
-            <span class="metric-title">Akumulasi Transfer Masuk</span>
+            <span class="metric-title">Transfer Masuk ({{ $filter['label'] ?? 'Hari Ini' }})</span>
         </div>
         <div class="metric-value"><span class="curr-prefix">Rp</span>{{ number_format($masukBank, 0, ',', '.') }}</div>
         <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">Hasil transfer potongan tunjangan pegawai</div>
@@ -47,7 +133,7 @@
 
     <div class="metric-card card-amber">
         <div class="metric-header">
-            <span class="metric-title">Akumulasi Penarikan Bank</span>
+            <span class="metric-title">Penarikan Bank ({{ $filter['label'] ?? 'Hari Ini' }})</span>
         </div>
         <div class="metric-value"><span class="curr-prefix">Rp</span>{{ number_format($keluarBank, 0, ',', '.') }}</div>
         <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">Penarikan tunai untuk kas fisik operasional</div>
@@ -58,7 +144,7 @@
             <span class="metric-title">Total Transaksi Bank</span>
         </div>
         <div class="metric-value">{{ $totalTransaksiBank }} <span style="font-size:14px; font-weight:600; color:var(--text-muted);">Mutasi</span></div>
-        <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">Audit trail perbankan Bank Mini</div>
+        <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">Periode: {{ $filter['label'] ?? date('d F Y') }}</div>
     </div>
 </div>
 
@@ -67,7 +153,7 @@
     <div class="card-header-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
         <div>
             <h2 class="card-heading">Jurnal Mutasi Rekening Bank Bendahara</h2>
-            <div style="font-size:12px; color:var(--text-muted);">Riwayat penerimaan transfer potongan payroll sekolah, penarikan, dan pemindahbukuan (maksimal 10 baris per halaman)</div>
+            <div style="font-size:12px; color:var(--text-muted);">Riwayat penerimaan transfer potongan payroll sekolah, penarikan, dan pemindahbukuan &bull; Periode: <strong>{{ $filter['label'] ?? 'Hari Ini' }}</strong> (maksimal 10 baris per halaman)</div>
         </div>
 
         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
@@ -236,6 +322,29 @@
 </div>
 
 <script>
+function pilihFilterModeBank(mode) {
+    document.getElementById('filter_type_bank').value = mode;
+    const selectTahunBulan = document.getElementById('selectTahunBulanBank');
+    const selectTahunTahunan = document.getElementById('selectTahunTahunanBank');
+
+    if (mode === 'tahunan') {
+        if (selectTahunBulan) selectTahunBulan.disabled = true;
+        if (selectTahunTahunan) selectTahunTahunan.name = 'tahun';
+    } else {
+        if (selectTahunBulan) selectTahunBulan.disabled = false;
+        if (selectTahunTahunan) selectTahunTahunan.name = 'tahun_tahunan';
+    }
+
+    document.getElementById('formFilterKasBank').submit();
+}
+
+function syncTahunanBank(el) {
+    const selectTahunBulan = document.getElementById('selectTahunBulanBank');
+    if (selectTahunBulan) selectTahunBulan.disabled = true;
+    el.name = 'tahun';
+    el.form.submit();
+}
+
 function bukaModalBankManual() {
     const modal = document.getElementById('modalInputKasBank');
     modal.style.display = 'flex';
