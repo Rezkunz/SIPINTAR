@@ -215,106 +215,111 @@
 </div>
 
 {{-- ── MODAL 2: FORM INPUT ALASAN KOREKSI / BERITA ACARA ── --}}
-<div id="modalFormKoreksi" class="sipintar-modal-backdrop" style="display:none; z-index:10000; align-items:center; justify-content:center;" onclick="tutupModalForm(event)">
-    <div class="sipintar-modal-card" style="max-width:540px; background:#FFFFFF; border-radius:14px; overflow:hidden; border:1px solid #E2E8F0; box-shadow:0 25px 50px -12px rgba(15,23,42,0.3);" onclick="event.stopPropagation()">
+<div id="modalFormKoreksi" class="sipintar-modal-backdrop" style="display:none; z-index:10000; align-items:center; justify-content:center; padding:16px;" onclick="tutupModalForm(event)">
+    <div class="sipintar-modal-card" style="max-width:540px; width:100%; max-height:92vh; display:flex; flex-direction:column; background:#FFFFFF; border-radius:14px; overflow:hidden; border:1px solid #E2E8F0; box-shadow:0 25px 50px -12px rgba(15,23,42,0.3);" onclick="event.stopPropagation()">
         
-        <div style="padding:18px 22px; background:linear-gradient(135deg, #0D5C46 0%, #15803D 100%); color:#FFFFFF; display:flex; justify-content:space-between; align-items:center;">
+        {{-- Header Modal (Fixed) --}}
+        <div style="padding:16px 20px; background:linear-gradient(135deg, #0D5C46 0%, #15803D 100%); color:#FFFFFF; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
             <div>
                 <div style="font-size:11px; text-transform:uppercase; font-weight:700; color:#A7F3D0; letter-spacing:0.04em;">Audit Trail Pembukuan Perbankan</div>
-                <h3 style="margin:2px 0 0 0; font-size:16px; font-weight:800; color:#FFFFFF;">Form Koreksi Transaksi Angsuran</h3>
+                <h3 style="margin:2px 0 0 0; font-size:15.5px; font-weight:800; color:#FFFFFF;">Form Koreksi Transaksi Angsuran</h3>
             </div>
             <button type="button" onclick="tutupModalForm()" style="background:rgba(255,255,255,0.2); border:none; color:#FFFFFF; width:30px; height:30px; border-radius:6px; cursor:pointer; font-size:18px;">&times;</button>
         </div>
 
-        <form id="formKoreksiAction" method="POST" action="" style="padding:22px;">
+        <form id="formKoreksiAction" method="POST" action="" style="display:flex; flex-direction:column; overflow:hidden; margin:0; flex:1;">
             @csrf
 
-            {{-- Ringkasan Item yang akan dikoreksi --}}
-            <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:10px; padding:12px 16px; margin-bottom:16px;">
-                <div style="font-weight:800; font-size:14.5px; color:#14532D;" id="formKoreksiNama">Nama Peminjam</div>
-                <div style="font-size:12.5px; color:#166534; margin-top:2px;" id="formKoreksiDetail">Angsuran Ke-N &bull; Total Rp 0</div>
-            </div>
-
-            {{-- Pilihan Mode Tindakan Koreksi --}}
-            <div class="form-group" style="margin-bottom:16px;">
-                <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-heading); margin-bottom:8px;">
-                    Pilih Tindakan Koreksi <span style="color:#DC2626;">*</span>
-                </label>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <label style="display:flex; align-items:flex-start; gap:8px; padding:10px 12px; border:2px solid #0D5C46; border-radius:8px; background:#F0FDF4; cursor:pointer;" id="labelModeGanti">
-                        <input type="radio" name="tipe_koreksi" id="modeGanti" value="ganti" checked onchange="toggleModeKoreksi()" style="margin-top:2px;">
-                        <div>
-                            <div style="font-size:12.5px; font-weight:700; color:#0D5C46;">Edit / Ganti Data</div>
-                            <div style="font-size:11px; color:#64748B; margin-top:2px;">Terbitkan entri baru yang benar (jurnal lama dibalik)</div>
-                        </div>
-                    </label>
-                    <label style="display:flex; align-items:flex-start; gap:8px; padding:10px 12px; border:1px solid #CBD5E1; border-radius:8px; background:#F8FAFC; cursor:pointer;" id="labelModeBatal">
-                        <input type="radio" name="tipe_koreksi" id="modeBatal" value="batal" onchange="toggleModeKoreksi()" style="margin-top:2px;">
-                        <div>
-                            <div style="font-size:12.5px; font-weight:700; color:#991B1B;">Batalkan Saja (Void)</div>
-                            <div style="font-size:11px; color:#64748B; margin-top:2px;">Status kembali belum bayar &amp; kas ditarik</div>
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            {{-- Form Input Khusus Mode Ganti / Edit --}}
-            <div id="sectionGantiData" style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; padding:14px; margin-bottom:16px;">
-                <div style="font-size:11.5px; font-weight:700; color:#0D5C46; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                    Data Pengganti yang Sah
+            {{-- Body Modal (Scrollable if height exceeds screen) --}}
+            <div style="padding:18px 20px; overflow-y:auto; flex:1;">
+                {{-- Ringkasan Item yang akan dikoreksi --}}
+                <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:8px; padding:10px 14px; margin-bottom:14px;">
+                    <div style="font-weight:800; font-size:14px; color:#14532D;" id="formKoreksiNama">Nama Peminjam</div>
+                    <div style="font-size:12px; color:#166534; margin-top:2px;" id="formKoreksiDetail">Angsuran Ke-N &bull; Total Rp 0</div>
                 </div>
 
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                    <div class="form-group">
-                        <label class="form-label" for="tgl_bayar_baru" style="display:block; font-size:12px; font-weight:600; color:var(--text-heading); margin-bottom:4px;">
-                            Tanggal Bayar yang Benar <span style="color:#DC2626;">*</span>
+                {{-- Pilihan Mode Tindakan Koreksi --}}
+                <div class="form-group" style="margin-bottom:14px;">
+                    <label style="display:block; font-size:12px; font-weight:700; color:var(--text-heading); margin-bottom:6px;">
+                        Pilih Tindakan Koreksi <span style="color:#DC2626;">*</span>
+                    </label>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                        <label style="display:flex; align-items:flex-start; gap:8px; padding:9px 11px; border:2px solid #0D5C46; border-radius:8px; background:#F0FDF4; cursor:pointer;" id="labelModeGanti">
+                            <input type="radio" name="tipe_koreksi" id="modeGanti" value="ganti" checked onchange="toggleModeKoreksi()" style="margin-top:2px;">
+                            <div>
+                                <div style="font-size:12px; font-weight:700; color:#0D5C46;">Edit / Ganti Data</div>
+                                <div style="font-size:10.5px; color:#64748B; margin-top:1px;">Terbitkan entri baru (jurnal lama dibalik)</div>
+                            </div>
                         </label>
-                        <input type="date" name="tgl_bayar_baru" id="tgl_bayar_baru" class="form-input"
-                               value="{{ date('Y-m-d') }}"
-                               style="width:100%; padding:8px 10px; font-size:12.5px; border:1px solid #CBD5E1; border-radius:6px; box-sizing:border-box;">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="kas_tujuan_id" style="display:block; font-size:12px; font-weight:600; color:var(--text-heading); margin-bottom:4px;">
-                            Rekening Kas Penerima <span style="color:#DC2626;">*</span>
+                        <label style="display:flex; align-items:flex-start; gap:8px; padding:9px 11px; border:1px solid #CBD5E1; border-radius:8px; background:#F8FAFC; cursor:pointer;" id="labelModeBatal">
+                            <input type="radio" name="tipe_koreksi" id="modeBatal" value="batal" onchange="toggleModeKoreksi()" style="margin-top:2px;">
+                            <div>
+                                <div style="font-size:12px; font-weight:700; color:#991B1B;">Batalkan Saja (Void)</div>
+                                <div style="font-size:10.5px; color:#64748B; margin-top:1px;">Status kembali belum bayar &amp; kas ditarik</div>
+                            </div>
                         </label>
-                        <select name="kas_tujuan_id" id="kas_tujuan_id" class="form-select"
-                                style="width:100%; padding:8px 10px; font-size:12.5px; border:1px solid #CBD5E1; border-radius:6px; box-sizing:border-box;">
-                            @if(isset($daftarKas))
-                                @foreach($daftarKas as $k)
-                                    <option value="{{ $k->kas_id }}">{{ $k->nama_kas }} (Saldo: Rp {{ number_format($k->saldo, 0, ',', '.') }})</option>
-                                @endforeach
-                            @endif
-                        </select>
                     </div>
                 </div>
 
-                <div style="font-size:11.5px; color:#475569; margin-top:10px; line-height:1.4;">
-                    ℹ️ <strong>Audit Trail:</strong> Baris data lama tetap diarsipkan sebagai bukti riwayat. Sistem mencatat transaksi pembalik kas lama dan otomatis membukukan transaksi angsuran baru.
+                {{-- Form Input Khusus Mode Ganti / Edit --}}
+                <div id="sectionGantiData" style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:12px; margin-bottom:14px;">
+                    <div style="font-size:11px; font-weight:700; color:#0D5C46; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        Data Pengganti yang Sah
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div class="form-group">
+                            <label class="form-label" for="tgl_bayar_baru" style="display:block; font-size:11.5px; font-weight:600; color:var(--text-heading); margin-bottom:3px;">
+                                Tanggal Bayar Baru <span style="color:#DC2626;">*</span>
+                            </label>
+                            <input type="date" name="tgl_bayar_baru" id="tgl_bayar_baru" class="form-input"
+                                   value="{{ date('Y-m-d') }}"
+                                   style="width:100%; padding:7px 9px; font-size:12px; border:1px solid #CBD5E1; border-radius:6px; box-sizing:border-box;">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="kas_tujuan_id" style="display:block; font-size:11.5px; font-weight:600; color:var(--text-heading); margin-bottom:3px;">
+                                Rekening Kas <span style="color:#DC2626;">*</span>
+                            </label>
+                            <select name="kas_tujuan_id" id="kas_tujuan_id" class="form-select"
+                                    style="width:100%; padding:7px 9px; font-size:12px; border:1px solid #CBD5E1; border-radius:6px; box-sizing:border-box;">
+                                @if(isset($daftarKas))
+                                    @foreach($daftarKas as $k)
+                                        <option value="{{ $k->kas_id }}">{{ $k->nama_kas }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="font-size:11px; color:#64748B; margin-top:8px; line-height:1.4;">
+                        ℹ️ <strong>Audit Trail:</strong> Jurnal lama dibalik dan entri baru diterbitkan otomatis tanpa menghapus arsip.
+                    </div>
+                </div>
+
+                {{-- Info Khusus Mode Batalkan Saja --}}
+                <div id="sectionBatalData" style="display:none; background:#FEF2F2; border:1px solid #FECACA; border-radius:8px; padding:10px 12px; margin-bottom:14px;">
+                    <div style="font-size:11.5px; color:#991B1B; line-height:1.4;">
+                        ⚠️ <strong>Perhatian:</strong> Pembatalan (void) akan membalik jurnal kas dan mengembalikan status tagihan jadwal angsuran menjadi <strong>belum bayar</strong>.
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom:6px;">
+                    <label class="form-label" for="alasan_koreksi" style="display:block; font-size:12px; font-weight:700; color:var(--text-heading); margin-bottom:4px;">
+                        Alasan Koreksi / Catatan Berita Acara <span style="color:#DC2626;">*</span>
+                    </label>
+                    <textarea name="alasan_koreksi" id="alasan_koreksi" class="form-textarea" rows="2" required
+                              placeholder="Contoh: Salah pilih tanggal pembayaran saat input transaksi"
+                              style="width:100%; padding:8px 10px; font-size:12px; border:1px solid #CBD5E1; border-radius:6px; box-sizing:border-box;"></textarea>
                 </div>
             </div>
 
-            {{-- Info Khusus Mode Batalkan Saja --}}
-            <div id="sectionBatalData" style="display:none; background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:12px 14px; margin-bottom:16px;">
-                <div style="font-size:12px; color:#991B1B; line-height:1.45;">
-                    ⚠️ <strong>Perhatian:</strong> Pembatalan (void) akan membalik jurnal kas dan mengembalikan status tagihan jadwal angsuran menjadi <strong>belum bayar</strong>.
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-bottom:20px;">
-                <label class="form-label" for="alasan_koreksi" style="display:block; font-size:12.5px; font-weight:700; color:var(--text-heading); margin-bottom:6px;">
-                    Alasan Koreksi / Catatan Berita Acara <span style="color:#DC2626;">*</span>
-                </label>
-                <textarea name="alasan_koreksi" id="alasan_koreksi" class="form-textarea" rows="3" required
-                          placeholder="Contoh: Salah pilih tanggal pembayaran saat input transaksi"
-                          style="width:100%; padding:10px 12px; font-size:13px; border:1px solid #CBD5E1; border-radius:8px; box-sizing:border-box;"></textarea>
-            </div>
-
-            <div style="display:flex; justify-content:flex-end; gap:10px;">
-                <button type="button" class="btn-ui btn-ui-outline" onclick="tutupModalForm()">Tutup</button>
-                <button type="button" id="btnSubmitKoreksi" class="btn-ui btn-ui-primary" onclick="konfirmasiSubmitKoreksi()" style="font-weight:700;">
-                    Simpan Koreksi
+            {{-- Footer Modal (Sticky / Always Visible at Bottom) --}}
+            <div style="padding:12px 20px; background:#F8FAFC; border-top:1px solid #E2E8F0; display:flex; justify-content:flex-end; gap:10px; flex-shrink:0;">
+                <button type="button" class="btn-ui btn-ui-outline" onclick="tutupModalForm()" style="padding:7px 14px; font-size:12.5px;">Batal</button>
+                <button type="button" id="btnSubmitKoreksi" class="btn-ui btn-ui-primary" onclick="konfirmasiSubmitKoreksi()" style="font-weight:700; padding:7px 16px; font-size:12.5px;">
+                    Simpan Perubahan &amp; Terbitkan Entri Baru
                 </button>
             </div>
         </form>
