@@ -85,6 +85,21 @@ class AngsuranBbmController extends Controller
             return back()->with('error', 'Tagihan angsuran ini sudah lunas atau tidak valid.');
         }
 
+        // Validasi: pokok yang dibayar tidak boleh melebihi sisa piutang (angsuran terkoreksi tidak dihitung)
+        $nominalPinjaman = (float) DB::table('tblPINJAMAN')->where('pinjaman_id', $jadwal->pinjaman_id)->value('nominal_pinjaman');
+        $pokokTerbayar = (float) DB::table('tblANGSURAN as ang')
+            ->join('tblJADWAL_ANGSURAN as ja', 'ang.jadwal_angsuran_id', '=', 'ja.jadwal_angsuran_id')
+            ->leftJoin('tblKOREKSI_ANGSURAN as kor', 'ang.angsuran_id', '=', 'kor.angsuran_id')
+            ->where('ja.pinjaman_id', $jadwal->pinjaman_id)
+            ->whereNull('kor.koreksi_id')
+            ->sum('ang.bayar_pokok');
+        $sisaPiutang = PinjamanCalculatorService::hitungSisaPokok($nominalPinjaman, $pokokTerbayar);
+
+        if ((float) $request->bayar_pokok > $sisaPiutang) {
+            return back()->with('error', 'Pembayaran ditolak: nominal pokok Rp ' . number_format((float) $request->bayar_pokok, 0, ',', '.')
+                . ' melebihi sisa piutang Rp ' . number_format($sisaPiutang, 0, ',', '.') . '.');
+        }
+
         // Validasi urutan angsuran: Tidak boleh melompati angsuran sebelumnya yang belum lunas
         $angsuranSebelumnyaBelumLunas = DB::table('tblJADWAL_ANGSURAN')
             ->where('pinjaman_id', $jadwal->pinjaman_id)
