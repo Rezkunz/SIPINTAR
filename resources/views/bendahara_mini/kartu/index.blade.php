@@ -89,7 +89,7 @@
                             </div>
 
                             {{-- Financial Metrics 3 Kolom --}}
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px 12px; margin-bottom: 14px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px 12px; margin-bottom: 14px;">
                                 <div>
                                     <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Plafon</div>
                                     <div style="font-size: 13px; font-weight: 800; color: var(--text-heading); margin-top: 2px;">
@@ -154,7 +154,12 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
             Kembali ke Galeri Kartu
         </a>
-        <div style="display:flex; align-items:center; gap:8px;">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <a href="{{ route('bbm.kartu.cetak', ['pinjaman_id' => $pinjamanTerpilih->pinjaman_id]) }}" target="_blank" id="btnCetakKartu"
+               class="btn-ui btn-ui-outline" style="text-decoration:none; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                Cetak Kartu
+            </a>
             <span style="font-size:12px; color:var(--text-muted);">Ganti Debitur:</span>
             <select class="form-select" onchange="if(this.value) window.location.href='{{ route('bbm.kartu.index') }}?pinjaman_id=' + this.value;" style="padding:6px 12px; font-size:12.5px; border-radius:6px;">
                 @foreach ($daftarPeminjam as $dp)
@@ -234,7 +239,7 @@
     </div>
 
     {{-- ── 2 TABEL DUA KOLOM: MATRIKS JADWAL & RIWAYAT TRANSAKSI ── --}}
-    <div style="display:grid; grid-template-columns: 3fr 2fr; gap:24px; align-items:start;">
+    <div class="layout-split layout-split-3-2">
 
         {{-- ── TABEL JADWAL ANGSURAN RESMI ── --}}
         <div class="content-card">
@@ -293,6 +298,7 @@
                         <tr>
                             <th>Tgl Bayar</th>
                             <th>Angs.</th>
+                            <th>Metode</th>
                             <th style="text-align: right;">Pokok</th>
                             <th style="text-align: right;">Jasa</th>
                             <th style="text-align: right;">Total Kas</th>
@@ -303,6 +309,13 @@
                             <tr>
                                 <td style="font-size:12.5px;">{{ \Carbon\Carbon::parse($r->tgl_bayar)->format('d/m/Y') }}</td>
                                 <td><span class="badge-pill blue">Ke-{{ $r->angsuran_ke }}</span></td>
+                                <td>
+                                    @if ($r->detail_potongan_id)
+                                        <span class="badge-pill green" style="font-size:10.5px;">Potong Tunjangan</span>
+                                    @else
+                                        <span class="badge-pill amber" style="font-size:10.5px;">Langsung</span>
+                                    @endif
+                                </td>
                                 <td style="text-align: right;">Rp {{ number_format($r->bayar_pokok, 0, ',', '.') }}</td>
                                 <td style="text-align: right; color:#047857;">Rp {{ number_format($r->bayar_bunga, 0, ',', '.') }}</td>
                                 <td style="text-align: right; font-weight:800; color:#0D5C46;">
@@ -311,7 +324,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5">
+                                <td colspan="6">
                                     <div class="empty-placeholder" style="padding:28px 14px; text-align:center;">
                                         Belum ada riwayat angsuran sah yang dibukukan.
                                     </div>

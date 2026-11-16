@@ -199,7 +199,7 @@
                     </div>
                 </div>
 
-                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:10px 12px; text-align:center;">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:8px; background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:10px 12px; text-align:center;">
                     <div>
                         <div style="font-size:10.5px; color:#64748B; font-weight:600; text-transform:uppercase;">Plafon Pinjaman</div>
                         <div id="modalPlafon" style="font-size:13px; font-weight:700; color:#0F172A; margin-top:2px;">Rp 0</div>

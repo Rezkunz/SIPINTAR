@@ -149,7 +149,7 @@
         <a href="{{ route('nasabah.pinjaman') }}" class="btn-ui btn-ui-outline btn-ui-sm">Detail Pinjaman</a>
     </div>
     <div class="card-body-content" style="padding:16px 20px;">
-        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:16px;">
             <div>
                 <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">Nominal Pinjaman</div>
                 <div style="font-weight:700; font-size:1.1rem;">Rp {{ number_format($pinjamanAktif->nominal_pinjaman, 0, ',', '.') }}</div>

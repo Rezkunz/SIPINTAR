@@ -15,9 +15,28 @@ use Tests\DuskTestCase;
  */
 abstract class SipintarDuskTestCase extends DuskTestCase
 {
-    use DatabaseMigrations;
+    use DatabaseMigrations {
+        runDatabaseMigrations as protected jalankanMigrasiTest;
+    }
 
     protected bool $seed = true;
+
+    /**
+     * PENGAMAN: test ini menjalankan migrate:fresh (menghapus semua tabel).
+     * Tolak berjalan bila database yang terhubung bukan database test (nama berakhiran _dusk),
+     * agar database pengembangan / produksi tidak pernah terhapus oleh salah konfigurasi.
+     */
+    public function runDatabaseMigrations(): void
+    {
+        $database = (string) config('database.connections.' . config('database.default') . '.database');
+
+        if (! str_ends_with($database, '_dusk')) {
+            $this->fail("Test Dusk dibatalkan: database '{$database}' bukan database test (*_dusk). "
+                . 'Pastikan .env.uat dimuat (phpunit.dusk.xml + tests/dusk-bootstrap.php).');
+        }
+
+        $this->jalankanMigrasiTest();
+    }
     protected string $seeder = DuskSeeder::class;
 
     public const PEGAWAI   = 'pegawai@sipintar.test';
