@@ -12,9 +12,70 @@ use RuntimeException;
 class KasController extends Controller
 {
     /**
+     * Resolve filter periode transaksi (harian, bulanan, tahunan, atau semua).
+     */
+    private function resolveFilter(Request $request, string $defaultType = 'harian'): array
+    {
+        $filterType = $request->query('filter_type', $defaultType);
+        if (!in_array($filterType, ['harian', 'bulanan', 'tahunan', 'semua'])) {
+            $filterType = $defaultType;
+        }
+
+        $tanggal = $request->query('tanggal', now()->toDateString());
+        $bulan   = (int) $request->query('bulan', now()->format('m'));
+        $tahun   = (int) $request->query('tahun', now()->format('Y'));
+
+        $bulanNames = [
+            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+            5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+        ];
+
+        switch ($filterType) {
+            case 'harian':
+                $label = \Carbon\Carbon::parse($tanggal)->translatedFormat('d F Y');
+                break;
+            case 'bulanan':
+                $namaBulan = $bulanNames[$bulan] ?? ('Bulan ' . $bulan);
+                $label = "{$namaBulan} {$tahun}";
+                break;
+            case 'tahunan':
+                $label = "Tahun {$tahun}";
+                break;
+            default:
+                $label = 'Seluruh Riwayat';
+                break;
+        }
+
+        return [
+            'type'    => $filterType,
+            'tanggal' => $tanggal,
+            'bulan'   => $bulan,
+            'tahun'   => $tahun,
+            'label'   => $label,
+        ];
+    }
+
+    /**
+     * Terapkan filter tanggal ke query builder.
+     */
+    private function applyFilter($query, array $filter, string $column = 'tgl_mutasi')
+    {
+        if ($filter['type'] === 'harian') {
+            $query->whereDate($column, $filter['tanggal']);
+        } elseif ($filter['type'] === 'bulanan') {
+            $query->whereYear($column, $filter['tahun'])
+                  ->whereMonth($column, $filter['bulan']);
+        } elseif ($filter['type'] === 'tahunan') {
+            $query->whereYear($column, $filter['tahun']);
+        }
+        return $query;
+    }
+
+    /**
      * Tampilkan buku Kas Harian (Kas Tunai Fisik di Loket/Brankas Bank Mini).
      */
-    public function harian()
+    public function harian(Request $request)
     {
         $kasFisik = DB::table('tblKAS')->where('jenis_kas', 'kas')->first();
         if (!$kasFisik) {
@@ -26,34 +87,35 @@ class KasController extends Controller
             $kasFisik = DB::table('tblKAS')->where('kas_id', $kasId)->first();
         }
 
-        // Mutasi kas harian (dipaginasi 10 per halaman)
-        $mutasiList = DB::table('tblMUTASI_KAS as mk')
+        $filter = $this->resolveFilter($request, 'harian');
+
+        // Mutasi kas harian terfilter
+        $mutasiQuery = DB::table('tblMUTASI_KAS as mk')
             ->join('tblUSER as u', 'mk.user_id', '=', 'u.user_id')
-            ->where('mk.kas_id', $kasFisik->kas_id)
+            ->where('mk.kas_id', $kasFisik->kas_id);
+
+        $this->applyFilter($mutasiQuery, $filter, 'mk.tgl_mutasi');
+
+        $mutasiList = $mutasiQuery
             ->select('mk.*', 'u.nama_user')
             ->orderByDesc('mk.mutasi_kas_id')
-            ->paginate(10);
+            ->paginate(10)
+            ->appends($request->query());
 
-        // Ringkasan hari ini
-        $hariIni = now()->toDateString();
-        $masukHariIni = DB::table('tblMUTASI_KAS')
-            ->where('kas_id', $kasFisik->kas_id)
-            ->where('tgl_mutasi', $hariIni)
-            ->where('arah', 'masuk')
-            ->sum('nominal');
+        // Ringkasan metrik sesuai filter periode
+        $statQuery = DB::table('tblMUTASI_KAS')
+            ->where('kas_id', $kasFisik->kas_id);
+        $this->applyFilter($statQuery, $filter, 'tgl_mutasi');
 
-        $keluarHariIni = DB::table('tblMUTASI_KAS')
-            ->where('kas_id', $kasFisik->kas_id)
-            ->where('tgl_mutasi', $hariIni)
-            ->where('arah', 'keluar')
-            ->sum('nominal');
+        $masukHariIni = (clone $statQuery)->where('arah', 'masuk')->sum('nominal');
+        $keluarHariIni = (clone $statQuery)->where('arah', 'keluar')->sum('nominal');
+        $totalMutasiHariIni = (clone $statQuery)->count();
 
-        $totalMutasiHariIni = DB::table('tblMUTASI_KAS')
-            ->where('kas_id', $kasFisik->kas_id)
-            ->where('tgl_mutasi', $hariIni)
-            ->count();
+        $availableYears = range((int)date('Y'), (int)date('Y') - 4);
 
-        return view('bendahara_mini.kas_harian', compact('kasFisik', 'mutasiList', 'masukHariIni', 'keluarHariIni', 'totalMutasiHariIni'));
+        return view('bendahara_mini.kas_harian', compact(
+            'kasFisik', 'mutasiList', 'masukHariIni', 'keluarHariIni', 'totalMutasiHariIni', 'filter', 'availableYears'
+        ));
     }
 
     /**
@@ -123,7 +185,7 @@ class KasController extends Controller
     /**
      * Tampilkan buku Kas Bank (Rekening Koran Perbankan).
      */
-    public function bank()
+    public function bank(Request $request)
     {
         $kasBank = DB::table('tblKAS')->where('jenis_kas', 'bank')->first();
         if (!$kasBank) {
@@ -135,29 +197,35 @@ class KasController extends Controller
             $kasBank = DB::table('tblKAS')->where('kas_id', $kasId)->first();
         }
 
-        $mutasiList = DB::table('tblMUTASI_KAS as mk')
+        $filter = $this->resolveFilter($request, 'harian');
+
+        // Mutasi rekening bank terfilter
+        $mutasiQuery = DB::table('tblMUTASI_KAS as mk')
             ->join('tblUSER as u', 'mk.user_id', '=', 'u.user_id')
-            ->where('mk.kas_id', $kasBank->kas_id)
+            ->where('mk.kas_id', $kasBank->kas_id);
+
+        $this->applyFilter($mutasiQuery, $filter, 'mk.tgl_mutasi');
+
+        $mutasiList = $mutasiQuery
             ->select('mk.*', 'u.nama_user')
             ->orderByDesc('mk.mutasi_kas_id')
-            ->paginate(10);
+            ->paginate(10)
+            ->appends($request->query());
 
-        // Ringkasan transaksi rekening bank
-        $masukBank = DB::table('tblMUTASI_KAS')
-            ->where('kas_id', $kasBank->kas_id)
-            ->where('arah', 'masuk')
-            ->sum('nominal');
+        // Ringkasan metrik rekening bank sesuai filter periode
+        $statQuery = DB::table('tblMUTASI_KAS')
+            ->where('kas_id', $kasBank->kas_id);
+        $this->applyFilter($statQuery, $filter, 'tgl_mutasi');
 
-        $keluarBank = DB::table('tblMUTASI_KAS')
-            ->where('kas_id', $kasBank->kas_id)
-            ->where('arah', 'keluar')
-            ->sum('nominal');
+        $masukBank = (clone $statQuery)->where('arah', 'masuk')->sum('nominal');
+        $keluarBank = (clone $statQuery)->where('arah', 'keluar')->sum('nominal');
+        $totalTransaksiBank = (clone $statQuery)->count();
 
-        $totalTransaksiBank = DB::table('tblMUTASI_KAS')
-            ->where('kas_id', $kasBank->kas_id)
-            ->count();
+        $availableYears = range((int)date('Y'), (int)date('Y') - 4);
 
-        return view('bendahara_mini.kas_bank', compact('kasBank', 'mutasiList', 'masukBank', 'keluarBank', 'totalTransaksiBank'));
+        return view('bendahara_mini.kas_bank', compact(
+            'kasBank', 'mutasiList', 'masukBank', 'keluarBank', 'totalTransaksiBank', 'filter', 'availableYears'
+        ));
     }
 
     /**
