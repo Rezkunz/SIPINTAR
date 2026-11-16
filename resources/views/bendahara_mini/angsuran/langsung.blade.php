@@ -17,6 +17,12 @@
     <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:14px 18px; margin-bottom:20px; color:#166534; font-size:14px; display:flex; align-items:center; gap:10px;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
         <span>{{ session('success') }}</span>
+        @if (session('bukti_angsuran_id'))
+            <a href="{{ route('bbm.angsuran.bukti', session('bukti_angsuran_id')) }}" target="_blank" id="linkCetakBuktiBaru"
+               class="btn-ui btn-ui-sm btn-ui-primary" style="margin-left:auto; text-decoration:none; font-weight:700;">
+                Cetak Bukti Pembayaran
+            </a>
+        @endif
     </div>
 @endif
 
@@ -107,7 +113,19 @@
                             @endif
                         </td>
                         <td style="text-align: center;">
-                            @if ($tagihan)
+                            @if ($tagihan && $p->paketAktif)
+                                <div style="display:inline-flex; gap:8px; align-items:center;">
+                                    <span class="badge-pill amber" id="paket-aktif-{{ $tagihan->jadwal_angsuran_id }}"
+                                          title="Angsuran sedang diproses lewat potongan tunjangan. Dapat dibayar langsung bila potongan gagal."
+                                          style="font-size:11.5px; padding:5px 10px; font-weight:700;">
+                                        Dalam Paket Potongan #RP-{{ str_pad($p->paketAktif->rencana_potongan_id, 4, '0', STR_PAD_LEFT) }}
+                                    </span>
+                                    <button type="button" class="btn-ui btn-ui-sm btn-ui-outline" style="padding:6px 12px; font-weight:600;"
+                                            onclick="bukaRincianPaket({{ $p->pinjaman_id }})">
+                                        Lihat Jadwal
+                                    </button>
+                                </div>
+                            @elseif ($tagihan)
                                 <div style="display:inline-flex; gap:8px; align-items:center;">
                                     <button type="button" class="btn-ui btn-ui-sm btn-ui-primary" style="padding:6px 14px; font-weight:700;"
                                             onclick="bukaModalBayar({{ $tagihan->jadwal_angsuran_id }}, '{{ addslashes($p->nama_nasabah) }}', '{{ addslashes($p->kelas_unit ?? 'Pegawai') }}', {{ $p->pinjaman_id }}, {{ $tagihan->angsuran_ke }}, {{ $p->tenor }}, {{ $tagihan->pokok }}, {{ $tagihan->bunga }}, '{{ \Carbon\Carbon::parse($tagihan->jatuh_tempo)->format('d/m/Y') }}')">
@@ -162,6 +180,7 @@
                     <th style="text-align: right;">Pokok</th>
                     <th style="text-align: right;">Jasa 2%</th>
                     <th style="text-align: right;">Total Kas Diterima</th>
+                    <th style="text-align: center;">Bukti</th>
                 </tr>
             </thead>
             <tbody>
@@ -180,10 +199,16 @@
                         <td style="text-align: right; font-weight:800; color:#0D5C46;">
                             Rp {{ number_format($r->bayar_pokok + $r->bayar_bunga, 0, ',', '.') }}
                         </td>
+                        <td style="text-align: center;">
+                            <a href="{{ route('bbm.angsuran.bukti', $r->angsuran_id) }}" target="_blank"
+                               class="btn-ui btn-ui-sm btn-ui-outline" style="text-decoration:none; font-weight:600;">
+                                Cetak
+                            </a>
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6">
+                        <td colspan="7">
                             <div class="empty-placeholder" style="padding:28px; text-align:center;">
                                 Belum ada riwayat penerimaan kasir.
                             </div>

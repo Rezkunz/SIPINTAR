@@ -40,6 +40,9 @@ class AngsuranBbmController extends Controller
                 ->get();
             $p->jadwals = $jadwals;
             $p->tagihanBerikutnya = $jadwals->firstWhere('status_bayar', 'belum');
+            $p->paketAktif = $p->tagihanBerikutnya
+                ? $this->paketPotonganAktif((int) $p->tagihanBerikutnya->jadwal_angsuran_id)
+                : null;
             $p->sisaBelumBayar = $jadwals->where('status_bayar', 'belum')->count();
             $p->sudahBayar = $jadwals->where('status_bayar', 'lunas')->count();
         }
@@ -85,6 +88,15 @@ class AngsuranBbmController extends Controller
             return back()->with('error', 'Tagihan angsuran ini sudah lunas atau tidak valid.');
         }
 
+        // Cegah pembayaran ganda: angsuran yang sedang diproses dalam paket potongan tunjangan
+        // tidak boleh dibayar langsung. Bila hasil potongannya "gagal", angsuran boleh dibayar langsung.
+        $paketAktif = $this->paketPotonganAktif((int) $jadwal->jadwal_angsuran_id);
+        if ($paketAktif) {
+            return back()->with('error', "Angsuran ke-{$jadwal->angsuran_ke} sedang diproses dalam paket potongan tunjangan #RP-"
+                . str_pad($paketAktif->rencana_potongan_id, 4, '0', STR_PAD_LEFT)
+                . '. Tunggu hasil potongan dari Bendahara Sekolah; bila potongan gagal, angsuran dapat dibayar langsung.');
+        }
+
         // Validasi: pokok yang dibayar tidak boleh melebihi sisa piutang (angsuran terkoreksi tidak dihitung)
         $nominalPinjaman = (float) DB::table('tblPINJAMAN')->where('pinjaman_id', $jadwal->pinjaman_id)->value('nominal_pinjaman');
         $pokokTerbayar = (float) DB::table('tblANGSURAN as ang')
@@ -126,13 +138,11 @@ class AngsuranBbmController extends Controller
 
         $totalBayar = $request->bayar_pokok + $request->bayar_bunga;
 
-        DB::transaction(function () use ($jadwal, $request, $periode, $kasTunai, $totalBayar) {
+        $angsuranId = null;
+
+        DB::transaction(function () use ($jadwal, $request, $periode, $kasTunai, $totalBayar, &$angsuranId) {
             // 1. Simpan baris angsuran
-                    // 1. Simpan baris angsuran
-        $angsuranId = DB::table('tblANGSURAN')
-            ->insertGetId([
-
-
+            $angsuranId = DB::table('tblANGSURAN')->insertGetId([
                 'jadwal_angsuran_id' => $jadwal->jadwal_angsuran_id,
                 'detail_potongan_id' => null,
                 'user_id'            => auth()->id(),
@@ -190,7 +200,64 @@ class AngsuranBbmController extends Controller
         });
 
         return redirect()->route('bbm.angsuran.langsung')
-            ->with('success', "Pembayaran angsuran ke-{$jadwal->angsuran_ke} sebesar Rp " . number_format($totalBayar, 0, ',', '.') . ' berhasil dicatat!');
+            ->with('success', "Pembayaran angsuran ke-{$jadwal->angsuran_ke} sebesar Rp " . number_format($totalBayar, 0, ',', '.') . ' berhasil dicatat!')
+            ->with('bukti_angsuran_id', $angsuranId);
+    }
+
+    /**
+     * Paket rencana potongan aktif (dikirim / menunggu verifikasi) yang memuat jadwal ini,
+     * kecuali Bendahara Sekolah sudah menandai potongannya "gagal".
+     */
+    private function paketPotonganAktif(int $jadwalId): ?object
+    {
+        return DB::table('tblDETAIL_POTONGAN as dp')
+            ->join('tblRENCANA_POTONGAN as rp', 'dp.rencana_potongan_id', '=', 'rp.rencana_potongan_id')
+            ->where('dp.jadwal_angsuran_id', $jadwalId)
+            ->whereIn('rp.status_potongan', ['dikirim', 'menunggu_verifikasi'])
+            ->where(fn ($q) => $q->whereNull('dp.hasil_potongan')->orWhere('dp.hasil_potongan', '!=', 'gagal'))
+            ->select('rp.rencana_potongan_id', 'rp.status_potongan')
+            ->first();
+    }
+
+    /**
+     * Bukti pembayaran angsuran (siap cetak) untuk diserahkan kepada peminjam.
+     */
+    public function buktiAngsuran($angsuranId)
+    {
+        $angsuran = DB::table('tblANGSURAN as ang')
+            ->join('tblJADWAL_ANGSURAN as ja', 'ang.jadwal_angsuran_id', '=', 'ja.jadwal_angsuran_id')
+            ->join('tblPINJAMAN as pin', 'ja.pinjaman_id', '=', 'pin.pinjaman_id')
+            ->join('tblNASABAH as n', 'pin.nasabah_id', '=', 'n.nasabah_id')
+            ->leftJoin('tblUSER as u', 'ang.user_id', '=', 'u.user_id')
+            ->leftJoin('tblKOREKSI_ANGSURAN as kor', 'ang.angsuran_id', '=', 'kor.angsuran_id')
+            ->where('ang.angsuran_id', $angsuranId)
+            ->select(
+                'ang.*',
+                'ja.angsuran_ke',
+                'ja.jatuh_tempo',
+                'pin.pinjaman_id',
+                'pin.nominal_pinjaman',
+                'pin.tenor',
+                'n.nama_nasabah',
+                'n.kelas_unit',
+                'u.nama_user as nama_petugas',
+                'kor.koreksi_id'
+            )
+            ->first();
+
+        abort_unless($angsuran, 404, 'Data pembayaran angsuran tidak ditemukan.');
+
+        $pokokTerbayar = (float) DB::table('tblANGSURAN as a')
+            ->join('tblJADWAL_ANGSURAN as j', 'a.jadwal_angsuran_id', '=', 'j.jadwal_angsuran_id')
+            ->leftJoin('tblKOREKSI_ANGSURAN as k', 'a.angsuran_id', '=', 'k.angsuran_id')
+            ->where('j.pinjaman_id', $angsuran->pinjaman_id)
+            ->whereNull('k.koreksi_id')
+            ->where('a.angsuran_id', '<=', $angsuran->angsuran_id)
+            ->sum('a.bayar_pokok');
+
+        $sisaPiutang = PinjamanCalculatorService::hitungSisaPokok($angsuran->nominal_pinjaman, $pokokTerbayar);
+
+        return view('bendahara_mini.cetak.bukti_angsuran', compact('angsuran', 'sisaPiutang'));
     }
 
     /**

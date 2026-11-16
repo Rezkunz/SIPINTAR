@@ -143,12 +143,14 @@ Route::middleware(['auth', 'akun.aktif', 'no.cache'])->group(function () {
             Route::post('/kelayakan/{pinjaman}', [PinjamanBbmController::class, 'simpanKelayakan'])->name('kelayakan.simpan');
             Route::get('/cair', [PinjamanBbmController::class, 'pencairan'])->name('cair');
             Route::post('/cair/{pinjaman}', [PinjamanBbmController::class, 'prosesPencairan'])->name('cair.proses');
+            Route::post('/{pinjaman}/metode', [PinjamanBbmController::class, 'ubahMetode'])->whereNumber('pinjaman')->name('metode');
         });
 
         // 2. Modul Angsuran
         Route::prefix('bbm/angsuran')->name('bbm.angsuran.')->group(function () {
             Route::get('/langsung', [AngsuranBbmController::class, 'catatLangsung'])->name('langsung');
             Route::post('/langsung', [AngsuranBbmController::class, 'simpanPembayaranLangsung'])->name('langsung.simpan');
+            Route::get('/bukti/{angsuran}', [AngsuranBbmController::class, 'buktiAngsuran'])->whereNumber('angsuran')->name('bukti');
             Route::get('/potongan', [AngsuranBbmController::class, 'rencanaPotongan'])->name('potongan');
             Route::post('/potongan', [AngsuranBbmController::class, 'simpanRencanaPotongan'])->name('potongan.simpan');
             Route::get('/potongan/{rencana}', [AngsuranBbmController::class, 'detailRencanaPotongan'])->name('potongan.detail');
@@ -161,6 +163,7 @@ Route::middleware(['auth', 'akun.aktif', 'no.cache'])->group(function () {
         // 3. Modul Kartu Piutang
         Route::prefix('bbm/kartu')->name('bbm.kartu.')->group(function () {
             Route::get('/', [KartuPiutangBbmController::class, 'kartu'])->name('index');
+            Route::get('/cetak', [KartuPiutangBbmController::class, 'cetak'])->name('cetak');
             Route::get('/rekap', function () {
                 return redirect()->route('bbm.kartu.index');
             })->name('rekap');
@@ -169,8 +172,10 @@ Route::middleware(['auth', 'akun.aktif', 'no.cache'])->group(function () {
         // 4. Modul Kas Harian & Bank
         Route::prefix('kas')->name('kas.')->group(function () {
             Route::get('/harian', [KasController::class, 'harian'])->name('harian');
+            Route::get('/harian/cetak', [KasController::class, 'cetakHarian'])->name('harian.cetak');
             Route::post('/harian', [KasController::class, 'simpanHarian'])->name('harian.simpan');
             Route::get('/bank', [KasController::class, 'bank'])->name('bank');
+            Route::get('/bank/cetak', [KasController::class, 'cetakBank'])->name('bank.cetak');
             Route::post('/bank', [KasController::class, 'simpanBank'])->name('bank.simpan');
         });
     });
@@ -258,7 +263,7 @@ Route::middleware(['auth', 'akun.aktif', 'no.cache'])->group(function () {
     Route::post('/chatbot/ask', function (\Illuminate\Http\Request $request) {
         $message = trim($request->input('message', ''));
         if (!$message) {
-            return response()->json(['reply' => 'Pesan tidak boleh kosong.']);
+            return response()->json(['reply' => 'Pesan tidak boleh kosong.', 'ai' => false]);
         }
 
         // Coba Gemini API jika API key tersedia
@@ -280,7 +285,7 @@ Route::middleware(['auth', 'akun.aktif', 'no.cache'])->group(function () {
                     $data = $response->json();
                     $reply = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
                     if ($reply) {
-                        return response()->json(['reply' => $reply]);
+                        return response()->json(['reply' => $reply, 'ai' => true]);
                     }
                 }
             } catch (\Exception $e) {
@@ -288,6 +293,7 @@ Route::middleware(['auth', 'akun.aktif', 'no.cache'])->group(function () {
             }
         }
 
-        return response()->json(['reply' => 'Maaf, asisten AI sedang tidak tersedia. Silakan hubungi staf Bank Mini Sekolah untuk bantuan langsung.']);
+        // ai=false: chatbot menampilkan saran pertanyaan dari FAQ, bukan pesan ini
+        return response()->json(['reply' => 'Maaf, asisten AI sedang tidak tersedia. Silakan hubungi staf Bank Mini Sekolah untuk bantuan langsung.', 'ai' => false]);
     })->name('chatbot.ask');
 });
