@@ -33,7 +33,7 @@
         <h3 style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Posisi Likuiditas Kas (Cash & Bank Milik Bendahara Bank Mini)</h3>
         <span style="font-size: 12px; color: var(--text-muted);">2 Tempat Penyimpanan Dana Bank Mini</span>
     </div>
-    <div class="metric-grid" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="metric-grid metric-grid-4">
         <div class="metric-card card-emerald">
             <div class="metric-watermark">
                 <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
@@ -86,7 +86,7 @@
         <h3 style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Portofolio Kredit & Piutang Pegawai</h3>
         <span style="font-size: 12px; color: var(--text-muted);">Pembiayaan Guru & Tenaga Kependidikan</span>
     </div>
-    <div class="metric-grid" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="metric-grid metric-grid-4">
         <div class="metric-card card-blue">
             <div class="metric-watermark">
                 <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -134,7 +134,7 @@
 </div>
 
 {{-- ── MAIN CONTENT (2 KOLOM: 2:1) ── --}}
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start;">
+<div class="layout-split">
 
     {{-- ── KOLOM KIRI (2/3): TABEL MUTASI KAS & PAKET POTONGAN ── --}}
     <div style="display: flex; flex-direction: column; gap: 24px;">

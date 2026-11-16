@@ -49,7 +49,7 @@
     </div>
 </div>
 
-<div style="display:grid; grid-template-columns: 3fr 2fr; gap:24px; align-items:start;">
+<div class="layout-split layout-split-3-2">
 
     {{-- ── TABEL JADWAL ANGSURAN ── --}}
     <div class="content-card">

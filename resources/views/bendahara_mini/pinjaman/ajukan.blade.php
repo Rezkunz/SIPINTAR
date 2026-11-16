@@ -100,7 +100,7 @@
                         Masukkan referensi gaji & tunjangan tetap di bawah ini untuk menghitung kuota angsuran dan rasio DSR.
                     </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;">
                         <div>
                             <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Gaji Pokok</div>
                             <div id="dispGaji" style="font-size: 13.5px; font-weight: 700; color: var(--text-heading); margin-top: 2px;">Rp 0</div>
@@ -234,7 +234,7 @@
                 </div>
 
                 {{-- 3 Box Utama: Pokok, Jasa, Total --}}
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 16px;">
                     <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px 14px;">
                         <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Angsuran Pokok / Bln</div>
                         <div id="simPokok" style="font-size: 15px; font-weight: 800; color: var(--text-heading); margin-top: 3px;">Rp 0</div>

@@ -56,6 +56,40 @@ class KasController extends Controller
         ];
     }
 
+    /** Laporan Kas Tunai siap cetak (periode mengikuti filter di layar). */
+    public function cetakHarian(Request $request)
+    {
+        return $this->cetakKas($request, 'kas', 'Laporan Mutasi Kas Tunai');
+    }
+
+    /** Laporan Kas Bank siap cetak (periode mengikuti filter di layar). */
+    public function cetakBank(Request $request)
+    {
+        return $this->cetakKas($request, 'bank', 'Laporan Mutasi Kas Bank');
+    }
+
+    private function cetakKas(Request $request, string $jenisKas, string $judul)
+    {
+        $kas = DB::table('tblKAS')->where('jenis_kas', $jenisKas)->first();
+        abort_unless($kas, 404, 'Master kas tidak ditemukan.');
+
+        $filter = $this->resolveFilter($request, 'harian');
+
+        $query = DB::table('tblMUTASI_KAS as mk')
+            ->join('tblUSER as u', 'mk.user_id', '=', 'u.user_id')
+            ->where('mk.kas_id', $kas->kas_id)
+            ->select('mk.*', 'u.nama_user')
+            ->orderBy('mk.tgl_mutasi')
+            ->orderBy('mk.mutasi_kas_id');
+        $this->applyFilter($query, $filter, 'mk.tgl_mutasi');
+        $mutasiList = $query->get();
+
+        $totalMasuk  = (float) $mutasiList->where('arah', 'masuk')->sum('nominal');
+        $totalKeluar = (float) $mutasiList->where('arah', 'keluar')->sum('nominal');
+
+        return view('bendahara_mini.cetak.kas', compact('kas', 'judul', 'filter', 'mutasiList', 'totalMasuk', 'totalKeluar'));
+    }
+
     /**
      * Terapkan filter tanggal ke query builder.
      */

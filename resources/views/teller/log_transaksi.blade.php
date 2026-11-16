@@ -19,7 +19,7 @@
     </div>
 </div>
 
-<div class="metric-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom:20px;">
+<div class="metric-grid metric-grid-4" style="margin-bottom:20px;">
     <div class="metric-card card-blue"><div class="metric-title">Jumlah Transaksi</div><div class="metric-value">{{ $ringkasan['total_transaksi'] }}</div></div>
     <div class="metric-card card-emerald"><div class="metric-title">Total Kredit</div><div class="metric-value"><span class="curr-prefix">Rp</span>{{ number_format($ringkasan['total_kredit'], 0, ',', '.') }}</div></div>
     <div class="metric-card card-amber"><div class="metric-title">Total Debit</div><div class="metric-value"><span class="curr-prefix">Rp</span>{{ number_format($ringkasan['total_debit'], 0, ',', '.') }}</div></div>
