@@ -1076,16 +1076,7 @@
                     <div class="chatbot-bubble">
                         Halo, <strong>{{ auth()->user()->name }}</strong>! 👋<br>
                         Saya asisten SIPINTAR. Saya bisa bantu Anda soal:
-                        <div class="chatbot-quick-chips" id="chatbot-quick-chips">
-                            <button type="button" class="chatbot-chip" onclick="sendQuick('Berapa saldo tabungan saya?')">💰 Cek Saldo</button>
-                            <button type="button" class="chatbot-chip" onclick="sendQuick('Cara setor tabungan?')">🏦 Cara Setor</button>
-                            <button type="button" class="chatbot-chip" onclick="sendQuick('Cara tarik tunai?')">💸 Cara Tarik</button>
-                            @if(auth()->user()->nasabah?->jenis_nasabah === 'pegawai')
-                            <button type="button" class="chatbot-chip" onclick="sendQuick('Cara mengajukan pinjaman?')">📋 Pinjaman</button>
-                            <button type="button" class="chatbot-chip" onclick="sendQuick('Kapan jatuh tempo angsuran saya?')">📅 Angsuran</button>
-                            @endif
-                            <button type="button" class="chatbot-chip" onclick="sendQuick('Jam operasional Bank Mini?')">🕐 Jam Buka</button>
-                        </div>
+                        <div class="chatbot-quick-chips" id="chatbot-quick-chips"></div>
                     </div>
                 </div>
             </div>
@@ -1265,6 +1256,31 @@
         border-color: #0f7c52;
         transform: translateY(-1px);
     }
+    .chatbot-chip { text-align: left; line-height: 1.35; }
+    .chatbot-chip-label {
+        margin-top: 10px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+    }
+    .chatbot-menu-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+    }
+    .chatbot-menu-links:empty { display: none; }
+    .chatbot-menu-link {
+        display: inline-block;
+        background: #0f7c52;
+        color: #fff;
+        font-size: 11.5px;
+        font-weight: 700;
+        padding: 5px 11px;
+        border-radius: 8px;
+        text-decoration: none;
+    }
+    .chatbot-menu-link:hover { background: #0b5f3f; color: #fff; }
     .chatbot-typing { padding: 0 14px 8px; }
     .typing-dots { display: flex !important; gap: 5px; align-items: center; background: #f0fdf4 !important; width: fit-content; }
     .typing-dots span {
@@ -1325,21 +1341,18 @@
     }
     </style>
 
+    <script src="{{ asset('js/chatbot-faq.js') }}?v={{ filemtime(public_path('js/chatbot-faq.js')) }}"></script>
     <script>
     // ── SIPINTAR AI CHATBOT ENGINE ──
-    const CHATBOT_FAQ = [
-        { keys: ['saldo', 'tabungan saya', 'berapa saldo', 'cek saldo'], answer: 'Untuk melihat saldo terkini, klik menu <strong>Informasi Rekening</strong> di sidebar, atau klik <strong>Riwayat Mutasi</strong> untuk melihat riwayat transaksi lengkap Anda.' },
-        { keys: ['setor', 'setor tunai', 'cara setor', 'menabung', 'tabung'], answer: '🏦 <strong>Cara Setor Tunai:</strong><br>1. Datang ke loket kasir Bank Mini Sekolah<br>2. Sebutkan nomor rekening Anda kepada teller<br>3. Serahkan uang yang akan disetorkan<br>4. Terima slip setoran resmi ber-stempel' },
-        { keys: ['tarik', 'tarik tunai', 'ambil uang', 'penarikan', 'cara tarik'], answer: '💸 <strong>Cara Tarik Tunai:</strong><br>1. Datang ke loket kasir pada jam operasional<br>2. Sebutkan nomor rekening & jumlah penarikan<br>3. Teller akan memverifikasi identitas Anda<br>4. Uang diserahkan beserta slip penarikan' },
-        { keys: ['jam', 'operasional', 'buka', 'jam buka', 'jam operasional'], answer: '🕐 <strong>Jam Operasional Bank Mini:</strong><br>Senin – Jumat: 07.30 – 14.00 WIB<br>Sabtu: 07.30 – 11.00 WIB<br>Minggu & Hari Libur: <em>Tutup</em>' },
-        { keys: ['pinjam', 'pinjaman', 'kredit', 'ajukan pinjaman'], answer: '📋 <strong>Pengajuan Pinjaman:</strong><br>1. Hubungi Bendahara Sekolah<br>2. Siapkan: KTP/KK, slip gaji 3 bulan terakhir, dan formulir pengajuan<br>3. Penilaian kelayakan dilakukan dalam 3 hari kerja<br>4. Dana cair setelah disetujui Manager' },
-        { keys: ['angsuran', 'cicilan', 'jatuh tempo', 'bayar angsuran'], answer: '📅 <strong>Jadwal Angsuran:</strong><br>Lihat jadwal lengkap di menu <strong>Jadwal Angsuran</strong> di sidebar. Angsuran dipotong otomatis dari gaji setiap bulan tanggal 25.' },
-        { keys: ['no rekening', 'nomor rekening', 'rekening saya'], answer: 'Nomor rekening Anda dapat dilihat di halaman <strong>Informasi Rekening</strong> (halaman dashboard). Nomor rekening berformat: 1001-YYYY-XXXXX' },
-        { keys: ['lupa sandi', 'ganti sandi', 'kata sandi', 'password'], answer: '🔒 Untuk mengganti kata sandi, klik avatar/nama Anda di pojok kanan atas topbar, lalu pilih tab <strong>Ganti Kata Sandi</strong> di panel profil.' },
-        { keys: ['hubungi', 'kontak', 'admin', 'bantuan lebih'], answer: '📞 Hubungi admin Bank Mini Sekolah:<br>• Loket Teller – Gedung Keuangan<br>• WhatsApp: <strong>0812-3456-7890</strong><br>• Email: <strong>bankmini@sipintar.sch.id</strong>' },
-        { keys: ['halo', 'hai', 'hi', 'hello', 'selamat pagi', 'selamat siang', 'selamat sore'], answer: 'Halo! 😊 Ada yang bisa saya bantu? Ketik pertanyaan Anda atau pilih topik di bawah.' },
-        { keys: ['terima kasih', 'makasih', 'thanks', 'ok', 'oke'], answer: 'Sama-sama! 😊 Semoga bermanfaat. Ada lagi yang ingin ditanyakan?' },
-    ];
+    // Basis pengetahuan & pencocokan ada di public/js/chatbot-faq.js (window.SipintarFaq)
+    @php
+        $penggunaChat = auth()->user();
+        $peranChat = $penggunaChat->role === 'nasabah'
+            ? (($penggunaChat->nasabah?->jenis_nasabah ?? null) === 'pegawai' ? 'nasabah_pegawai' : 'nasabah_siswa')
+            : $penggunaChat->role;
+    @endphp
+    const CHATBOT_PERAN = @json($peranChat);
+    const CHATBOT_BASE = @json(rtrim(url('/'), '/'));
 
     let chatbotOpen = false;
 
@@ -1365,16 +1378,59 @@
         sendChatMessage();
     }
 
-    function appendMessage(text, role) {
+    /** Deretan chip pertanyaan; klik chip = kirim pertanyaan tersebut. */
+    function buatChips(daftar, judul) {
+        const wrap = document.createElement('div');
+        if (judul) {
+            const label = document.createElement('div');
+            label.className = 'chatbot-chip-label';
+            label.textContent = judul;
+            wrap.appendChild(label);
+        }
+        const chips = document.createElement('div');
+        chips.className = 'chatbot-quick-chips';
+        daftar.forEach(item => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'chatbot-chip';
+            btn.textContent = item.tanya;
+            btn.addEventListener('click', () => sendQuick(item.tanya));
+            chips.appendChild(btn);
+        });
+        wrap.appendChild(chips);
+        return wrap;
+    }
+
+    function buatTombolMenu(menu) {
+        const wrap = document.createElement('div');
+        wrap.className = 'chatbot-menu-links';
+        (menu || []).forEach(([label, path]) => {
+            const a = document.createElement('a');
+            a.href = CHATBOT_BASE + path;
+            a.className = 'chatbot-menu-link';
+            a.textContent = label + ' →';
+            wrap.appendChild(a);
+        });
+        return wrap;
+    }
+
+    function appendMessage(content, role) {
         const container = document.getElementById('chatbot-messages');
         const msg = document.createElement('div');
         msg.className = `chatbot-msg ${role}`;
         const bubble = document.createElement('div');
         bubble.className = 'chatbot-bubble';
-        bubble.innerHTML = text;
+        if (role === 'user') {
+            bubble.textContent = content;          // teks pengguna tidak dirender sebagai HTML
+        } else if (typeof content === 'string') {
+            bubble.innerHTML = content;             // jawaban bot berasal dari basis FAQ internal
+        } else {
+            content.forEach(node => bubble.appendChild(node));
+        }
         msg.appendChild(bubble);
         container.appendChild(msg);
         container.scrollTop = container.scrollHeight;
+        return bubble;
     }
 
     function showTyping(show) {
@@ -1382,13 +1438,19 @@
         if (show) document.getElementById('chatbot-messages').scrollTop = 99999;
     }
 
-    function getBotAnswer(text) {
-        const lower = text.toLowerCase();
-        for (const faq of CHATBOT_FAQ) {
-            if (faq.keys.some(k => lower.includes(k))) return faq.answer;
+    function jawabanFaq(hasil) {
+        const nodes = [];
+        const isi = document.createElement('div');
+        if (hasil.entri.jawab === '__TOPIK__') {
+            isi.innerHTML = '📚 Berikut topik yang bisa Anda tanyakan. Klik salah satu, atau ketik pertanyaan sendiri:';
+            nodes.push(isi, buatChips(window.SipintarFaq.topik(CHATBOT_PERAN)));
+            return nodes;
         }
-        // Gemini AI fallback — kirim ke endpoint backend
-        return null;
+        isi.innerHTML = hasil.entri.jawab;
+        nodes.push(isi);
+        if (hasil.entri.menu) nodes.push(buatTombolMenu(hasil.entri.menu));
+        if (hasil.saran.length) nodes.push(buatChips(hasil.saran, 'Pertanyaan terkait:'));
+        return nodes;
     }
 
     async function sendChatMessage() {
@@ -1397,43 +1459,71 @@
         if (!text) return;
         input.value = '';
 
-        // Hide quick chips after first message
         const chips = document.getElementById('chatbot-quick-chips');
         if (chips) chips.style.display = 'none';
 
         appendMessage(text, 'user');
         showTyping(true);
+        await new Promise(r => setTimeout(r, 450 + Math.random() * 300));
 
-        // Simulate brief delay for UX
-        await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
+        const hasil = window.SipintarFaq.cari(text, CHATBOT_PERAN);
+        if (hasil.entri) {
+            showTyping(false);
+            appendMessage(jawabanFaq(hasil), 'bot');
+            return;
+        }
 
-        const faqAnswer = getBotAnswer(text);
+        // Tidak ada di FAQ: coba asisten AI (bila API key tersedia), lalu tawarkan pertanyaan serupa
+        let balasanAi = null;
+        try {
+            const resp = await fetch(CHATBOT_BASE + '/chatbot/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({ message: text })
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data.ai && data.reply) balasanAi = data.reply;
+            }
+        } catch (e) {
+            // abaikan: pakai saran dari FAQ
+        }
         showTyping(false);
 
-        if (faqAnswer) {
-            appendMessage(faqAnswer, 'bot');
-        } else {
-            // Fallback: try Gemini API via backend
-            try {
-                const resp = await fetch('/chatbot/ask', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({ message: text })
-                });
-                if (resp.ok) {
-                    const data = await resp.json();
-                    appendMessage(data.reply || 'Maaf, saya tidak mengerti pertanyaan itu.', 'bot');
-                } else {
-                    throw new Error('API error');
-                }
-            } catch {
-                appendMessage('Maaf, saya belum bisa menjawab itu. Silakan hubungi staf Bank Mini Sekolah secara langsung untuk bantuan lebih lanjut. 🙏', 'bot');
-            }
+        if (balasanAi) {
+            const isi = document.createElement('div');
+            isi.textContent = balasanAi;
+            appendMessage([isi], 'bot');
+            return;
         }
+
+        const isi = document.createElement('div');
+        isi.innerHTML = 'Maaf, saya belum menemukan jawaban untuk pertanyaan itu. 🙏';
+        const nodes = [isi];
+        const saran = hasil.saran.length ? hasil.saran : window.SipintarFaq.chipAwal(CHATBOT_PERAN).slice(0, 3);
+        nodes.push(buatChips(saran, hasil.saran.length ? 'Mungkin maksud Anda:' : 'Coba tanyakan:'));
+        nodes.push(buatChips([{ tanya: 'Apa saja yang bisa ditanyakan?' }]));
+        appendMessage(nodes, 'bot');
     }
+
+    // Chip pembuka sesuai peran pengguna
+    document.addEventListener('DOMContentLoaded', function () {
+        const wadah = document.getElementById('chatbot-quick-chips');
+        if (!wadah || !window.SipintarFaq) return;
+        const awal = window.SipintarFaq.chipAwal(CHATBOT_PERAN).concat([{ tanya: 'Apa saja yang bisa ditanyakan?' }]);
+        awal.forEach(item => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'chatbot-chip';
+            btn.textContent = item.tanya;
+            btn.addEventListener('click', () => sendQuick(item.tanya));
+            wadah.appendChild(btn);
+        });
+    });
 
     // Close chatbot when clicking outside
     document.addEventListener('click', function(e) {

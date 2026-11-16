@@ -122,6 +122,44 @@
     margin-bottom: 24px;
 }
 
+/* Kartu metrik boleh menyempit; angka besar tidak mendorong grid keluar layar */
+.metric-grid > * { min-width: 0; }
+
+/* 4 / 3 kartu sejajar di layar lebar, otomatis turun ke 2 lalu 1 kolom */
+.metric-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.metric-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+@media (max-width: 1440px) {
+    .metric-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 1100px) {
+    .metric-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+    .metric-grid-4,
+    .metric-grid-3 { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Tata letak konten utama + panel samping (dashboard, form, kartu piutang).
+   Panel samping turun ke bawah bila layar tidak cukup lebar. */
+.layout-split {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.layout-split-3-2 { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+
+.layout-split > * { min-width: 0; }
+
+@media (max-width: 1366px) {
+    .layout-split,
+    .layout-split-3-2 { grid-template-columns: minmax(0, 1fr); }
+}
+
 .metric-card {
     background-color: var(--surface-card);
     border: 1px solid var(--border-subtle);
@@ -298,7 +336,9 @@
 }
 
 .metric-value {
-    font-size: 1.85rem;
+    /* Mengecil mengikuti lebar layar agar nominal ratusan juta tetap muat di kartu */
+    font-size: clamp(1.35rem, 0.85rem + 1.05vw, 1.85rem);
+    overflow-wrap: anywhere;
     font-weight: 800;
     color: var(--text-heading);
     letter-spacing: -0.03em;

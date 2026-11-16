@@ -163,6 +163,11 @@
                        style="padding:7px 14px; font-size:13px; border-radius:8px; width:100%;">
             </div>
             
+            <a href="{{ route('kas.harian.cetak', request()->query()) }}" target="_blank" id="btnCetakKas"
+               class="btn-ui btn-ui-outline" style="font-weight:700; padding:8px 16px; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                <span>Cetak Laporan</span>
+            </a>
             <button type="button" class="btn-ui btn-ui-primary" onclick="bukaModalKasManual()" style="font-weight:700; padding:8px 16px;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 <span>Catat Mutasi Manual</span>

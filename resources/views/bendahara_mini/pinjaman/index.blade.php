@@ -136,6 +136,14 @@
                                     Setor Tunai
                                 </span>
                             @endif
+                            @if (in_array($p->status_pinjaman, ['diajukan', 'layak', 'cair'], true))
+                                <button type="button" class="btn-ubah-metode" id="btn-ubah-metode-{{ $p->pinjaman_id }}"
+                                        onclick="bukaModalMetode({{ $p->pinjaman_id }}, '{{ addslashes($p->nama_nasabah) }}', '{{ $p->metode_bayar }}')"
+                                        title="Ubah metode pembayaran angsuran"
+                                        style="display:block; margin-top:4px; background:none; border:none; padding:0; font-size:11.5px; font-weight:700; color:#0369A1; cursor:pointer; text-decoration:underline;">
+                                    Ubah metode
+                                </button>
+                            @endif
                         </td>
                         <td style="text-align: center;">
                             @if ($p->status_pinjaman === 'diajukan')
@@ -197,5 +205,57 @@
     @endif
 </div>
 
-@endsection
+{{-- ── MODAL UBAH METODE PEMBAYARAN ── --}}
+<div id="modalUbahMetode" class="sipintar-modal-backdrop" style="display:none; z-index:9999; align-items:center; justify-content:center;" onclick="if(event.target === this) tutupModalMetode()">
+    <div style="max-width:460px; width:calc(100% - 32px); background:#FFFFFF; border-radius:14px; overflow:hidden; border:1px solid #E2E8F0; box-shadow:0 25px 50px -12px rgba(15,23,42,0.25);">
+        <div style="padding:16px 20px; background:#0D5C46; color:#FFFFFF; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <div style="font-weight:800; font-size:15px;">Ubah Metode Pembayaran</div>
+                <div style="font-size:12px; color:#A7F3D0;" id="metodeInfoPinjaman">-</div>
+            </div>
+            <button type="button" onclick="tutupModalMetode()" style="background:rgba(255,255,255,0.15); border:none; color:#FFFFFF; width:30px; height:30px; border-radius:6px; cursor:pointer; font-size:20px;">&times;</button>
+        </div>
+        <form id="formUbahMetode" method="POST" action="" style="padding:20px; display:flex; flex-direction:column; gap:14px; margin:0;">
+            @csrf
+            <div>
+                <div style="font-size:13px; font-weight:700; margin-bottom:8px;">Metode baru</div>
+                <label style="display:flex; gap:8px; align-items:flex-start; margin-bottom:8px; cursor:pointer;">
+                    <input type="radio" name="metode_bayar" id="metodeBaruPotong" value="potong_gaji">
+                    <span><strong>Potong Gaji / Tunjangan</strong><br><span style="font-size:12px; color:var(--text-muted);">Angsuran masuk Rencana Potongan bulanan.</span></span>
+                </label>
+                <label style="display:flex; gap:8px; align-items:flex-start; cursor:pointer;">
+                    <input type="radio" name="metode_bayar" id="metodeBaruTunai" value="tunai">
+                    <span><strong>Pembayaran Langsung (Tunai)</strong><br><span style="font-size:12px; color:var(--text-muted);">Angsuran dibayar di loket lewat menu Angsuran Langsung.</span></span>
+                </label>
+            </div>
+            <div>
+                <label for="metodeAlasan" style="font-size:13px; font-weight:700; display:block; margin-bottom:6px;">Alasan perubahan</label>
+                <input type="text" name="alasan" id="metodeAlasan" class="form-input" maxlength="255" required minlength="5"
+                       placeholder="Contoh: Salah pilih metode saat pengajuan" style="width:100%;">
+            </div>
+            <div style="font-size:11.5px; color:var(--text-muted);">Seluruh riwayat angsuran tetap tercatat di kartu piutang yang sama; perubahan dicatat di log audit.</div>
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" class="btn-ui btn-ui-outline" onclick="tutupModalMetode()">Batal</button>
+                <button type="submit" class="btn-ui btn-ui-primary" style="font-weight:800;">Simpan Metode</button>
+            </div>
+        </form>
+    </div>
+</div>
 
+<script>
+function bukaModalMetode(pinjamanId, nama, metodeSaatIni) {
+    const form = document.getElementById('formUbahMetode');
+    form.action = @json(url('/bbm/pinjaman')) + '/' + pinjamanId + '/metode';
+    document.getElementById('metodeInfoPinjaman').innerText = '#PINJ-' + String(pinjamanId).padStart(4, '0') + ' a.n. ' + nama;
+    // Pilih otomatis metode lawan dari metode saat ini
+    document.getElementById(metodeSaatIni === 'potong_gaji' ? 'metodeBaruTunai' : 'metodeBaruPotong').checked = true;
+    document.getElementById('metodeAlasan').value = '';
+    document.getElementById('modalUbahMetode').style.display = 'flex';
+}
+
+function tutupModalMetode() {
+    document.getElementById('modalUbahMetode').style.display = 'none';
+}
+</script>
+
+@endsection

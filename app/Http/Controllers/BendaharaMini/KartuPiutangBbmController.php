@@ -12,6 +12,45 @@ class KartuPiutangBbmController extends Controller
     /**
      * Tampilkan Kartu Piutang Digital per peminjam.
      */
+    /**
+     * Kartu Piutang Individu siap cetak (jadwal + riwayat pembayaran sah).
+     */
+    public function cetak(Request $request)
+    {
+        $pinjaman = DB::table('tblPINJAMAN as pin')
+            ->join('tblNASABAH as n', 'pin.nasabah_id', '=', 'n.nasabah_id')
+            ->leftJoin('tblPENCAIRAN as cair', 'pin.pinjaman_id', '=', 'cair.pinjaman_id')
+            ->where('pin.pinjaman_id', $request->integer('pinjaman_id'))
+            ->whereIn('pin.status_pinjaman', ['cair', 'lunas'])
+            ->select('pin.*', 'n.nama_nasabah', 'n.kelas_unit', 'cair.tgl_cair')
+            ->first();
+
+        abort_unless($pinjaman, 404, 'Kartu piutang tidak ditemukan.');
+
+        $jadwalList = DB::table('tblJADWAL_ANGSURAN')
+            ->where('pinjaman_id', $pinjaman->pinjaman_id)
+            ->orderBy('angsuran_ke')
+            ->get();
+
+        $riwayatAngsuran = DB::table('tblANGSURAN as ang')
+            ->join('tblJADWAL_ANGSURAN as ja', 'ang.jadwal_angsuran_id', '=', 'ja.jadwal_angsuran_id')
+            ->leftJoin('tblKOREKSI_ANGSURAN as kor', 'ang.angsuran_id', '=', 'kor.angsuran_id')
+            ->where('ja.pinjaman_id', $pinjaman->pinjaman_id)
+            ->whereNull('kor.koreksi_id')
+            ->select('ang.*', 'ja.angsuran_ke')
+            ->orderBy('ang.tgl_bayar')
+            ->orderBy('ang.angsuran_id')
+            ->get();
+
+        $totalPokokTerbayar = (float) $riwayatAngsuran->sum('bayar_pokok');
+        $totalJasaTerbayar  = (float) $riwayatAngsuran->sum('bayar_bunga');
+        $sisaPokokPiutang   = PinjamanCalculatorService::hitungSisaPokok($pinjaman->nominal_pinjaman, $totalPokokTerbayar);
+
+        return view('bendahara_mini.cetak.kartu_piutang', compact(
+            'pinjaman', 'jadwalList', 'riwayatAngsuran', 'totalPokokTerbayar', 'totalJasaTerbayar', 'sisaPokokPiutang'
+        ));
+    }
+
     public function kartu(Request $request)
     {
         $selectedPinjamanId = $request->query('pinjaman_id');
