@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <!-- Hanya file UAT Dusk (TC_xx_xxTest.php); test Feature lain di folder ini tidak ikut -->
+        <testsuite name="UAT Modul Pinjaman">
+            <directory prefix="TC_" suffix="Test.php">tests/Modul_Pinjaman</directory>
+        </testsuite>
+        <testsuite name="UAT Modul Dashboard">
+            <directory prefix="TC_" suffix="Test.php">tests/Modul_Dashboard</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
