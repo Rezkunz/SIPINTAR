@@ -111,6 +111,17 @@
                     <td class="lap-income-num">{{ $rp($total['pendapatan_lain']) }}</td>
                     <td></td>
                 </tr>
+                {{-- Rincian otomatis dari setiap kas manual masuk pada periode laporan --}}
+                @foreach ($kasManual->where('arah', 'masuk') as $k)
+                    <tr dusk="rincian-pendapatan-lain">
+                        <td class="lap-income-item" style="padding-left:44px; font-size:12px; color:var(--text-muted);">
+                            {{ \Carbon\Carbon::parse($k->tgl_mutasi)->format('d/m/Y') }} &bull; {{ $k->uraian ?: 'Tanpa keterangan' }}
+                            <span class="lap-income-note">{{ $k->jenis_kas === 'bank' ? 'Kas Bank' : 'Kas Tunai' }}</span>
+                        </td>
+                        <td class="lap-income-num" style="font-size:12px; color:var(--text-muted);">{{ $rp($k->nominal) }}</td>
+                        <td></td>
+                    </tr>
+                @endforeach
                 <tr class="lap-income-subtotal">
                     <td>Total Pendapatan</td>
                     <td></td>
@@ -119,12 +130,12 @@
 
                 <tr class="lap-income-group"><td colspan="3">Beban</td></tr>
                 <tr>
-                    <td class="lap-income-item">Beban Jasa Tabungan Guru / Karyawan <span class="lap-income-note">Interest Takar Expense &bull; 0,2% per bulan</span></td>
+                    <td class="lap-income-item">Beban Jasa Tabungan Guru / Karyawan <span class="lap-income-note">Interest Takar Expense &bull; {{ str_replace('.', ',', (string) \App\Services\JasaTabunganService::KATEGORI['guru']['persen_jasa']) }}% per bulan</span></td>
                     <td class="lap-income-num">{{ $rp($total['jasa_guru']) }}</td>
                     <td></td>
                 </tr>
                 <tr>
-                    <td class="lap-income-item">Beban Jasa Tabungan Siswa <span class="lap-income-note">Interest Tapel Expense &bull; 0,1% per bulan</span></td>
+                    <td class="lap-income-item">Beban Jasa Tabungan Siswa <span class="lap-income-note">Interest Tapel Expense &bull; {{ str_replace('.', ',', (string) \App\Services\JasaTabunganService::KATEGORI['siswa']['persen_jasa']) }}% per bulan</span></td>
                     <td class="lap-income-num">{{ $rp($total['jasa_siswa']) }}</td>
                     <td></td>
                 </tr>
@@ -133,6 +144,17 @@
                     <td class="lap-income-num">{{ $rp($total['beban_operasional']) }}</td>
                     <td></td>
                 </tr>
+                {{-- Rincian otomatis dari setiap kas manual keluar pada periode laporan --}}
+                @foreach ($kasManual->where('arah', 'keluar') as $k)
+                    <tr dusk="rincian-beban-operasional">
+                        <td class="lap-income-item" style="padding-left:44px; font-size:12px; color:var(--text-muted);">
+                            {{ \Carbon\Carbon::parse($k->tgl_mutasi)->format('d/m/Y') }} &bull; {{ $k->uraian ?: 'Tanpa keterangan' }}
+                            <span class="lap-income-note">{{ $k->jenis_kas === 'bank' ? 'Kas Bank' : 'Kas Tunai' }}</span>
+                        </td>
+                        <td class="lap-income-num" style="font-size:12px; color:var(--text-muted);">{{ $rp($k->nominal) }}</td>
+                        <td></td>
+                    </tr>
+                @endforeach
                 <tr class="lap-income-subtotal">
                     <td>Total Beban</td>
                     <td></td>
