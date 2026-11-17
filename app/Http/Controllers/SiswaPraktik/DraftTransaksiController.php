@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\SiswaPraktik;
 
+use App\Http\Controllers\Concerns\TanganiKesalahanInput;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SiswaPraktik\StoreDraftRequest;
 use App\Models\Draft;
@@ -13,9 +14,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Throwable;
 
 class DraftTransaksiController extends Controller
 {
+    use TanganiKesalahanInput;
+
     /**
      * Tampilkan formulir pembuatan draft setoran / penarikan.
      */
@@ -93,12 +97,16 @@ class DraftTransaksiController extends Controller
      */
     public function store(StoreDraftRequest $request, DraftService $draftService): RedirectResponse
     {
-        $draft = $draftService->createDraft(Auth::id(), $request->validated());
+        try {
+            $draft = $draftService->createDraft(Auth::id(), $request->validated());
 
-        return redirect()->route('tabungan.draft.riwayat')->with([
-            'success_draft' => $draft->draft_id,
-            'status'        => 'Draft transaksi berhasil disimpan dengan status menunggu verifikasi loket.',
-        ]);
+            return redirect()->route('tabungan.draft.riwayat')->with([
+                'success_draft' => $draft->draft_id,
+                'status'        => 'Draft transaksi berhasil disimpan dengan status menunggu verifikasi loket.',
+            ]);
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'menyimpan draft transaksi');
+        }
     }
 
     /**

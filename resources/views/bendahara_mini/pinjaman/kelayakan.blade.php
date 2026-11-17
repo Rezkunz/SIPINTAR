@@ -34,15 +34,13 @@
             <h2 class="card-heading">Antrean Permohonan Pinjaman Belum Dinilai</h2>
             <div style="font-size:12px; color:var(--text-muted);">Persetujuan komite wajib disimpan sebagai dokumentasi audit kredit</div>
         </div>
-        <div style="display:flex; align-items:center; gap:10px;">
-            <div style="position:relative; width:250px;">
-                <input type="text" class="form-input" placeholder="Cari nama atau unit peminjam..." 
-                       oninput="filterTableRows(this, 'tableKelayakan')"
-                       style="padding:6px 12px; font-size:12.5px; border-radius:6px; width:100%;">
-            </div>
-            <span class="badge-pill amber">{{ $pinjamanBelumDinilai->count() }} Menunggu Verifikasi</span>
-        </div>
+        <span class="badge-pill amber">{{ $pinjamanBelumDinilai->total() }} Menunggu Verifikasi</span>
     </div>
+
+    @include('partials.daftar_toolbar', [
+        'id' => 'antrean', 'tabs' => [], 'tab' => null, 'q' => $q, 'pageName' => 'hal_antrean',
+        'placeholder' => 'Cari nama, unit, atau ID pinjaman',
+    ])
 
     <div class="table-responsive">
         <table class="financial-table" id="tableKelayakan">
@@ -119,6 +117,10 @@
             </tbody>
         </table>
     </div>
+
+    @if ($pinjamanBelumDinilai->hasPages())
+        <div style="padding: 0 20px 12px;">{{ $pinjamanBelumDinilai->links() }}</div>
+    @endif
 </div>
 
 {{-- ── 10 RIWAYAT PENILAIAN TERAKHIR ── --}}

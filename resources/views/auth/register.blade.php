@@ -11,7 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     {{-- Clean Auth Stylesheet matching Image 3 --}}
-    <link rel="stylesheet" href="{{ asset('css/auth.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('css/auth.css') }}?v={{ @filemtime(public_path('css/auth.css')) ?: 0 }}">
+    @include('partials.pwa_head')
 </head>
 <body class="auth-page-body">
 

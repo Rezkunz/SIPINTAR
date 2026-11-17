@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Nasabah;
 use App\Models\Rekening;
 use App\Models\User;
+use App\Support\NomorHp;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,12 +32,20 @@ class AuthController extends Controller
     }
 
     /**
-     * Proses autentikasi login (menggunakan nomor unik NISN / Kode Pegawai / No HP / Email).
+     * Proses autentikasi login. Login HANYA memakai nomor HP yang terdaftar + kata sandi.
+     * Nomor dinormalisasi lebih dulu sehingga "+62 812...", "62812...", dan "0812..." dianggap sama.
      */
     public function login(Request $request)
     {
-        $loginRaw = (string) $request->input('login', '');
-        $throttleKey = Str::transliterate(Str::lower(trim($loginRaw)) . '|' . $request->ip());
+        if (str_contains((string) $request->input('login'), '@')) {
+            throw ValidationException::withMessages([
+                'login' => 'Login SIPINTAR hanya memakai nomor HP yang terdaftar, bukan email. Contoh: 081234567890.',
+            ]);
+        }
+
+        $noHp = NomorHp::normalisasi($request->input('login'));
+        $request->merge(['login' => $noHp]);
+        $throttleKey = 'login|' . $noHp . '|' . $request->ip();
 
         // 1. Rate Limiting Throttling (Maksimal 5 percobaan gagal per 60 detik)
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
@@ -48,34 +57,28 @@ class AuthController extends Controller
 
         // 2. Validasi Input Kredensial Login
         $request->validate([
-            'login'    => ['required', 'string', 'min:3', 'max:100'],
+            'login'    => ['required', 'string', 'regex:/^0[0-9]{9,14}$/'],
             'password' => ['required', 'string', 'min:4', 'max:100'],
         ], [
-            'login.required'    => 'Nomor telepon, NISN / NIP, atau alamat email wajib diisi.',
-            'login.min'         => 'Nomor identitas login minimal 3 karakter.',
-            'login.max'         => 'Nomor identitas login maksimal 100 karakter.',
+            'login.required'    => 'Nomor HP wajib diisi.',
+            'login.regex'       => 'Masukkan nomor HP yang valid, 10–15 digit angka (contoh: 081234567890). Login tidak dapat memakai email.',
             'password.required' => 'Kata sandi keamanan akun wajib diisi.',
             'password.min'      => 'Kata sandi akun minimal 4 karakter.',
             'password.max'      => 'Kata sandi akun maksimal 100 karakter.',
         ]);
 
-        $loginInput = strip_tags(trim($loginRaw));
         $password   = (string) $request->input('password');
         $remember   = $request->boolean('remember');
 
         try {
-            // 3. Pencarian Akun Pengguna di tblUSER
-            $user = User::query()
-                ->where('no_hp', $loginInput)
-                ->orWhere('no_induk', $loginInput)
-                ->orWhere('email', strtolower($loginInput))
-                ->first();
+            // 3. Pencarian Akun Pengguna di tblUSER berdasarkan nomor HP
+            $user = User::query()->where('no_hp', $noHp)->first();
 
             // Cek Keberadaan Akun
             if (!$user) {
                 RateLimiter::hit($throttleKey, 60);
                 throw ValidationException::withMessages([
-                    'login' => 'Nomor HP, NISN/NIP, atau email tersebut tidak terdaftar di sistem SIPINTAR.',
+                    'login' => 'Nomor HP tersebut tidak terdaftar di sistem SIPINTAR. Periksa kembali nomor Anda atau hubungi Teller.',
                 ]);
             }
 
@@ -145,7 +148,7 @@ class AuthController extends Controller
         }
 
         // 2. Sanitasi Awal Input
-        $cleanedNoHp = preg_replace('/[^0-9+]/', '', trim((string) $request->input('no_hp', '')));
+        $cleanedNoHp = NomorHp::normalisasi($request->input('no_hp'));
         $cleanedEmail = strtolower(trim((string) $request->input('email', '')));
         $cleanedNoInduk = strip_tags(trim((string) $request->input('no_induk', '')));
         $cleanedNama = strip_tags(trim((string) $request->input('nama_lengkap', '')));
@@ -199,27 +202,27 @@ class AuthController extends Controller
             'password_confirmation.min'      => 'Kolom ulangi kata sandi minimal 6 karakter.',
         ]);
 
-        // 4. Pengecekan Duplikasi dengan Pesan Spesifik per Field
-        if (User::where('no_induk', $cleanedNoInduk)->exists()) {
-            throw ValidationException::withMessages([
-                'no_induk' => 'Nomor Induk / NISN ini sudah terdaftar. Silakan masuk atau gunakan nomor induk lain.',
-            ]);
-        }
-
-        if (Nasabah::where('no_hp', $cleanedNoHp)->exists() || User::where('no_hp', $cleanedNoHp)->exists()) {
-            throw ValidationException::withMessages([
-                'no_hp' => 'Nomor WhatsApp / HP ini sudah digunakan pada akun nasabah lain.',
-            ]);
-        }
-
-        if (User::where('email', $cleanedEmail)->exists()) {
-            throw ValidationException::withMessages([
-                'email' => 'Alamat email ini sudah terdaftar pada akun lain. Silakan gunakan email lain.',
-            ]);
-        }
-
-        // 5. Eksekusi Transaksi Database dengan Try-Catch Lengkap
         try {
+            // 4. Pengecekan Duplikasi dengan Pesan Spesifik per Field
+            if (User::where('no_induk', $cleanedNoInduk)->exists()) {
+                throw ValidationException::withMessages([
+                    'no_induk' => 'Nomor Induk / NISN ini sudah terdaftar. Silakan masuk atau gunakan nomor induk lain.',
+                ]);
+            }
+
+            if (Nasabah::where('no_hp', $cleanedNoHp)->exists() || User::where('no_hp', $cleanedNoHp)->exists()) {
+                throw ValidationException::withMessages([
+                    'no_hp' => 'Nomor WhatsApp / HP ini sudah digunakan pada akun nasabah lain.',
+                ]);
+            }
+
+            if (User::where('email', $cleanedEmail)->exists()) {
+                throw ValidationException::withMessages([
+                    'email' => 'Alamat email ini sudah terdaftar pada akun lain. Silakan gunakan email lain.',
+                ]);
+            }
+
+            // 5. Eksekusi Transaksi Database (masih di dalam try-catch yang sama)
             $user = DB::transaction(function () use ($cleanedNoHp, $cleanedNama, $request, $cleanedKelas, $cleanedNoInduk, $cleanedEmail) {
                 // Simpan Data Nasabah
                 $nasabah = Nasabah::create([
@@ -287,9 +290,15 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        try {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        } catch (\Throwable $e) {
+            // Sesi tetap dianggap berakhir; pengguna diarahkan ke login agar tidak tertahan di halaman lama.
+            Log::warning('Logout tidak bersih: ' . $e->getMessage());
+            return redirect()->route('login')->with('error', 'Sesi Anda sudah diakhiri, tetapi terjadi kendala saat membersihkan data sesi. Silakan login kembali.');
+        }
 
         return redirect()->route('login');
     }

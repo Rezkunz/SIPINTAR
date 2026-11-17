@@ -86,7 +86,7 @@ abstract class DashboardDuskTestCase extends SipintarDuskTestCase
         $browser->visit('/login');
         $browser->driver->manage()->deleteAllCookies();
         $browser->visit('/login')->waitFor('#login');
-        $this->isi($browser, '#login', $login);
+        $this->isi($browser, '#login', $this->noHpLogin($login));
         $this->isi($browser, '#password', $password);
 
         return $browser->press('#btn-submit');

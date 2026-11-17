@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers\Manager;
 
+use App\Http\Controllers\Concerns\TanganiKesalahanInput;
 use App\Http\Controllers\Controller;
 use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class PosNeracaController extends Controller
 {
+    use TanganiKesalahanInput;
+
     /**
      * Tambah entri pos neraca manual.
      */
@@ -17,18 +21,22 @@ class PosNeracaController extends Controller
     {
         $data = $this->validasi($request);
 
-        $posId = DB::table('tblPOS_NERACA')->insertGetId(array_merge($data, [
-            'user_id'    => auth()->id(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]), 'pos_neraca_id');
+        try {
+            $posId = DB::table('tblPOS_NERACA')->insertGetId(array_merge($data, [
+                'user_id'    => auth()->id(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]), 'pos_neraca_id');
 
-        AuditLogService::log(aksi: 'INSERT', entitas: 'tblPOS_NERACA', entitasId: $posId, dataBaru: $data);
+            AuditLogService::log(aksi: 'INSERT', entitas: 'tblPOS_NERACA', entitasId: $posId, dataBaru: $data);
 
-        return redirect()
-            ->route('laporan.neraca', $this->paramKembali($request))
-            ->with('success', "Pos \"{$data['nama_pos']}\" berhasil ditambahkan ke neraca.")
-            ->withFragment('pos-manual');
+            return redirect()
+                ->route('laporan.neraca', $this->paramKembali($request))
+                ->with('success', "Pos \"{$data['nama_pos']}\" berhasil ditambahkan ke neraca.")
+                ->withFragment('pos-manual');
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'menambah pos neraca');
+        }
     }
 
     /**
@@ -41,20 +49,24 @@ class PosNeracaController extends Controller
 
         $data = $this->validasi($request);
 
-        DB::table('tblPOS_NERACA')->where('pos_neraca_id', $pos)->update(array_merge($data, ['updated_at' => now()]));
+        try {
+            DB::table('tblPOS_NERACA')->where('pos_neraca_id', $pos)->update(array_merge($data, ['updated_at' => now()]));
 
-        AuditLogService::log(
-            aksi: 'UPDATE',
-            entitas: 'tblPOS_NERACA',
-            entitasId: $pos,
-            dataLama: (array) $lama,
-            dataBaru: $data
-        );
+            AuditLogService::log(
+                aksi: 'UPDATE',
+                entitas: 'tblPOS_NERACA',
+                entitasId: $pos,
+                dataLama: (array) $lama,
+                dataBaru: $data
+            );
 
-        return redirect()
-            ->route('laporan.neraca', $this->paramKembali($request))
-            ->with('success', "Pos \"{$data['nama_pos']}\" berhasil diperbarui.")
-            ->withFragment('pos-manual');
+            return redirect()
+                ->route('laporan.neraca', $this->paramKembali($request))
+                ->with('success', "Pos \"{$data['nama_pos']}\" berhasil diperbarui.")
+                ->withFragment('pos-manual');
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'memperbarui pos neraca');
+        }
     }
 
     /**
@@ -62,17 +74,21 @@ class PosNeracaController extends Controller
      */
     public function destroy(Request $request, int $pos): RedirectResponse
     {
-        $lama = DB::table('tblPOS_NERACA')->where('pos_neraca_id', $pos)->first();
-        abort_unless($lama, 404);
+        try {
+            $lama = DB::table('tblPOS_NERACA')->where('pos_neraca_id', $pos)->first();
+            abort_unless($lama, 404);
 
-        DB::table('tblPOS_NERACA')->where('pos_neraca_id', $pos)->delete();
+            DB::table('tblPOS_NERACA')->where('pos_neraca_id', $pos)->delete();
 
-        AuditLogService::log(aksi: 'DELETE', entitas: 'tblPOS_NERACA', entitasId: $pos, dataLama: (array) $lama);
+            AuditLogService::log(aksi: 'DELETE', entitas: 'tblPOS_NERACA', entitasId: $pos, dataLama: (array) $lama);
 
-        return redirect()
-            ->route('laporan.neraca', $this->paramKembali($request))
-            ->with('success', "Pos \"{$lama->nama_pos}\" berhasil dihapus dari neraca.")
-            ->withFragment('pos-manual');
+            return redirect()
+                ->route('laporan.neraca', $this->paramKembali($request))
+                ->with('success', "Pos \"{$lama->nama_pos}\" berhasil dihapus dari neraca.")
+                ->withFragment('pos-manual');
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'menghapus pos neraca');
+        }
     }
 
     private function validasi(Request $request): array

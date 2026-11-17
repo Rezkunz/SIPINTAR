@@ -41,15 +41,13 @@
             <div style="font-size:12px; color:var(--text-muted);">Pilih paket pinjaman untuk membuka formulir penerimaan kasir tunai</div>
         </div>
         
-        <div style="display:flex; align-items:center; gap:12px;">
-            <div style="position:relative; width:280px;">
-                <input type="text" class="form-input" placeholder="Cari nama peminjam, ID pinjaman, unit..." 
-                       oninput="filterTableRows(this, 'tablePinjamanLangsung')"
-                       style="padding:7px 14px; font-size:13px; border-radius:8px; width:100%;">
-            </div>
-            <span class="badge-pill green">{{ $pinjamanAktifList->count() }} Paket Berjalan</span>
-        </div>
+        <span class="badge-pill green">{{ $tabs['semua']['jumlah'] }} Paket Berjalan</span>
     </div>
+
+    @include('partials.daftar_toolbar', [
+        'id' => 'paket', 'tabs' => $tabs, 'tab' => $tab, 'q' => $q, 'pageName' => 'hal_paket',
+        'placeholder' => 'Cari nama, unit, atau ID pinjaman',
+    ])
 
     <div class="table-responsive">
         <table class="financial-table" id="tablePinjamanLangsung">
@@ -146,7 +144,13 @@
                     <tr>
                         <td colspan="5">
                             <div class="empty-placeholder" style="padding:36px 16px; text-align:center;">
-                                Tidak ada pinjaman pegawai aktif yang sedang berjalan.
+                                @if ($q !== '')
+                                    Tidak ada pinjaman yang cocok dengan "{{ $q }}".
+                                @elseif ($tab !== 'semua')
+                                    Tidak ada angsuran pada kategori ini.
+                                @else
+                                    Tidak ada pinjaman pegawai aktif yang sedang berjalan.
+                                @endif
                             </div>
                         </td>
                     </tr>
@@ -154,6 +158,10 @@
             </tbody>
         </table>
     </div>
+
+    @if ($pinjamanAktifList->hasPages())
+        <div style="padding: 0 20px 12px;">{{ $pinjamanAktifList->links() }}</div>
+    @endif
 </div>
 
 {{-- ── TABEL RIWAYAT TRANSAKSI TERAKHIR (PAGINASI 10 BARIS) ── --}}

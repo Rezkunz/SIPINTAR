@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\BendaharaMini;
 
+use App\Http\Controllers\Concerns\DaftarTerfilter;
+use App\Http\Controllers\Concerns\TanganiKesalahanInput;
 use App\Http\Controllers\Controller;
 use App\Services\AuditLogService;
 use App\Services\DataTunjanganService;
@@ -11,9 +13,13 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Throwable;
 
 class PinjamanBbmController extends Controller
 {
+    use DaftarTerfilter;
+    use TanganiKesalahanInput;
+
     /**
      * Tampilkan seluruh daftar pinjaman dengan opsi filter status.
      */
@@ -113,73 +119,77 @@ class PinjamanBbmController extends Controller
             'tgl_pengajuan.required'    => 'Tanggal pengajuan wajib diisi.',
         ]);
 
-        // Validasi: hanya nasabah bertipe pegawai yang boleh meminjam
-        $nasabah = DB::table('tblNASABAH')->where('nasabah_id', $request->nasabah_id)->first();
-        if (!$nasabah || $nasabah->jenis_nasabah !== 'pegawai') {
-            return back()->withInput()->with('error', 'Pinjaman hanya diperbolehkan bagi guru dan tenaga kependidikan (pegawai).');
-        }
-
-        // Validasi: nasabah wajib memiliki rekening yang telah diaktivasi fisik
-        $rekening = DB::table('tblREKENING')->where('nasabah_id', $request->nasabah_id)->first();
-        if (!$rekening || $rekening->status_rekening !== 'aktif') {
-            return back()->withInput()->with('error', 'Pegawai yang dipilih belum mengaktifkan rekening di Bank Mini. Rekening harus berstatus aktif untuk mengajukan fasilitas pinjaman.');
-        }
-
-        // Validasi: tidak boleh memiliki pinjaman aktif yang sedang berjalan
-        $pinjamanAktif = DB::table('tblPINJAMAN')
-            ->where('nasabah_id', $request->nasabah_id)
-            ->whereIn('status_pinjaman', ['diajukan', 'layak', 'cair'])
-            ->first();
-
-        if ($pinjamanAktif) {
-            $statusLabel = strtoupper($pinjamanAktif->status_pinjaman);
-            return back()->withInput()->with('error', "Nasabah {$nasabah->nama_nasabah} masih memiliki fasilitas pinjaman yang sedang berjalan (#PINJ-{$pinjamanAktif->pinjaman_id} - status: {$statusLabel}). Pengajuan baru hanya dapat diproses setelah seluruh angsuran pinjaman tersebut lunas.");
-        }
-
-        // Cek penguncian periode
         try {
-            PeriodeLockService::assertPeriodeTerbuka($request->tgl_pengajuan);
-        } catch (RuntimeException $e) {
-            return back()->withInput()->with('error', $e->getMessage());
-        }
+            // Validasi: hanya nasabah bertipe pegawai yang boleh meminjam
+            $nasabah = DB::table('tblNASABAH')->where('nasabah_id', $request->nasabah_id)->first();
+            if (!$nasabah || $nasabah->jenis_nasabah !== 'pegawai') {
+                return back()->withInput()->with('error', 'Pinjaman hanya diperbolehkan bagi guru dan tenaga kependidikan (pegawai).');
+            }
 
-        // Perbarui gaji pokok dan tunjangan jika diinput atau jika sebelumnya masih 0
-        if ($request->filled('gaji_pokok') || $request->filled('tunjangan')) {
-            $gajiBaru = $request->filled('gaji_pokok') ? (float) $request->input('gaji_pokok') : (float) $nasabah->gaji_pokok;
-            $tunjBaru = $request->filled('tunjangan') ? (float) $request->input('tunjangan') : (float) $nasabah->tunjangan;
-            DB::table('tblNASABAH')->where('nasabah_id', $request->nasabah_id)->update([
-                'gaji_pokok' => $gajiBaru,
-                'tunjangan'  => $tunjBaru,
-            ]);
-        }
+            // Validasi: nasabah wajib memiliki rekening yang telah diaktivasi fisik
+            $rekening = DB::table('tblREKENING')->where('nasabah_id', $request->nasabah_id)->first();
+            if (!$rekening || $rekening->status_rekening !== 'aktif') {
+                return back()->withInput()->with('error', 'Pegawai yang dipilih belum mengaktifkan rekening di Bank Mini. Rekening harus berstatus aktif untuk mengajukan fasilitas pinjaman.');
+            }
 
-        $pinjamanId = DB::table('tblPINJAMAN')->insertGetId([
-            'nasabah_id'       => $request->nasabah_id,
-            'user_id'          => auth()->id(),
-            'nominal_pinjaman' => $request->nominal_pinjaman,
-            'tenor'            => $request->tenor,
-            'bunga_persen'     => 2.00,
-            'tgl_pengajuan'    => $request->tgl_pengajuan,
-            'metode_bayar'     => $request->metode_bayar,
-            'keperluan'        => trim(strip_tags($request->keperluan)),
-            'status_pinjaman'  => 'diajukan',
-        ], 'pinjaman_id');
+            // Validasi: tidak boleh memiliki pinjaman aktif yang sedang berjalan
+            $pinjamanAktif = DB::table('tblPINJAMAN')
+                ->where('nasabah_id', $request->nasabah_id)
+                ->whereIn('status_pinjaman', ['diajukan', 'layak', 'cair'])
+                ->first();
 
-        AuditLogService::log(
-            aksi: 'PENGAJUAN_PINJAMAN',
-            entitas: 'tblPINJAMAN',
-            entitasId: $pinjamanId,
-            dataBaru: [
+            if ($pinjamanAktif) {
+                $statusLabel = strtoupper($pinjamanAktif->status_pinjaman);
+                return back()->withInput()->with('error', "Nasabah {$nasabah->nama_nasabah} masih memiliki fasilitas pinjaman yang sedang berjalan (#PINJ-{$pinjamanAktif->pinjaman_id} - status: {$statusLabel}). Pengajuan baru hanya dapat diproses setelah seluruh angsuran pinjaman tersebut lunas.");
+            }
+
+            // Cek penguncian periode
+            try {
+                PeriodeLockService::assertPeriodeTerbuka($request->tgl_pengajuan);
+            } catch (RuntimeException $e) {
+                return back()->withInput()->with('error', $e->getMessage());
+            }
+
+            // Perbarui gaji pokok dan tunjangan jika diinput atau jika sebelumnya masih 0
+            if ($request->filled('gaji_pokok') || $request->filled('tunjangan')) {
+                $gajiBaru = $request->filled('gaji_pokok') ? (float) $request->input('gaji_pokok') : (float) $nasabah->gaji_pokok;
+                $tunjBaru = $request->filled('tunjangan') ? (float) $request->input('tunjangan') : (float) $nasabah->tunjangan;
+                DB::table('tblNASABAH')->where('nasabah_id', $request->nasabah_id)->update([
+                    'gaji_pokok' => $gajiBaru,
+                    'tunjangan'  => $tunjBaru,
+                ]);
+            }
+
+            $pinjamanId = DB::table('tblPINJAMAN')->insertGetId([
                 'nasabah_id'       => $request->nasabah_id,
+                'user_id'          => auth()->id(),
                 'nominal_pinjaman' => $request->nominal_pinjaman,
                 'tenor'            => $request->tenor,
+                'bunga_persen'     => 2.00,
+                'tgl_pengajuan'    => $request->tgl_pengajuan,
                 'metode_bayar'     => $request->metode_bayar,
-                'keperluan'        => $request->keperluan,
-            ]
-        );
+                'keperluan'        => trim(strip_tags($request->keperluan)),
+                'status_pinjaman'  => 'diajukan',
+            ], 'pinjaman_id');
 
-        return redirect()->route('bbm.pinjaman.kelayakan')
-            ->with('success', "Pengajuan pinjaman untuk {$nasabah->nama_nasabah} berhasil disimpan. Silakan lakukan penilaian kelayakan.");
+            AuditLogService::log(
+                aksi: 'PENGAJUAN_PINJAMAN',
+                entitas: 'tblPINJAMAN',
+                entitasId: $pinjamanId,
+                dataBaru: [
+                    'nasabah_id'       => $request->nasabah_id,
+                    'nominal_pinjaman' => $request->nominal_pinjaman,
+                    'tenor'            => $request->tenor,
+                    'metode_bayar'     => $request->metode_bayar,
+                    'keperluan'        => $request->keperluan,
+                ]
+            );
+
+            return redirect()->route('bbm.pinjaman.kelayakan')
+                ->with('success', "Pengajuan pinjaman untuk {$nasabah->nama_nasabah} berhasil disimpan. Silakan lakukan penilaian kelayakan.");
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'menyimpan pengajuan pinjaman');
+        }
     }
 
     /**
@@ -197,60 +207,67 @@ class PinjamanBbmController extends Controller
             'alasan.min'            => 'Alasan perubahan minimal 5 karakter.',
         ]);
 
-        $pinjaman = DB::table('tblPINJAMAN')->where('pinjaman_id', $pinjamanId)->first();
-        if (!$pinjaman) {
-            return back()->with('error', 'Data pinjaman tidak ditemukan.');
+        try {
+            $pinjaman = DB::table('tblPINJAMAN')->where('pinjaman_id', $pinjamanId)->first();
+            if (!$pinjaman) {
+                return back()->with('error', 'Data pinjaman tidak ditemukan.');
+            }
+
+            if (!in_array($pinjaman->status_pinjaman, ['diajukan', 'layak', 'cair'], true)) {
+                return back()->with('error', 'Metode pembayaran hanya dapat diubah untuk pinjaman yang masih berjalan.');
+            }
+
+            if ($pinjaman->metode_bayar === $request->metode_bayar) {
+                return back()->with('error', 'Metode pembayaran yang dipilih sama dengan metode saat ini.');
+            }
+
+            // Jangan ubah metode selama masih ada angsuran yang sedang diproses di paket potongan tunjangan
+            $paketAktif = DB::table('tblDETAIL_POTONGAN as dp')
+                ->join('tblRENCANA_POTONGAN as rp', 'dp.rencana_potongan_id', '=', 'rp.rencana_potongan_id')
+                ->join('tblJADWAL_ANGSURAN as ja', 'dp.jadwal_angsuran_id', '=', 'ja.jadwal_angsuran_id')
+                ->where('ja.pinjaman_id', $pinjaman->pinjaman_id)
+                ->whereIn('rp.status_potongan', ['dikirim', 'menunggu_verifikasi'])
+                ->value('rp.rencana_potongan_id');
+
+            if ($paketAktif) {
+                return back()->with('error', 'Metode belum dapat diubah: masih ada angsuran dalam paket potongan tunjangan #RP-'
+                    . str_pad($paketAktif, 4, '0', STR_PAD_LEFT) . ' yang sedang diproses Bendahara Sekolah.');
+            }
+
+            DB::table('tblPINJAMAN')
+                ->where('pinjaman_id', $pinjaman->pinjaman_id)
+                ->update(['metode_bayar' => $request->metode_bayar]);
+
+            AuditLogService::log(
+                aksi: 'UBAH_METODE_BAYAR',
+                entitas: 'tblPINJAMAN',
+                entitasId: $pinjaman->pinjaman_id,
+                dataLama: ['metode_bayar' => $pinjaman->metode_bayar],
+                dataBaru: ['metode_bayar' => $request->metode_bayar, 'alasan' => $request->alasan]
+            );
+
+            $label = $request->metode_bayar === 'potong_gaji' ? 'Potong Gaji' : 'Pembayaran Langsung';
+
+            return back()->with('success', "Metode pembayaran #PINJ-{$pinjaman->pinjaman_id} diubah menjadi {$label}.");
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'mengubah metode pembayaran');
         }
-
-        if (!in_array($pinjaman->status_pinjaman, ['diajukan', 'layak', 'cair'], true)) {
-            return back()->with('error', 'Metode pembayaran hanya dapat diubah untuk pinjaman yang masih berjalan.');
-        }
-
-        if ($pinjaman->metode_bayar === $request->metode_bayar) {
-            return back()->with('error', 'Metode pembayaran yang dipilih sama dengan metode saat ini.');
-        }
-
-        // Jangan ubah metode selama masih ada angsuran yang sedang diproses di paket potongan tunjangan
-        $paketAktif = DB::table('tblDETAIL_POTONGAN as dp')
-            ->join('tblRENCANA_POTONGAN as rp', 'dp.rencana_potongan_id', '=', 'rp.rencana_potongan_id')
-            ->join('tblJADWAL_ANGSURAN as ja', 'dp.jadwal_angsuran_id', '=', 'ja.jadwal_angsuran_id')
-            ->where('ja.pinjaman_id', $pinjaman->pinjaman_id)
-            ->whereIn('rp.status_potongan', ['dikirim', 'menunggu_verifikasi'])
-            ->value('rp.rencana_potongan_id');
-
-        if ($paketAktif) {
-            return back()->with('error', 'Metode belum dapat diubah: masih ada angsuran dalam paket potongan tunjangan #RP-'
-                . str_pad($paketAktif, 4, '0', STR_PAD_LEFT) . ' yang sedang diproses Bendahara Sekolah.');
-        }
-
-        DB::table('tblPINJAMAN')
-            ->where('pinjaman_id', $pinjaman->pinjaman_id)
-            ->update(['metode_bayar' => $request->metode_bayar]);
-
-        AuditLogService::log(
-            aksi: 'UBAH_METODE_BAYAR',
-            entitas: 'tblPINJAMAN',
-            entitasId: $pinjaman->pinjaman_id,
-            dataLama: ['metode_bayar' => $pinjaman->metode_bayar],
-            dataBaru: ['metode_bayar' => $request->metode_bayar, 'alasan' => $request->alasan]
-        );
-
-        $label = $request->metode_bayar === 'potong_gaji' ? 'Potong Gaji' : 'Pembayaran Langsung';
-
-        return back()->with('success', "Metode pembayaran #PINJ-{$pinjaman->pinjaman_id} diubah menjadi {$label}.");
     }
 
     /**
      * Halaman antrean dan formulir penilaian kelayakan kredit.
      */
-    public function kelayakan()
+    public function kelayakan(Request $request)
     {
+        $q = trim((string) $request->query('q', ''));
+
         // Pinjaman yang belum dinilai
         $pinjamanBelumDinilai = DB::table('tblPINJAMAN')
             ->join('tblNASABAH', 'tblPINJAMAN.nasabah_id', '=', 'tblNASABAH.nasabah_id')
             ->leftJoin('tblKELAYAKAN', 'tblPINJAMAN.pinjaman_id', '=', 'tblKELAYAKAN.pinjaman_id')
             ->whereNull('tblKELAYAKAN.pinjaman_id')
             ->where('tblPINJAMAN.status_pinjaman', 'diajukan')
+            ->when($q !== '', fn ($w) => $this->filterCari($w, $q, ['tblNASABAH.nama_nasabah', 'tblNASABAH.kelas_unit'], 'tblPINJAMAN.pinjaman_id'))
             ->select(
                 'tblPINJAMAN.*',
                 'tblNASABAH.nama_nasabah',
@@ -259,7 +276,9 @@ class PinjamanBbmController extends Controller
                 'tblNASABAH.tunjangan'
             )
             ->orderBy('tblPINJAMAN.tgl_pengajuan', 'asc')
-            ->get();
+            ->orderBy('tblPINJAMAN.pinjaman_id', 'asc')
+            ->paginate(10, ['*'], 'hal_antrean')
+            ->withQueryString();
 
         // Data tunjangan terbaru dari Bendahara Sekolah (FR-16) sebagai dasar penghasilan
         $dataTunjangan = DataTunjanganService::terbaruUntuk($pinjamanBelumDinilai->pluck('nasabah_id')->all());
@@ -288,7 +307,7 @@ class PinjamanBbmController extends Controller
             ->limit(10)
             ->get();
 
-        return view('bendahara_mini.pinjaman.kelayakan', compact('pinjamanBelumDinilai', 'pinjamanSudahDinilai'));
+        return view('bendahara_mini.pinjaman.kelayakan', compact('pinjamanBelumDinilai', 'pinjamanSudahDinilai', 'q'));
     }
 
     /**
@@ -306,68 +325,75 @@ class PinjamanBbmController extends Controller
             'catatan.required'         => 'Catatan penilaian kelayakan wajib diisi sebagai dokumentasi.',
         ]);
 
-        $pinjaman = DB::table('tblPINJAMAN')->where('pinjaman_id', $pinjamanId)->first();
-        if (!$pinjaman) {
-            return back()->with('error', 'Data pinjaman tidak ditemukan.');
-        }
-
-        if ($pinjaman->status_pinjaman !== 'diajukan') {
-            return back()->with('error', 'Status pinjaman sudah bukan diajukan.');
-        }
-
-        $statusBaru = ($request->hasil_kelayakan === 'layak') ? 'layak' : 'ditolak';
-
-        DB::transaction(function () use ($request, $pinjamanId, $pinjaman, $statusBaru) {
-            DB::table('tblKELAYAKAN')->insert([
-                'pinjaman_id'     => $pinjamanId,
-                'user_id'         => auth()->id(),
-                'penghasilan'     => $request->penghasilan,
-                'hasil_kelayakan' => $request->hasil_kelayakan,
-                'catatan'         => $request->catatan,
-                'tgl_nilai'       => now()->toDateString(),
-            ]);
-
-            DB::table('tblPINJAMAN')
-                ->where('pinjaman_id', $pinjamanId)
-                ->update(['status_pinjaman' => $statusBaru]);
-
-            // Jika di master nasabah gaji masih 0, perbarui dengan data penghasilan terverifikasi
-            $nasabah = DB::table('tblNASABAH')->where('nasabah_id', $pinjaman->nasabah_id)->first();
-            if ($nasabah && ((float)$nasabah->gaji_pokok + (float)$nasabah->tunjangan) == 0 && (float)$request->penghasilan > 0) {
-                DB::table('tblNASABAH')->where('nasabah_id', $pinjaman->nasabah_id)->update([
-                    'gaji_pokok' => $request->penghasilan,
-                ]);
+        try {
+            $pinjaman = DB::table('tblPINJAMAN')->where('pinjaman_id', $pinjamanId)->first();
+            if (!$pinjaman) {
+                return back()->with('error', 'Data pinjaman tidak ditemukan.');
             }
 
-            AuditLogService::log(
-                aksi: 'ASSESSMENT_KELAYAKAN',
-                entitas: 'tblKELAYAKAN',
-                entitasId: $pinjamanId,
-                dataLama: ['status' => $pinjaman->status_pinjaman],
-                dataBaru: [
-                    'hasil_kelayakan' => $request->hasil_kelayakan,
-                    'status_pinjaman' => $statusBaru,
+            if ($pinjaman->status_pinjaman !== 'diajukan') {
+                return back()->with('error', 'Status pinjaman sudah bukan diajukan.');
+            }
+
+            $statusBaru = ($request->hasil_kelayakan === 'layak') ? 'layak' : 'ditolak';
+
+            DB::transaction(function () use ($request, $pinjamanId, $pinjaman, $statusBaru) {
+                DB::table('tblKELAYAKAN')->insert([
+                    'pinjaman_id'     => $pinjamanId,
+                    'user_id'         => auth()->id(),
                     'penghasilan'     => $request->penghasilan,
-                ]
-            );
-        });
+                    'hasil_kelayakan' => $request->hasil_kelayakan,
+                    'catatan'         => $request->catatan,
+                    'tgl_nilai'       => now()->toDateString(),
+                ]);
 
-        $pesan = ($statusBaru === 'layak')
-            ? 'Penilaian kelayakan berhasil: Pinjaman berstatus LAYAK dan siap dicairkan.'
-            : 'Penilaian kelayakan disimpan: Pinjaman DITOLAK dan alur pengajuan selesai.';
+                DB::table('tblPINJAMAN')
+                    ->where('pinjaman_id', $pinjamanId)
+                    ->update(['status_pinjaman' => $statusBaru]);
 
-        return redirect()->route('bbm.pinjaman.kelayakan')->with('success', $pesan);
+                // Jika di master nasabah gaji masih 0, perbarui dengan data penghasilan terverifikasi
+                $nasabah = DB::table('tblNASABAH')->where('nasabah_id', $pinjaman->nasabah_id)->first();
+                if ($nasabah && ((float)$nasabah->gaji_pokok + (float)$nasabah->tunjangan) == 0 && (float)$request->penghasilan > 0) {
+                    DB::table('tblNASABAH')->where('nasabah_id', $pinjaman->nasabah_id)->update([
+                        'gaji_pokok' => $request->penghasilan,
+                    ]);
+                }
+
+                AuditLogService::log(
+                    aksi: 'ASSESSMENT_KELAYAKAN',
+                    entitas: 'tblKELAYAKAN',
+                    entitasId: $pinjamanId,
+                    dataLama: ['status' => $pinjaman->status_pinjaman],
+                    dataBaru: [
+                        'hasil_kelayakan' => $request->hasil_kelayakan,
+                        'status_pinjaman' => $statusBaru,
+                        'penghasilan'     => $request->penghasilan,
+                    ]
+                );
+            });
+
+            $pesan = ($statusBaru === 'layak')
+                ? 'Penilaian kelayakan berhasil: Pinjaman berstatus LAYAK dan siap dicairkan.'
+                : 'Penilaian kelayakan disimpan: Pinjaman DITOLAK dan alur pengajuan selesai.';
+
+            return redirect()->route('bbm.pinjaman.kelayakan')->with('success', $pesan);
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'menyimpan penilaian kelayakan');
+        }
     }
 
     /**
      * Halaman daftar pinjaman yang layak dan siap dicairkan.
      */
-    public function pencairan()
+    public function pencairan(Request $request)
     {
+        $q = trim((string) $request->query('q', ''));
+
         $siapCair = DB::table('tblPINJAMAN')
             ->join('tblNASABAH', 'tblPINJAMAN.nasabah_id', '=', 'tblNASABAH.nasabah_id')
             ->join('tblKELAYAKAN', 'tblPINJAMAN.pinjaman_id', '=', 'tblKELAYAKAN.pinjaman_id')
             ->where('tblPINJAMAN.status_pinjaman', 'layak')
+            ->when($q !== '', fn ($w) => $this->filterCari($w, $q, ['tblNASABAH.nama_nasabah', 'tblNASABAH.kelas_unit'], 'tblPINJAMAN.pinjaman_id'))
             ->select(
                 'tblPINJAMAN.*',
                 'tblNASABAH.nama_nasabah',
@@ -375,7 +401,9 @@ class PinjamanBbmController extends Controller
                 'tblKELAYAKAN.catatan as catatan_kelayakan'
             )
             ->orderBy('tblPINJAMAN.tgl_pengajuan', 'asc')
-            ->get();
+            ->orderBy('tblPINJAMAN.pinjaman_id', 'asc')
+            ->paginate(10, ['*'], 'hal_cair')
+            ->withQueryString();
 
         // Riwayat pencairan
         $riwayatCair = DB::table('tblPENCAIRAN')
@@ -395,7 +423,7 @@ class PinjamanBbmController extends Controller
         $kasTunai = DB::table('tblKAS')->where('jenis_kas', 'kas')->first();
         $kasBank  = DB::table('tblKAS')->where('jenis_kas', 'bank')->first();
 
-        return view('bendahara_mini.pinjaman.cair', compact('siapCair', 'riwayatCair', 'kasTunai', 'kasBank'));
+        return view('bendahara_mini.pinjaman.cair', compact('siapCair', 'riwayatCair', 'kasTunai', 'kasBank', 'q'));
     }
 
     /**
@@ -411,111 +439,115 @@ class PinjamanBbmController extends Controller
             'tgl_cair.required' => 'Tanggal pencairan dana wajib ditentukan.',
         ]);
 
-        $metodeCair = $request->input('metode_pencairan', 'cash');
-
-        $pinjaman = DB::table('tblPINJAMAN')->where('pinjaman_id', $pinjamanId)->first();
-        if (!$pinjaman) {
-            return back()->with('error', 'Pinjaman tidak ditemukan.');
-        }
-
-        if ($pinjaman->status_pinjaman !== 'layak') {
-            return back()->with('error', 'Hanya pinjaman yang sudah berstatus Layak yang dapat dicairkan.');
-        }
-
-        $nasabah = DB::table('tblNASABAH')->where('nasabah_id', $pinjaman->nasabah_id)->first();
-        if (!$nasabah) {
-            return back()->with('error', 'Data nasabah peminjam tidak ditemukan.');
-        }
-
-        // Cek penguncian periode
         try {
-            $periode = PeriodeLockService::assertPeriodeTerbuka($request->tgl_cair);
-        } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
-        }
+            $metodeCair = $request->input('metode_pencairan', 'cash');
 
-        // Tentukan tempat kas sumber pencairan (Tunai Fisik vs Rekening Bank)
-        $jenisKasTarget = ($metodeCair === 'transfer') ? 'bank' : 'kas';
-        $kasSumber = DB::table('tblKAS')->where('jenis_kas', $jenisKasTarget)->first();
-
-        if (!$kasSumber) {
-            $labelKas = ($metodeCair === 'transfer') ? 'Kas Bank Bendahara' : 'Kas Tunai Bank Mini';
-            return back()->with('error', "Master {$labelKas} tidak ditemukan dalam sistem.");
-        }
-
-        if ($kasSumber->saldo < $pinjaman->nominal_pinjaman) {
-            $labelKas = ($metodeCair === 'transfer') ? 'Kas Bank Bendahara (BJB)' : 'Kas Tunai (Brankas)';
-            return back()->with('error', "Saldo {$labelKas} saat ini (Rp " . number_format($kasSumber->saldo, 0, ',', '.') . ") tidak mencukupi untuk mencairkan pinjaman sebesar Rp " . number_format($pinjaman->nominal_pinjaman, 0, ',', '.') . ".");
-        }
-
-        DB::transaction(function () use ($pinjaman, $nasabah, $request, $periode, $kasSumber, $metodeCair) {
-            // 1. Simpan baris pencairan
-            $pencairanId = DB::table('tblPENCAIRAN')->insertGetId([
-                'pinjaman_id'  => $pinjaman->pinjaman_id,
-                'user_id'      => auth()->id(),
-                'tgl_cair'     => $request->tgl_cair,
-                'nominal_cair' => $pinjaman->nominal_pinjaman,
-                'metode_cair'  => $metodeCair,
-                'catatan_cair' => $request->catatan,
-            ], 'pencairan_id');
-
-            // 2. Bentuk baris jadwal angsuran (jasa flat 2% per bulan)
-            $jadwalList = PinjamanCalculatorService::generateJadwalAngsuran(
-                pinjamanId: $pinjaman->pinjaman_id,
-                pokokAwal: $pinjaman->nominal_pinjaman,
-                tenor: $pinjaman->tenor,
-                tglMulai: $request->tgl_cair,
-                persenBunga: $pinjaman->bunga_persen
-            );
-
-            foreach ($jadwalList as $baris) {
-                DB::table('tblJADWAL_ANGSURAN')->insert($baris);
+            $pinjaman = DB::table('tblPINJAMAN')->where('pinjaman_id', $pinjamanId)->first();
+            if (!$pinjaman) {
+                return back()->with('error', 'Pinjaman tidak ditemukan.');
             }
 
-            // 3. Catat mutasi kas keluar dengan uraian deskriptif mencantumkan nama peminjam
-            $labelMetode = ($metodeCair === 'transfer') ? 'Transfer (Bank)' : 'Tunai (Cash)';
-            $uraian = "Pencairan pinjaman {$labelMetode} #PINJ-{$pinjaman->pinjaman_id} a.n. {$nasabah->nama_nasabah} ({$pinjaman->tenor} bln)";
+            if ($pinjaman->status_pinjaman !== 'layak') {
+                return back()->with('error', 'Hanya pinjaman yang sudah berstatus Layak yang dapat dicairkan.');
+            }
 
-            DB::table('tblMUTASI_KAS')->insert([
-                'kas_id'       => $kasSumber->kas_id,
-                'periode_id'   => $periode->periode_id,
-                'user_id'      => auth()->id(),
-                'transaksi_id' => null,
-                'angsuran_id'  => null,
-                'pencairan_id' => $pencairanId,
-                'tgl_mutasi'   => $request->tgl_cair,
-                'arah'         => 'keluar',
-                'nominal'      => $pinjaman->nominal_pinjaman,
-                'uraian'       => $uraian,
-            ]);
+            $nasabah = DB::table('tblNASABAH')->where('nasabah_id', $pinjaman->nasabah_id)->first();
+            if (!$nasabah) {
+                return back()->with('error', 'Data nasabah peminjam tidak ditemukan.');
+            }
 
-            // 4. Update saldo kas sumber (Tunai atau Bank)
-            DB::table('tblKAS')
-                ->where('kas_id', $kasSumber->kas_id)
-                ->decrement('saldo', $pinjaman->nominal_pinjaman);
+            // Cek penguncian periode
+            try {
+                $periode = PeriodeLockService::assertPeriodeTerbuka($request->tgl_cair);
+            } catch (RuntimeException $e) {
+                return back()->with('error', $e->getMessage());
+            }
 
-            // 5. Update status pinjaman menjadi cair
-            DB::table('tblPINJAMAN')
-                ->where('pinjaman_id', $pinjaman->pinjaman_id)
-                ->update(['status_pinjaman' => 'cair']);
+            // Tentukan tempat kas sumber pencairan (Tunai Fisik vs Rekening Bank)
+            $jenisKasTarget = ($metodeCair === 'transfer') ? 'bank' : 'kas';
+            $kasSumber = DB::table('tblKAS')->where('jenis_kas', $jenisKasTarget)->first();
 
-            AuditLogService::log(
-                aksi: 'PENCAIRAN_PINJAMAN',
-                entitas: 'tblPENCAIRAN',
-                entitasId: $pencairanId,
-                dataBaru: [
+            if (!$kasSumber) {
+                $labelKas = ($metodeCair === 'transfer') ? 'Kas Bank Bendahara' : 'Kas Tunai Bank Mini';
+                return back()->with('error', "Master {$labelKas} tidak ditemukan dalam sistem.");
+            }
+
+            if ($kasSumber->saldo < $pinjaman->nominal_pinjaman) {
+                $labelKas = ($metodeCair === 'transfer') ? 'Kas Bank Bendahara (BJB)' : 'Kas Tunai (Brankas)';
+                return back()->with('error', "Saldo {$labelKas} saat ini (Rp " . number_format($kasSumber->saldo, 0, ',', '.') . ") tidak mencukupi untuk mencairkan pinjaman sebesar Rp " . number_format($pinjaman->nominal_pinjaman, 0, ',', '.') . ".");
+            }
+
+            DB::transaction(function () use ($pinjaman, $nasabah, $request, $periode, $kasSumber, $metodeCair) {
+                // 1. Simpan baris pencairan
+                $pencairanId = DB::table('tblPENCAIRAN')->insertGetId([
                     'pinjaman_id'  => $pinjaman->pinjaman_id,
-                    'nominal_cair' => $pinjaman->nominal_pinjaman,
-                    'tenor'        => $pinjaman->tenor,
+                    'user_id'      => auth()->id(),
                     'tgl_cair'     => $request->tgl_cair,
+                    'nominal_cair' => $pinjaman->nominal_pinjaman,
                     'metode_cair'  => $metodeCair,
-                ]
-            );
-        });
+                    'catatan_cair' => $request->catatan,
+                ], 'pencairan_id');
 
-        $infoMetode = ($metodeCair === 'transfer') ? 'melalui Transfer Rekening Bank' : 'secara Tunai di Loket';
-        return redirect()->route('bbm.pinjaman.cair')
-            ->with('success', "Pinjaman #PINJ-{$pinjaman->pinjaman_id} a.n. {$nasabah->nama_nasabah} berhasil dicairkan {$infoMetode}! Jadwal angsuran telah dibentuk otomatis.");
+                // 2. Bentuk baris jadwal angsuran (jasa flat 2% per bulan)
+                $jadwalList = PinjamanCalculatorService::generateJadwalAngsuran(
+                    pinjamanId: $pinjaman->pinjaman_id,
+                    pokokAwal: $pinjaman->nominal_pinjaman,
+                    tenor: $pinjaman->tenor,
+                    tglMulai: $request->tgl_cair,
+                    persenBunga: $pinjaman->bunga_persen
+                );
+
+                foreach ($jadwalList as $baris) {
+                    DB::table('tblJADWAL_ANGSURAN')->insert($baris);
+                }
+
+                // 3. Catat mutasi kas keluar dengan uraian deskriptif mencantumkan nama peminjam
+                $labelMetode = ($metodeCair === 'transfer') ? 'Transfer (Bank)' : 'Tunai (Cash)';
+                $uraian = "Pencairan pinjaman {$labelMetode} #PINJ-{$pinjaman->pinjaman_id} a.n. {$nasabah->nama_nasabah} ({$pinjaman->tenor} bln)";
+
+                DB::table('tblMUTASI_KAS')->insert([
+                    'kas_id'       => $kasSumber->kas_id,
+                    'periode_id'   => $periode->periode_id,
+                    'user_id'      => auth()->id(),
+                    'transaksi_id' => null,
+                    'angsuran_id'  => null,
+                    'pencairan_id' => $pencairanId,
+                    'tgl_mutasi'   => $request->tgl_cair,
+                    'arah'         => 'keluar',
+                    'nominal'      => $pinjaman->nominal_pinjaman,
+                    'uraian'       => $uraian,
+                ]);
+
+                // 4. Update saldo kas sumber (Tunai atau Bank)
+                DB::table('tblKAS')
+                    ->where('kas_id', $kasSumber->kas_id)
+                    ->decrement('saldo', $pinjaman->nominal_pinjaman);
+
+                // 5. Update status pinjaman menjadi cair
+                DB::table('tblPINJAMAN')
+                    ->where('pinjaman_id', $pinjaman->pinjaman_id)
+                    ->update(['status_pinjaman' => 'cair']);
+
+                AuditLogService::log(
+                    aksi: 'PENCAIRAN_PINJAMAN',
+                    entitas: 'tblPENCAIRAN',
+                    entitasId: $pencairanId,
+                    dataBaru: [
+                        'pinjaman_id'  => $pinjaman->pinjaman_id,
+                        'nominal_cair' => $pinjaman->nominal_pinjaman,
+                        'tenor'        => $pinjaman->tenor,
+                        'tgl_cair'     => $request->tgl_cair,
+                        'metode_cair'  => $metodeCair,
+                    ]
+                );
+            });
+
+            $infoMetode = ($metodeCair === 'transfer') ? 'melalui Transfer Rekening Bank' : 'secara Tunai di Loket';
+            return redirect()->route('bbm.pinjaman.cair')
+                ->with('success', "Pinjaman #PINJ-{$pinjaman->pinjaman_id} a.n. {$nasabah->nama_nasabah} berhasil dicairkan {$infoMetode}! Jadwal angsuran telah dibentuk otomatis.");
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'mencairkan pinjaman');
+        }
     }
 }
 
