@@ -1,16 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit backupGlobals="false"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/dusk-bootstrap.php"
          beStrictAboutTestsThatDoNotTestAnything="false"
          colors="true"
          processIsolation="false"
          stopOnError="false"
          stopOnFailure="false"
          cacheDirectory=".phpunit.cache"
-         backupStaticProperties="false">
+         backupGlobals="false"
+         backupStaticProperties="false"
+>
     <testsuites>
         <!-- Skenario pengujian: satu file per test case, nama file = nama method tes -->
         <testsuite name="Browser Test Suite">
             <directory suffix=".php">./tests/Browser/Feature</directory>
         </testsuite>
+        <!-- Hanya file UAT Dusk (TC_xx_xxTest.php); test Feature lain di folder ini tidak ikut -->
+        <testsuite name="UAT Modul Pinjaman">
+            <directory prefix="TC_" suffix="Test.php">tests/Modul_Pinjaman</directory>
+            <exclude>tests/Modul_Pinjaman/iterasi2</exclude>
+        </testsuite>
+        <!-- Iterasi 2: perbaikan dari feedback UAT Bendahara Bank Mini -->
+        <testsuite name="UAT Modul Pinjaman Iterasi 2">
+            <directory prefix="TC_" suffix="Test.php">tests/Modul_Pinjaman/iterasi2</directory>
+        </testsuite>
+        <testsuite name="UAT Modul Dashboard">
+            <directory prefix="TC_" suffix="Test.php">tests/Modul_Dashboard</directory>
+        </testsuite>
     </testsuites>
+    <php>
+        <!-- Muat .env.uat (database sipintar_dusk) tanpa menukar .env milik aplikasi pengembangan -->
+        <!-- $_SERVER dibaca Laravel lebih dulu; `php artisan dusk` mewarisi APP_ENV=local dari .env -->
+        <server name="APP_ENV" value="uat" force="true"/>
+        <env name="APP_ENV" value="uat" force="true"/>
+    </php>
 </phpunit>

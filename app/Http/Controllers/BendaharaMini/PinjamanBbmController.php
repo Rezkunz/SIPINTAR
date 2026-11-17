@@ -177,6 +177,64 @@ class PinjamanBbmController extends Controller
     }
 
     /**
+     * Ubah metode pembayaran angsuran (Potong Gaji <-> Pembayaran Langsung) bila salah pilih
+     * atau kondisi peminjam berubah. Seluruh angsuran tetap tercatat di buku yang sama.
+     */
+    public function ubahMetode(Request $request, $pinjamanId)
+    {
+        $request->validate([
+            'metode_bayar' => 'required|in:potong_gaji,tunai',
+            'alasan'       => 'required|string|min:5|max:255',
+        ], [
+            'metode_bayar.required' => 'Metode pembayaran baru wajib dipilih.',
+            'alasan.required'       => 'Alasan perubahan metode wajib diisi untuk audit.',
+            'alasan.min'            => 'Alasan perubahan minimal 5 karakter.',
+        ]);
+
+        $pinjaman = DB::table('tblPINJAMAN')->where('pinjaman_id', $pinjamanId)->first();
+        if (!$pinjaman) {
+            return back()->with('error', 'Data pinjaman tidak ditemukan.');
+        }
+
+        if (!in_array($pinjaman->status_pinjaman, ['diajukan', 'layak', 'cair'], true)) {
+            return back()->with('error', 'Metode pembayaran hanya dapat diubah untuk pinjaman yang masih berjalan.');
+        }
+
+        if ($pinjaman->metode_bayar === $request->metode_bayar) {
+            return back()->with('error', 'Metode pembayaran yang dipilih sama dengan metode saat ini.');
+        }
+
+        // Jangan ubah metode selama masih ada angsuran yang sedang diproses di paket potongan tunjangan
+        $paketAktif = DB::table('tblDETAIL_POTONGAN as dp')
+            ->join('tblRENCANA_POTONGAN as rp', 'dp.rencana_potongan_id', '=', 'rp.rencana_potongan_id')
+            ->join('tblJADWAL_ANGSURAN as ja', 'dp.jadwal_angsuran_id', '=', 'ja.jadwal_angsuran_id')
+            ->where('ja.pinjaman_id', $pinjaman->pinjaman_id)
+            ->whereIn('rp.status_potongan', ['dikirim', 'menunggu_verifikasi'])
+            ->value('rp.rencana_potongan_id');
+
+        if ($paketAktif) {
+            return back()->with('error', 'Metode belum dapat diubah: masih ada angsuran dalam paket potongan tunjangan #RP-'
+                . str_pad($paketAktif, 4, '0', STR_PAD_LEFT) . ' yang sedang diproses Bendahara Sekolah.');
+        }
+
+        DB::table('tblPINJAMAN')
+            ->where('pinjaman_id', $pinjaman->pinjaman_id)
+            ->update(['metode_bayar' => $request->metode_bayar]);
+
+        AuditLogService::log(
+            aksi: 'UBAH_METODE_BAYAR',
+            entitas: 'tblPINJAMAN',
+            entitasId: $pinjaman->pinjaman_id,
+            dataLama: ['metode_bayar' => $pinjaman->metode_bayar],
+            dataBaru: ['metode_bayar' => $request->metode_bayar, 'alasan' => $request->alasan]
+        );
+
+        $label = $request->metode_bayar === 'potong_gaji' ? 'Potong Gaji' : 'Pembayaran Langsung';
+
+        return back()->with('success', "Metode pembayaran #PINJ-{$pinjaman->pinjaman_id} diubah menjadi {$label}.");
+    }
+
+    /**
      * Halaman antrean dan formulir penilaian kelayakan kredit.
      */
     public function kelayakan()

@@ -7,17 +7,8 @@
 
 @push('styles')
 <style>
-    /* Tata letak responsif dashboard BBM (NFR-06: tanpa gulir horizontal di 360 px s.d. 1920 px) */
-    .metric-grid.bbm-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .bbm-main-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 24px; align-items: start; }
-    @media (max-width: 1200px) {
-        .metric-grid.bbm-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-    @media (max-width: 960px) {
-        .bbm-main-grid { grid-template-columns: minmax(0, 1fr); }
-    }
+    /* Tombol aksi banner turun ke baris berikutnya di layar sempit (NFR-06: tanpa gulir horizontal) */
     @media (max-width: 520px) {
-        .metric-grid.bbm-grid-4 { grid-template-columns: minmax(0, 1fr); }
         .dashboard-welcome-banner .welcome-actions { flex-wrap: wrap; }
     }
 </style>
@@ -51,7 +42,7 @@
         <h3 style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Posisi Likuiditas Kas (Cash & Bank Milik Bendahara Bank Mini)</h3>
         <span style="font-size: 12px; color: var(--text-muted);">2 Tempat Penyimpanan Dana Bank Mini</span>
     </div>
-    <div class="metric-grid bbm-grid-4">
+    <div class="metric-grid metric-grid-4">
         <div class="metric-card card-emerald">
             <div class="metric-watermark">
                 <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
@@ -104,7 +95,7 @@
         <h3 style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">Portofolio Kredit & Piutang Pegawai</h3>
         <span style="font-size: 12px; color: var(--text-muted);">Pembiayaan Guru & Tenaga Kependidikan</span>
     </div>
-    <div class="metric-grid bbm-grid-4">
+    <div class="metric-grid metric-grid-4">
         <div class="metric-card card-blue">
             <div class="metric-watermark">
                 <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -152,7 +143,7 @@
 </div>
 
 {{-- ── MAIN CONTENT (2 KOLOM: 2:1) ── --}}
-<div class="bbm-main-grid">
+<div class="layout-split">
 
     {{-- ── KOLOM KIRI (2/3): TABEL MUTASI KAS & PAKET POTONGAN ── --}}
     <div style="display: flex; flex-direction: column; gap: 24px;">

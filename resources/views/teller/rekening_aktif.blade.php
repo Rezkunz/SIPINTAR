@@ -4,12 +4,9 @@
 @section('breadcrumb', 'Nasabah & Rekening')
 
 @section('content')
-<div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap;">
-    <div>
-        <h1 class="page-title">Nasabah & Rekening</h1>
-        <p class="page-subtitle">Buka rekening langsung di loket, ubah data nasabah, dan tutup rekening yang saldonya sudah nol.</p>
-    </div>
-    <a href="{{ route('tabungan.nasabah.tambah') }}" class="btn-ui btn-ui-primary" dusk="tambah-nasabah">+ Tambah Nasabah</a>
+<div class="page-header">
+    <h1 class="page-title">Daftar Rekening Aktif </h1>
+    <p class="page-subtitle">Rekening pada daftar ini sudah disetujui dan menerima setoran awal oleh Siswa Praktik.</p>
 </div>
 
 @if ($errors->any())

@@ -39,6 +39,10 @@ abstract class DuskTestCase extends BaseTestCase
             $this->shouldStartMaximized() ? '--start-maximized' : '--window-size=1920,1080',
             '--disable-search-engine-choice-screen',
             '--disable-smooth-scrolling',
+            // Cegah dialog Password Manager / "password bocor" yang memblokir input di test berikutnya
+            '--disable-features=PasswordLeakDetection,PasswordManagerOnboarding,AutofillServerCommunication',
+            '--password-store=basic',
+            '--no-first-run',
         ])->unless($this->hasHeadlessDisabled(), function (Collection $items) {
             return $items->merge([
                 '--disable-gpu',
@@ -46,12 +50,15 @@ abstract class DuskTestCase extends BaseTestCase
             ]);
         })->all());
 
-        // Folder unduhan untuk menguji ekspor PDF/Excel (TC-14-08)
+        // Folder unduhan untuk menguji ekspor PDF/Excel (TC-14-08) + matikan Password Manager Chrome
         $options->setExperimentalOption('prefs', [
             'download.default_directory' => static::folderUnduhan(),
             'download.prompt_for_download' => false,
             'download.directory_upgrade' => true,
             'safebrowsing.enabled' => true,
+            'credentials_enable_service' => false,
+            'profile.password_manager_enabled' => false,
+            'profile.password_manager_leak_detection' => false,
         ]);
 
         return RemoteWebDriver::create(

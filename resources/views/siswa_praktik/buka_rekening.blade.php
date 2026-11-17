@@ -13,7 +13,7 @@
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start;">
+<div class="layout-split">
 
     {{-- ── FORM PEMBUKAAN REKENING ── --}}
     <div class="content-card">

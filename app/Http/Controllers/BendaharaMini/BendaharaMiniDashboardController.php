@@ -41,8 +41,15 @@ class BendaharaMiniDashboardController extends Controller
             ->where('status_bayar', 'belum')
             ->sum('pokok');
 
-        $totalPokokTerbayar = (float) DB::table('tblANGSURAN')->sum('bayar_pokok');
-        $totalJasaTerbayar  = (float) DB::table('tblANGSURAN')->sum('bayar_bunga');
+        $totalPokokTerbayar = (float) DB::table('tblANGSURAN as ang')
+            ->leftJoin('tblKOREKSI_ANGSURAN as kor', 'ang.angsuran_id', '=', 'kor.angsuran_id')
+            ->whereNull('kor.koreksi_id')
+            ->sum('ang.bayar_pokok');
+
+        $totalJasaTerbayar  = (float) DB::table('tblANGSURAN as ang')
+            ->leftJoin('tblKOREKSI_ANGSURAN as kor', 'ang.angsuran_id', '=', 'kor.angsuran_id')
+            ->whereNull('kor.koreksi_id')
+            ->sum('ang.bayar_bunga');
 
         $totalPinjamanDisalurkan = (float) DB::table('tblPINJAMAN')
             ->whereIn('status_pinjaman', ['cair', 'lunas'])
