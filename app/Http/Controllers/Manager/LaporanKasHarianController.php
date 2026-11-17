@@ -163,7 +163,7 @@ class LaporanKasHarianController extends Controller
                         ['label' => 'Debet', 'angka' => true], ['label' => 'Kredit', 'angka' => true],
                     ],
                     'baris'   => $detail,
-                    'catatan' => 'Debet = penarikan (kas keluar), Kredit = setoran (kas masuk).',
+                    'catatan' => 'Debet = penarikan (kas keluar), Kredit = setoran (kas masuk). Pembalik koreksi tampil di sisi kebalikannya; pada ringkasan harian ia mengurangi kolom jenis transaksinya.',
                 ],
             ],
         ];
@@ -203,8 +203,10 @@ class LaporanKasHarianController extends Controller
             ->select(
                 DB::raw("DATE({$tglCol}) as tanggal"),
                 'tblNASABAH.jenis_nasabah',
-                DB::raw("SUM({$tblTx}.kredit) as masuk"),
-                DB::raw("SUM({$tblTx}.debit) as keluar"),
+                // Per jenis transaksi: pembalik koreksi mengurangi kolom jenisnya sendiri,
+                // sehingga penerimaan/pengeluaran tidak membengkak oleh koreksi
+                DB::raw("SUM(CASE WHEN {$tblTx}.jenis_transaksi_id = 1 THEN {$tblTx}.kredit - {$tblTx}.debit ELSE 0 END) as masuk"),
+                DB::raw("SUM(CASE WHEN {$tblTx}.jenis_transaksi_id = 2 THEN {$tblTx}.debit - {$tblTx}.kredit ELSE 0 END) as keluar"),
                 DB::raw('COUNT(*) as jumlah_transaksi')
             )
             ->orderBy('tanggal')

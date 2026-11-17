@@ -9,7 +9,7 @@
 <div class="dashboard-welcome-banner" style="margin-bottom: 24px;">
     <div class="welcome-content">
         <h1>Rekap Tabungan &amp; Jasa Bulanan</h1>
-        <p>Saldo pokok setiap rekening per akhir bulan beserta jasa tabungan (siswa 0,1% dan guru/karyawan 0,2% per bulan) yang menjadi hak nasabah.</p>
+        <p>Saldo pokok setiap rekening per akhir bulan beserta jasa tabungan ({{ collect(\App\Services\JasaTabunganService::KATEGORI)->map(fn ($k) => strtolower($k['label']) . ' ' . str_replace('.', ',', (string) $k['persen_jasa']) . '%')->implode(' dan ') }} per bulan) yang menjadi hak nasabah.</p>
     </div>
 </div>
 
@@ -27,10 +27,20 @@
 
     <div class="metric-card card-amber">
         <div class="metric-header">
-            <span class="metric-title">Total Jasa {{ $labelPersenJasa }}</span>
+            <span class="metric-title">Jasa {{ $labelPersenJasa }} Bulan Ini</span>
         </div>
         <div class="metric-value"><span class="curr-prefix">Rp</span>{{ number_format($ringkasan['total_jasa'], 0, ',', '.') }}</div>
-        <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">Beban jasa tabungan bulan ini</div>
+        <div dusk="status-jasa" style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">
+            @if ($ringkasan['total_jasa'] <= 0)
+                Tidak ada jasa bulan ini
+            @elseif ($ringkasan['jasa_dibukukan'] <= 0)
+                <span style="color:#92400E; font-weight:700;">Belum dibukukan</span> ke rekening nasabah
+            @elseif ($ringkasan['jasa_dibukukan'] < $ringkasan['total_jasa'])
+                Sudah dibukukan Rp {{ number_format($ringkasan['jasa_dibukukan'], 0, ',', '.') }}; sisanya belum dibukukan
+            @else
+                Sudah dibukukan ke rekening nasabah
+            @endif
+        </div>
     </div>
 
     <div class="metric-card card-blue">
@@ -38,7 +48,7 @@
             <span class="metric-title">Total Pokok + Jasa</span>
         </div>
         <div class="metric-value"><span class="curr-prefix">Rp</span>{{ number_format($ringkasan['total_akhir'], 0, ',', '.') }}</div>
-        <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">Kewajiban Bank Mini kepada nasabah</div>
+        <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">Hak nasabah setelah jasa bulan ini dibukukan</div>
     </div>
 
     <div class="metric-card card-purple">
@@ -68,6 +78,7 @@
                     <th style="min-width:220px;">Nama Nasabah</th>
                     <th style="text-align:right; min-width:150px;">Jumlah Pokok</th>
                     <th style="text-align:right; min-width:130px;">Jasa {{ $labelPersenJasa }}</th>
+                    <th style="text-align:right; min-width:130px;" title="Jasa yang sudah benar-benar masuk ke rekening">Jasa Dibukukan</th>
                     <th style="text-align:right; min-width:150px;">Total</th>
                 </tr>
             </thead>
@@ -91,13 +102,16 @@
                         <td style="text-align:right; white-space:nowrap; font-weight:700; color:{{ $b->jasa > 0 ? 'var(--brand-accent-hover)' : 'var(--text-muted)' }};">
                             {{ $b->jasa > 0 ? number_format($b->jasa, 0, ',', '.') : '-' }}
                         </td>
+                        <td style="text-align:right; white-space:nowrap; color:{{ $b->jasa_dibukukan > 0 ? 'var(--text-heading)' : 'var(--text-muted)' }};">
+                            {{ $b->jasa_dibukukan > 0 ? number_format($b->jasa_dibukukan, 0, ',', '.') : '-' }}
+                        </td>
                         <td style="text-align:right; white-space:nowrap; font-weight:800; color:var(--brand-primary);">
                             {{ number_format($b->total, 0, ',', '.') }}
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6">
+                        <td colspan="7">
                             <div class="empty-placeholder" style="padding:36px; text-align:center;">
                                 @if ($cari !== '')
                                     Tidak ada nasabah yang cocok dengan pencarian "{{ $cari }}".
@@ -119,6 +133,7 @@
                         </td>
                         <td style="text-align:right; white-space:nowrap; font-weight:800; color:var(--text-heading);">{{ number_format($ringkasan['total_pokok'], 0, ',', '.') }}</td>
                         <td style="text-align:right; white-space:nowrap; font-weight:800; color:var(--brand-accent-hover);">{{ number_format($ringkasan['total_jasa'], 0, ',', '.') }}</td>
+                        <td style="text-align:right; white-space:nowrap; font-weight:800; color:var(--text-heading);">{{ number_format($ringkasan['jasa_dibukukan'], 0, ',', '.') }}</td>
                         <td style="text-align:right; white-space:nowrap; font-weight:800; color:var(--brand-primary);">{{ number_format($ringkasan['total_akhir'], 0, ',', '.') }}</td>
                     </tr>
                 </tfoot>

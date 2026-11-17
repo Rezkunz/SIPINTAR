@@ -117,16 +117,17 @@ class LaporanTabunganController extends Controller
             fputcsv($output, ['PER ' . strtoupper($rekap['akhirBulan']->translatedFormat('d F Y'))], ';');
             fputcsv($output, [], ';');
 
-            fputcsv($output, ['NO', 'NO REKENING', 'NAMA NASABAH', 'JUMLAH POKOK', 'JASA ' . $rekap['labelPersenJasa'], 'TOTAL'], ';');
+            fputcsv($output, ['NO', 'NO REKENING', 'NAMA NASABAH', 'JUMLAH POKOK', 'JASA ' . $rekap['labelPersenJasa'], 'JASA SUDAH DIBUKUKAN', 'TOTAL'], ';');
 
             foreach ($rekap['baris'] as $i => $b) {
-                fputcsv($output, [$i + 1, $b->no_rek, $b->nama_nasabah, $b->pokok, $b->jasa, $b->total], ';');
+                fputcsv($output, [$i + 1, $b->no_rek, $b->nama_nasabah, $b->pokok, $b->jasa, $b->jasa_dibukukan, $b->total], ';');
             }
 
             fputcsv($output, [
                 '', '', 'JUMLAH',
                 $rekap['ringkasan']['total_pokok'],
                 $rekap['ringkasan']['total_jasa'],
+                $rekap['ringkasan']['jasa_dibukukan'],
                 $rekap['ringkasan']['total_akhir'],
             ], ';');
 
@@ -207,13 +208,15 @@ class LaporanTabunganController extends Controller
             'bagian'    => [[
                 'kolom' => [
                     ['label' => 'No', 'align' => 'center'], ['label' => 'No Rekening'], ['label' => 'Nama Nasabah'],
-                    ['label' => 'Jumlah Pokok', 'angka' => true], ['label' => 'Jasa ' . $rekap['labelPersenJasa'], 'angka' => true], ['label' => 'Total', 'angka' => true],
+                    ['label' => 'Jumlah Pokok', 'angka' => true], ['label' => 'Jasa ' . $rekap['labelPersenJasa'], 'angka' => true],
+                    ['label' => 'Jasa Dibukukan', 'angka' => true], ['label' => 'Total', 'angka' => true],
                 ],
                 'baris' => $rekap['baris']->values()->map(fn ($b, $i) => EksporLaporanService::baris([
-                    $i + 1, $b->no_rek, $b->nama_nasabah, $b->pokok, $b->jasa, $b->total,
+                    $i + 1, $b->no_rek, $b->nama_nasabah, $b->pokok, $b->jasa, $b->jasa_dibukukan ?: null, $b->total,
                 ]))->all(),
-                'kaki'  => [EksporLaporanService::baris(['', '', 'JUMLAH', $r['total_pokok'], $r['total_jasa'], $r['total_akhir']], 'total')],
-                'catatan' => "Jasa {$rekap['labelPersenJasa']} per bulan dari saldo pokok, dibulatkan ke rupiah terdekat.",
+                'kaki'  => [EksporLaporanService::baris(['', '', 'JUMLAH', $r['total_pokok'], $r['total_jasa'], $r['jasa_dibukukan'], $r['total_akhir']], 'total')],
+                'catatan' => "Jasa {$rekap['labelPersenJasa']} per bulan dari saldo pokok, dibulatkan ke rupiah terdekat. "
+                    . 'Jasa Dibukukan = jasa yang sudah benar-benar masuk ke rekening; selisihnya belum masuk ke rekening.',
             ]],
         ];
     }
@@ -237,11 +240,13 @@ class LaporanTabunganController extends Controller
             ->whereBetween('tblTRANSAKSI.tgl_transaksi', [$awalBulan, $akhirBulan])
             ->tap($filterCari)
             ->groupBy('tblTRANSAKSI.rekening_id', DB::raw("DATE({$tglCol})"))
+            // Dikelompokkan per jenis transaksi: pembalik koreksi setoran mengurangi setoran,
+            // pembalik koreksi penarikan mengurangi penarikan (bukan dihitung sebagai arah sebaliknya)
             ->select(
                 'tblTRANSAKSI.rekening_id',
                 DB::raw("DATE({$tglCol}) as tanggal"),
-                DB::raw("SUM({$tblTx}.kredit) as total_setoran"),
-                DB::raw("SUM({$tblTx}.debit) as total_penarikan")
+                DB::raw("SUM(CASE WHEN {$tblTx}.jenis_transaksi_id = 1 THEN {$tblTx}.kredit - {$tblTx}.debit ELSE 0 END) as total_setoran"),
+                DB::raw("SUM(CASE WHEN {$tblTx}.jenis_transaksi_id = 2 THEN {$tblTx}.debit - {$tblTx}.kredit ELSE 0 END) as total_penarikan")
             )
             ->get();
 
@@ -312,6 +317,7 @@ class LaporanTabunganController extends Controller
         $ringkasan = [
             'total_pokok'     => (float) $baris->sum('pokok'),
             'total_jasa'      => (float) $baris->sum('jasa'),
+            'jasa_dibukukan'  => (float) $baris->sum('jasa_dibukukan'),
             'total_akhir'     => (float) $baris->sum('total'),
             'jumlah_rekening' => $baris->count(),
             'rekening_bersaldo' => $baris->where('pokok', '>', 0)->count(),
