@@ -20,9 +20,10 @@ class TC_08_01Test extends SipintarDuskTestCase
                 ->clickLink('Ajukan Pinjaman')
                 ->waitForLocation('/nasabah/pinjaman/ajukan');
 
-            // 3. Nominal Rp5.000.000, tenor 10 bulan (4. form tidak memiliki field keperluan)
+            // 3-4. Nominal Rp5.000.000, tenor 10 bulan, dan keperluan
             $this->isi($browser, '#nominal_pinjaman', 5000000);
             $this->isi($browser, '#tenor', 10);
+            $this->isi($browser, '#keperluan', 'Biaya pendidikan anak');
             $browser->assertSeeIn('#simTotalBulan', '600.000');
 
             // 5. Klik Ajukan + konfirmasi
@@ -38,6 +39,7 @@ class TC_08_01Test extends SipintarDuskTestCase
             'nominal_pinjaman' => 5000000,
             'tenor'            => 10,
             'status_pinjaman'  => 'diajukan',
+            'keperluan'        => 'Biaya pendidikan anak',
         ]);
     }
 }

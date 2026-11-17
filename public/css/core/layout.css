@@ -745,6 +745,8 @@
 .notif-card-icon.emerald { background: #DCFCE7; color: #059669; }
 .notif-card-icon.blue { background: #DBEAFE; color: #2563EB; }
 .notif-card-icon.amber { background: #FEF3C7; color: #D97706; }
+.notif-card-icon.red { background: #FEE2E2; color: #DC2626; }
+.notif-empty { padding: 22px 16px; text-align: center; font-size: 12.5px; color: var(--text-muted, #64748B); }
 
 .notif-card-content {
     flex: 1;

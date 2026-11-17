@@ -29,6 +29,7 @@
         <div><span>Unit Kerja</span>: {{ $pinjaman->kelas_unit ?? '-' }}</div>
         <div><span>Metode Bayar</span>: {{ $pinjaman->metode_bayar === 'potong_gaji' ? 'Potong Tunjangan' : 'Pembayaran Langsung' }}</div>
         <div><span>Plafon</span>: {{ $rp($pinjaman->nominal_pinjaman) }}</div>
+        <div><span>Keperluan</span>: {{ $pinjaman->keperluan ?: '-' }}</div>
         <div><span>Tenor / Jasa</span>: {{ $pinjaman->tenor }} bulan / {{ rtrim(rtrim(number_format($pinjaman->bunga_persen, 2, ',', '.'), '0'), ',') }}% per bulan</div>
     </div>
 

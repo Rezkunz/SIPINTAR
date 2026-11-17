@@ -32,6 +32,18 @@ abstract class Iterasi2DuskTestCase extends SipintarDuskTestCase
         DB::table('tblKAS')->where('kas_id', $kas->kas_id)->increment('saldo', $arah === 'masuk' ? $nominal : -$nominal);
     }
 
+    /** Data tunjangan pegawai (FR-16) untuk bulan tertentu (default bulan ini). */
+    protected function isiTunjangan(string $email, float $gaji, float $tunjangan, float $potonganLain = 0, ?\Carbon\Carbon $bulan = null): void
+    {
+        $bulan ??= now();
+        DB::table('tblDATA_TUNJANGAN')->insert([
+            'nasabah_id' => $this->nasabahId($email), 'tahun' => $bulan->year, 'bulan' => $bulan->month,
+            'gaji_pokok' => $gaji, 'tunjangan' => $tunjangan, 'potongan_lain' => $potonganLain,
+            'keterangan' => null, 'user_id' => $this->userId(self::BND_SKL),
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+    }
+
     /** Teks seluruh elemen yang cocok dengan selector. */
     protected function teksSemua(Browser $browser, string $selector): array
     {
