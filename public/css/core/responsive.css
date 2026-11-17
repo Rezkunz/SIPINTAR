@@ -1,0 +1,1277 @@
+/* ==========================================================================
+   SIPINTAR – Penyesuaian lintas perangkat
+   Dimuat PALING AKHIR (setelah CSS peran) agar aturan di sini menang.
+
+   Rentang:
+   • ≥ 1600px  : monitor lebar / iMac / MacBook resolusi tinggi
+   • 961–1280  : laptop kecil & tablet landscape (iPad Pro)
+   • ≤ 960px   : tablet portrait (iPad) — sidebar jadi menu geser
+   • ≤ 720px   : HP (Android & iPhone) — tabel jadi kartu, form bertumpuk
+   • ≤ 400px   : HP layar sempit (iPhone SE / Android kecil)
+   ========================================================================== */
+
+/* ── Dasar untuk semua perangkat ── */
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas {
+    max-width: 100%;
+}
+
+/* Tinggi layar yang benar di Safari iOS / Chrome Android (bilah alamat dinamis) */
+@supports (height: 100dvh) {
+    .app-sidebar { height: 100dvh; }
+    .app-main { min-height: calc(100dvh - var(--topbar-h)); }
+}
+
+/* Jarak aman tombol chatbot dari "home indicator" iPhone */
+.chatbot-container {
+    bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    right: calc(28px + env(safe-area-inset-right, 0px));
+}
+
+/* Isian tidak melebihi lebar wadahnya */
+.app-main input:not([type="checkbox"]):not([type="radio"]),
+.app-main select,
+.app-main textarea {
+    max-width: 100%;
+}
+
+/* Header kartu boleh turun baris bila tombolnya banyak */
+.card-header-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* Tabel menggulir halus di layar sentuh */
+.table-responsive {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ── Toolbar daftar: pencarian server + tab status (partials/daftar_toolbar) ── */
+.daftar-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-subtle, #E2E8F0);
+    background: #FFFFFF;
+}
+
+.daftar-cari {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 520px;
+}
+
+.daftar-cari-ikon {
+    position: absolute;
+    left: 12px;
+    color: var(--text-muted, #64748B);
+    pointer-events: none;
+}
+
+.daftar-cari input[type="search"] {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 44px;
+    padding: 0 36px 0 38px;
+    border: 1px solid #CBD5E1;
+    border-radius: 10px;
+    font: inherit;
+    font-size: 14px;
+    background: #FFFFFF;
+}
+
+.daftar-cari input[type="search"]:focus {
+    outline: 2px solid #A7F3D0;
+    border-color: #0D5C46;
+}
+
+.daftar-cari input[type="search"]::-webkit-search-cancel-button { display: none; }
+
+.daftar-cari-hapus {
+    position: absolute;
+    right: 84px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--text-muted, #64748B);
+    font-size: 20px;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.daftar-cari-btn {
+    flex: 0 0 auto;
+    height: 44px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 10px;
+    background: #0D5C46;
+    color: #FFFFFF;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.daftar-tab {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -4px;
+    padding: 0 4px 2px;
+}
+
+.daftar-tab::-webkit-scrollbar { display: none; }
+
+.daftar-tab-item {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid #E2E8F0;
+    border-radius: 999px;
+    background: #F8FAFC;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.daftar-tab-item.aktif {
+    background: #0D5C46;
+    border-color: #0D5C46;
+    color: #FFFFFF;
+}
+
+.daftar-tab-jumlah {
+    min-width: 22px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: #E2E8F0;
+    color: #334155;
+    font-size: 11.5px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.daftar-tab-jumlah.amber { background: #FEF3C7; color: #92400E; }
+.daftar-tab-jumlah.red { background: #FEE2E2; color: #991B1B; }
+.daftar-tab-jumlah.green { background: #DCFCE7; color: #166534; }
+.daftar-tab-item.aktif .daftar-tab-jumlah { background: rgba(255, 255, 255, 0.22); color: #FFFFFF; }
+
+.daftar-info-cari {
+    padding: 10px 20px 0;
+    font-size: 12.5px;
+    color: var(--text-muted, #64748B);
+}
+
+/* Bilah aksi: "Pilih semua" hanya perlu saat judul tabel tersembunyi (HP/tablet) */
+.bar-aksi-pilih-semua {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-heading, #0F172A);
+    cursor: pointer;
+}
+
+.bar-aksi-pilih-semua input { width: 22px; height: 22px; }
+
+.bar-aksi-jumlah {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted, #64748B);
+}
+
+@media (max-width: 960px) {
+    .bar-aksi-pilih-semua { display: inline-flex; }
+}
+
+/* Ringkasan kartu piutang khusus HP */
+.kartu-hp-meta { display: none; }
+
+/* Tombol tutup panel rincian: cincin fokus hanya untuk keyboard */
+.lembar-tutup:focus { outline: none; }
+.lembar-tutup:focus-visible { outline: 3px solid #A7F3D0; outline-offset: 2px; }
+
+/* Tombol menu (ikon garis tiga) di tablet & HP */
+.btn-toggle-menu {
+    width: 40px;
+    height: 40px;
+    padding: 0 !important;
+    flex: 0 0 auto;
+    border-radius: 10px;
+}
+
+.btn-toggle-menu svg {
+    display: block;
+}
+
+.btn-toggle-menu:focus-visible {
+    outline: 3px solid #A7F3D0;
+    outline-offset: 2px;
+}
+
+/* ── Monitor lebar (iMac, MacBook Retina mode "More Space", monitor 2K/4K) ── */
+@media (min-width: 1600px) {
+    .app-main {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+}
+
+/* ── Laptop kecil & tablet landscape ── */
+@media (max-width: 1280px) {
+    .app-topbar { padding: 0 24px; }
+    .app-main { padding: 24px 24px 56px; }
+    .topbar-date-card .date-full { display: none; }
+}
+
+/* ── Tablet portrait (iPad, tablet Android) ── */
+@media (max-width: 960px) {
+    /* Pengaman: mode sidebar ringkas desktop tidak boleh menggeser halaman di tablet/HP */
+    html.sidebar-collapsed .app-main { margin-left: 0; }
+    html.sidebar-collapsed .app-topbar { left: 0; }
+    .sidebar-collapse-toggle { display: none !important; }
+
+    .app-topbar {
+        padding: 0 16px;
+        gap: 10px;
+    }
+
+    .topbar-left {
+        min-width: 0;
+        flex: 1 1 auto;
+        gap: 10px;
+    }
+
+    .topbar-right {
+        flex: 0 0 auto;
+        gap: 8px;
+    }
+
+    .topbar-breadcrumbs {
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .topbar-breadcrumbs .current {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .app-main { padding: 20px 16px 88px; }
+
+    .dashboard-welcome-banner { padding: 20px; }
+
+    /* Dropdown notifikasi melebar mengikuti layar */
+    .topbar-notif-dropdown {
+        position: fixed;
+        top: calc(var(--topbar-h) + 8px);
+        left: 12px;
+        right: 12px;
+        width: auto;
+        max-width: none;
+        max-height: calc(100vh - var(--topbar-h) - 24px);
+        overflow-y: auto;
+    }
+
+    .sipintar-modal-card {
+        max-width: calc(100vw - 24px);
+        max-height: calc(100vh - 24px);
+    }
+
+    @supports (height: 100dvh) {
+        .sipintar-modal-card { max-height: calc(100dvh - 24px); }
+    }
+}
+
+/* ── HP (Android & iPhone) ── */
+@media (max-width: 720px) {
+    /* Topbar ringkas: jam, label "SIPINTAR /", dan nama pengguna disembunyikan */
+    .topbar-date-card,
+    .topbar-breadcrumbs > span:not(.current),
+    .topbar-user-info {
+        display: none !important;
+    }
+
+    .topbar-breadcrumbs .current {
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+
+    .profile-dropdown-menu {
+        position: fixed;
+        top: calc(var(--topbar-h) + 8px);
+        right: 12px;
+        width: min(280px, calc(100vw - 24px));
+    }
+
+    .app-main { padding: 16px 12px 96px; }
+
+    /* Safari iOS memperbesar halaman bila ukuran huruf isian < 16px */
+    .app-main input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    .app-main select,
+    .app-main textarea,
+    .sipintar-modal-card input:not([type="checkbox"]):not([type="radio"]),
+    .sipintar-modal-card select,
+    .sipintar-modal-card textarea {
+        font-size: 16px !important;
+    }
+
+    /* Banner sambutan */
+    .dashboard-welcome-banner {
+        padding: 18px 16px;
+        border-radius: 14px;
+    }
+
+    .dashboard-welcome-banner h1 {
+        font-size: 20px !important;
+        line-height: 1.3;
+    }
+
+    .dashboard-welcome-banner p {
+        font-size: 13px !important;
+    }
+
+    .dashboard-welcome-banner .btn-ui,
+    .dashboard-welcome-banner a {
+        flex: 1 1 auto;
+    }
+
+    /* Kartu & header kartu */
+    .content-card {
+        border-radius: 14px;
+        margin-bottom: 16px;
+    }
+
+    .card-header-bar {
+        padding: 14px 14px;
+        align-items: flex-start;
+    }
+
+    .card-header-bar > * {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .metric-card { padding: 16px 18px; }
+
+    /* Grid & baris yang ditulis inline di halaman: jadi satu kolom */
+    .app-main [style*="grid-template-columns"],
+    .sipintar-modal-card [style*="grid-template-columns"] {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .app-main [style*="display:flex"],
+    .app-main [style*="display: flex"] {
+        flex-wrap: wrap;
+    }
+
+    /* Form filter (GET) bertumpuk; tombol selebar layar agar mudah disentuh */
+    .app-main form[method="GET"],
+    .app-main form[method="get"] {
+        flex-wrap: wrap;
+    }
+
+    .app-main form[method="GET"] > *,
+    .app-main form[method="get"] > * {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    /* Ukuran sentuh minimal ±40px */
+    .btn-ui,
+    .app-main button:not(.page-link):not([class*="close"]) {
+        min-height: 40px;
+    }
+
+    /* Modal hampir layar penuh */
+    .sipintar-modal-backdrop {
+        padding: 12px !important;
+        align-items: flex-end;
+    }
+
+    .sipintar-modal-card {
+        border-radius: 16px;
+    }
+
+    /* Pagination */
+    .sipintar-pagination {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .sipintar-pagination .pagination-info {
+        flex: 1 1 100%;
+    }
+
+    /* Chatbot lebih kecil & tidak menutupi tombol halaman */
+    .chatbot-container {
+        bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+        right: calc(14px + env(safe-area-inset-right, 0px));
+    }
+
+    .chatbot-trigger-btn {
+        width: 50px !important;
+        height: 50px !important;
+    }
+
+    /* Jendela chatbot layar penuh; tingginya mengikuti area terlihat saat keyboard muncul */
+    .chatbot-window {
+        position: fixed !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: var(--vv-atas, 0px) !important;
+        bottom: auto !important;
+        width: 100% !important;
+        height: var(--vv-tinggi, 100dvh) !important;
+        max-height: none !important;
+        border-radius: 0 !important;
+        transform-origin: bottom center;
+    }
+
+    .chatbot-header {
+        padding-top: calc(14px + env(safe-area-inset-top, 0px)) !important;
+    }
+
+    .chatbot-messages {
+        max-height: none !important;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    .chatbot-input-area {
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* Tombol bulat disembunyikan selama chatbot terbuka (tutup lewat tombol × di header) */
+    .chatbot-container.chat-terbuka .chatbot-trigger-btn,
+    .chatbot-container.chat-terbuka .chatbot-pulse-ring {
+        display: none !important;
+    }
+
+    html.chatbot-layar-penuh,
+    html.chatbot-layar-penuh body {
+        overflow: hidden;
+        overscroll-behavior: none;
+    }
+
+    /* Visual hierarchy: banner hanya judul; deskripsi panjang disembunyikan di HP */
+    .dashboard-welcome-banner {
+        padding: 14px 16px !important;
+        margin-bottom: 14px !important;
+    }
+
+    .dashboard-welcome-banner h1 {
+        font-size: 18px !important;
+        margin: 0 !important;
+    }
+
+    .dashboard-welcome-banner .welcome-content > p {
+        display: none !important;
+    }
+
+    /* Ringkasan metrik: grid 2x2 kecil, keterangan pendukung disembunyikan */
+    .metric-grid,
+    .metric-grid-3,
+    .metric-grid-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+        margin-bottom: 14px !important;
+    }
+
+    .metric-grid > .metric-card:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+    }
+
+    .metric-card {
+        min-height: 0 !important;
+        padding: 12px 14px !important;
+        border-radius: 12px !important;
+    }
+
+    .metric-card .metric-title {
+        font-size: 10.5px !important;
+        line-height: 1.3;
+    }
+
+    .metric-card .metric-value {
+        font-size: 18px !important;
+        margin-top: 4px;
+    }
+
+    .metric-card > :not(.metric-header):not(.metric-value),
+    .metric-card .metric-icon,
+    .metric-card svg {
+        display: none !important;
+    }
+
+    /* Toolbar daftar */
+    .daftar-toolbar { padding: 12px 14px; }
+    .app-main .daftar-toolbar > * { flex: 0 0 auto !important; min-width: 0; max-width: 100%; }
+    .daftar-cari { max-width: none; }
+    .daftar-cari input[type="search"] { flex: 1 1 0 !important; width: 0; }
+    .daftar-cari-btn { padding: 0 14px; }
+    .daftar-cari-hapus { right: 74px; }
+
+    /* Kartu Piutang: kartu ringkas (nama, info singkat, sisa pokok, progres); seluruh kartu dapat disentuh */
+    #gridKartuDebitur {
+        gap: 10px !important;
+        padding: 12px !important;
+    }
+
+    .kartu-debitur-item {
+        position: relative;
+        border-radius: 12px !important;
+    }
+
+    .kartu-debitur-item .kartu-kepala,
+    .kartu-debitur-item .kartu-unit,
+    .kartu-debitur-item .kartu-progres > div:first-child {
+        display: none !important;
+    }
+
+    .kartu-debitur-item > div:last-child {
+        padding: 12px 40px 12px 14px !important;
+    }
+
+    .kartu-debitur-item .kartu-hp-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 2px;
+        font-size: 12.5px;
+        color: var(--text-muted, #64748B);
+    }
+
+    .kartu-debitur-item .kartu-hp-meta .badge-pill { font-size: 10.5px; padding: 1px 8px; }
+
+    .kartu-debitur-item .kartu-metrik {
+        display: block !important;
+        padding: 0 !important;
+        margin: 8px 0 6px !important;
+        background: none !important;
+        border: 0 !important;
+    }
+
+    .kartu-debitur-item .kartu-metrik > div:not(:last-child) { display: none !important; }
+
+    .kartu-debitur-item .kartu-metrik > div:last-child {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+    }
+
+    .kartu-debitur-item .kartu-metrik > div:last-child > div:last-child {
+        font-size: 15px !important;
+        margin: 0 !important;
+    }
+
+    .kartu-debitur-item .kartu-progres { margin-bottom: 0 !important; }
+
+    .kartu-debitur-item .kartu-tombol {
+        height: 0;
+        padding: 0 !important;
+        border: 0 !important;
+    }
+
+    .kartu-debitur-item > div:last-child > div:first-child > div:first-child {
+        margin-bottom: 0 !important;
+    }
+
+    /* Tautan "Buka Kartu" melebar menutupi seluruh kartu; tampilannya diganti panah */
+    .kartu-debitur-item .kartu-tombol a {
+        position: static !important;
+        width: 0 !important;
+        height: 0 !important;
+        padding: 0 !important;
+        min-height: 0 !important;
+        overflow: hidden;
+        font-size: 0 !important;
+        border: 0 !important;
+    }
+
+    .kartu-debitur-item .kartu-tombol a::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+    }
+
+    .kartu-debitur-item::after {
+        content: "";
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        width: 8px;
+        height: 8px;
+        border-right: 2px solid #94A3B8;
+        border-top: 2px solid #94A3B8;
+        transform: translateY(-50%) rotate(45deg);
+    }
+
+    /* Fitts's law: bilah aksi utama menempel di bawah layar (zona ibu jari) */
+    .content-card:has(.bar-aksi-lengket) {
+        overflow: clip;
+    }
+
+    .bar-aksi-lengket {
+        position: sticky;
+        bottom: 0;
+        z-index: 30;
+        display: grid !important;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 8px 12px !important;
+        padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+        background: #FFFFFF;
+        box-shadow: 0 -6px 20px rgba(15, 23, 42, 0.1);
+    }
+
+    .bar-aksi-lengket > button,
+    .bar-aksi-lengket > .btn-ui {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-height: 48px;
+        justify-content: center;
+    }
+
+    .bar-aksi-ringkasan {
+        text-align: right;
+    }
+
+    .bar-aksi-ringkasan > span:first-child { display: none; }
+    .bar-aksi-ringkasan #dispTotalRencana { margin-left: 0 !important; font-size: 17px !important; }
+
+    body:has(.bar-aksi-lengket) .chatbot-container {
+        bottom: calc(140px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* Ringkasan angka kecil (Plafon / Terbayar / Sisa) tetap berjejer tiga */
+    .app-main .kartu-metrik {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    .app-main .kartu-metrik > div > div:last-child {
+        font-size: 12px !important;
+    }
+}
+
+/* ==========================================================================
+   Tabel sebagai kartu
+   Kelas .tabel-kartu-aktif dipasang/dilepas oleh js/responsive-table.js sesuai lebar layar
+   dan jumlah kolom tabel (≥ 7 kolom: ≤ 960px, 4–6 kolom: ≤ 720px).
+   ========================================================================== */
+.table-responsive:has(> table.tabel-kartu-aktif) {
+    overflow-x: visible;
+    padding: 12px;
+}
+
+table.tabel-kartu-aktif,
+table.tabel-kartu-aktif > tbody,
+table.tabel-kartu-aktif > tfoot {
+    display: block;
+    width: 100%;
+}
+
+table.tabel-kartu-aktif > thead {
+    display: none;
+}
+
+table.tabel-kartu-aktif > tbody > tr,
+table.tabel-kartu-aktif > tfoot > tr {
+    display: block;
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle, #E2E8F0);
+    border-radius: 12px;
+    padding: 4px 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+table.tabel-kartu-aktif > tfoot > tr {
+    background: #F8FAFC;
+}
+
+/* Tiap sel: [label kolom | isi]. Isi yang terdiri dari beberapa elemen ditumpuk di kolom kanan. */
+table.tabel-kartu-aktif > tbody > tr > td,
+table.tabel-kartu-aktif > tfoot > tr > td {
+    display: grid;
+    grid-template-columns: minmax(0, 38%) minmax(0, 1fr);
+    grid-auto-flow: row dense;
+    column-gap: 12px;
+    row-gap: 0;
+    align-items: start;
+    justify-items: end;
+    width: 100%;
+    padding: 10px 0 !important;
+    border-bottom: 1px dashed var(--border-subtle, #E2E8F0);
+    text-align: right !important;
+    white-space: normal !important;
+    word-break: break-word;
+    min-width: 0 !important;
+    box-sizing: border-box;
+}
+
+table.tabel-kartu-aktif > tbody > tr > td:last-child,
+table.tabel-kartu-aktif > tfoot > tr > td:last-child {
+    border-bottom: 0;
+}
+
+table.tabel-kartu-aktif > tbody > tr > td[data-label]::before,
+table.tabel-kartu-aktif > tfoot > tr > td[data-label]::before {
+    content: attr(data-label);
+    grid-column: 1;
+    grid-row: 1 / span 12;
+    justify-self: start;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted, #64748B);
+    padding-top: 2px;
+}
+
+table.tabel-kartu-aktif > tbody > tr > td[data-label] > *,
+table.tabel-kartu-aktif > tfoot > tr > td[data-label] > * {
+    grid-column: 2;
+    max-width: 100%;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+table.tabel-kartu-aktif > tbody > tr > td[data-label] > * + *,
+table.tabel-kartu-aktif > tfoot > tr > td[data-label] > * + * {
+    margin-top: 4px !important;
+}
+
+/* Isian di dalam kartu selebar kolom kanan */
+table.tabel-kartu-aktif > tbody > tr > td[data-label] > input:not([type="checkbox"]):not([type="radio"]),
+table.tabel-kartu-aktif > tbody > tr > td[data-label] > select,
+table.tabel-kartu-aktif > tbody > tr > td[data-label] > textarea {
+    justify-self: stretch;
+    width: 100%;
+    min-width: 0 !important;
+}
+
+/* Sel tanpa judul kolom (kotak centang, tombol aksi) & sel gabungan (pesan "data kosong") */
+table.tabel-kartu-aktif > tbody > tr > td:not([data-label]) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+table.tabel-kartu-aktif > tbody > tr > td[colspan] {
+    justify-content: center;
+    text-align: center !important;
+}
+
+table.tabel-kartu-aktif > tbody > tr:has(> td[colspan]:only-child) {
+    border-style: dashed;
+    box-shadow: none;
+}
+
+/* Sel berisi tombol (mis. "Tindakan Kasir", "Aksi"): judul di atas, tombol selebar kartu & boleh turun baris */
+table.tabel-kartu-aktif > tbody > tr > td[data-label]:has(button, .btn-ui, a.btn) {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: stretch;
+}
+
+table.tabel-kartu-aktif > tbody > tr > td[data-label]:has(button, .btn-ui, a.btn)::before {
+    grid-row: auto;
+    margin-bottom: 6px;
+}
+
+table.tabel-kartu-aktif > tbody > tr > td[data-label]:has(button, .btn-ui, a.btn) > * {
+    grid-column: 1;
+}
+
+table.tabel-kartu-aktif > tbody > tr > td:has(button, .btn-ui, a.btn) div[style*="inline-flex"]:has(> button, > .btn-ui, > a.btn) {
+    display: flex !important;
+}
+
+table.tabel-kartu-aktif > tbody > tr > td:has(button, .btn-ui, a.btn) div:has(> button, > .btn-ui, > a.btn) {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    width: 100%;
+}
+
+table.tabel-kartu-aktif > tbody > tr > td:has(button, .btn-ui, a.btn) div > :is(button, .btn-ui, a.btn) {
+    flex: 1 1 auto;
+    justify-content: center;
+}
+
+/* Kartu ringkas: kolom rincian disembunyikan sampai "Lihat rincian" ditekan */
+td.kartu-toggle-sel {
+    display: none !important;
+}
+
+table.tabel-kartu-aktif > tbody > tr:not(.kartu-terbuka) > td.kartu-rinci {
+    display: none !important;
+}
+
+table.tabel-kartu-aktif > tbody > tr > td.kartu-toggle-sel {
+    display: block !important;
+    padding: 8px 0 6px !important;
+    border-bottom: 0;
+    text-align: center !important;
+}
+
+.kartu-toggle-btn {
+    width: 100%;
+    min-height: 38px;
+    border: 1px dashed #A7F3D0;
+    border-radius: 10px;
+    background: #F0FDF4;
+    color: #0D5C46;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.kartu-toggle-btn:focus-visible {
+    outline: 3px solid #A7F3D0;
+    outline-offset: 2px;
+}
+
+/* Sel pertama = identitas baris, ditebalkan sebagai judul kartu */
+table.tabel-kartu-aktif > tbody > tr > td:first-child {
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   Daftar ringkas HP (kelas .tabel-daftar-aktif dari js/responsive-table.js)
+   Satu data = satu baris: [centang] judul ............ nilai  ›
+                                     info singkat ...... status
+   Prinsip: cognitive load (sedikit informasi per baris), visual hierarchy (nama & nominal menonjol),
+   Fitts's law (seluruh baris area sentuh >= 64px), progressive disclosure (rincian di panel bawah).
+   ========================================================================== */
+.table-responsive:has(> table.tabel-daftar-aktif) {
+    overflow-x: visible;
+    padding: 0;
+}
+
+table.tabel-daftar-aktif,
+table.tabel-daftar-aktif > tbody {
+    display: block;
+    width: 100%;
+}
+
+table.tabel-daftar-aktif > thead,
+table.tabel-daftar-aktif > tfoot {
+    display: none;
+}
+
+table.tabel-daftar-aktif > tbody > tr {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "judul nilai"
+        "sub   status";
+    column-gap: 12px;
+    row-gap: 3px;
+    align-items: center;
+    min-height: 64px;
+    padding: 12px 34px 12px 16px;
+    border-bottom: 1px solid var(--border-subtle, #E2E8F0);
+    background: #FFFFFF;
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(13, 92, 70, 0.08);
+}
+
+table.tabel-daftar-aktif > tbody > tr.punya-cek {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+        "cek judul nilai"
+        "cek sub   status";
+}
+
+table.tabel-daftar-aktif > tbody > tr:active { background: #F0FDF4; }
+table.tabel-daftar-aktif > tbody > tr:focus-visible { outline: 3px solid #A7F3D0; outline-offset: -3px; }
+
+/* Penanda "buka rincian" */
+table.tabel-daftar-aktif > tbody > tr::after {
+    content: "";
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid #94A3B8;
+    border-top: 2px solid #94A3B8;
+    transform: translateY(-50%) rotate(45deg);
+}
+
+table.tabel-daftar-aktif > tbody > tr > td {
+    display: none !important;
+}
+
+table.tabel-daftar-aktif > tbody > tr > td[data-peran] {
+    display: block !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: none !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Hanya elemen pertama tiap sel yang tampil di baris; sisanya ada di panel rincian */
+table.tabel-daftar-aktif > tbody > tr > td[data-peran]:not([data-peran="status"]) > :not(:first-child) {
+    display: none !important;
+}
+
+table.tabel-daftar-aktif > tbody > tr > td[data-peran] > :first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+table.tabel-daftar-aktif td[data-peran="cek"] {
+    grid-area: cek;
+    align-self: center;
+    padding-right: 12px !important;
+    overflow: visible;
+}
+
+table.tabel-daftar-aktif td[data-peran="cek"] input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+}
+
+table.tabel-daftar-aktif td[data-peran="judul"] {
+    grid-area: judul;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: var(--text-heading, #0F172A) !important;
+}
+
+table.tabel-daftar-aktif td[data-peran="judul"] * {
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    color: inherit !important;
+}
+
+table.tabel-daftar-aktif td[data-peran="nilai"] {
+    grid-area: nilai;
+    text-align: right !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    color: var(--text-heading, #0F172A);
+}
+
+table.tabel-daftar-aktif td[data-peran="sub"] {
+    grid-area: sub;
+    font-size: 12.5px !important;
+    font-weight: 500 !important;
+    color: var(--text-muted, #64748B) !important;
+}
+
+table.tabel-daftar-aktif td[data-peran="sub"] * {
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    color: inherit !important;
+    background: none !important;
+    border: 0 !important;
+    padding: 0 !important;
+}
+
+/* Status: hanya lencana terpilih yang ditampilkan */
+table.tabel-daftar-aktif td[data-peran="status"] {
+    grid-area: status;
+    justify-self: end;
+    font-size: 0 !important;
+}
+
+table.tabel-daftar-aktif td[data-peran="status"] *:not(.lencana-status):not(:has(.lencana-status)) {
+    display: none !important;
+}
+
+table.tabel-daftar-aktif td[data-peran="status"] .lencana-status {
+    display: inline-block !important;
+    font-size: 11.5px !important;
+    padding: 2px 8px !important;
+    white-space: nowrap;
+}
+
+table.tabel-daftar-aktif td[data-peran="status"] .lencana-status * {
+    display: revert !important;
+    font-size: inherit !important;
+}
+
+table.tabel-daftar-aktif td[data-peran="status"] :has(.lencana-status) {
+    display: block !important;
+    margin: 0 !important;
+}
+
+/* Baris "data kosong" */
+table.tabel-daftar-aktif > tbody > tr:has(> td[colspan]:only-child) {
+    display: block;
+    cursor: default;
+    padding: 0;
+}
+
+table.tabel-daftar-aktif > tbody > tr:has(> td[colspan]:only-child)::after { display: none; }
+
+table.tabel-daftar-aktif > tbody > tr > td[colspan]:only-child {
+    display: block !important;
+    border: 0;
+}
+
+/* ── Panel rincian dari bawah (bottom sheet) ── */
+.lembar {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+}
+
+.lembar[hidden] { display: none; }
+
+.lembar-latar {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.lembar-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    background: #FFFFFF;
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.2);
+    transform: translateY(100%);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@supports (height: 100dvh) {
+    .lembar-panel { max-height: 85dvh; }
+}
+
+.lembar.tampil .lembar-latar { opacity: 1; }
+.lembar.tampil .lembar-panel { transform: translateY(0); }
+
+.lembar-pegangan {
+    width: 40px;
+    height: 4px;
+    margin: 10px auto 2px;
+    border-radius: 999px;
+    background: #CBD5E1;
+}
+
+.lembar-kepala {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 20px 12px;
+    border-bottom: 1px solid var(--border-subtle, #E2E8F0);
+}
+
+.lembar-judul {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-heading, #0F172A);
+    line-height: 1.3;
+}
+
+.lembar-subjudul {
+    margin-top: 2px;
+    font-size: 12.5px;
+    color: var(--text-muted, #64748B);
+}
+
+.lembar-tutup {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    margin: -6px -10px 0 0;
+    border: 0;
+    border-radius: 50%;
+    background: #F1F5F9;
+    color: #334155;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.lembar-isi {
+    flex: 1 1 auto;
+    margin: 0;
+    padding: 4px 20px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.lembar-baris {
+    display: grid;
+    grid-template-columns: minmax(0, 40%) minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--border-subtle, #E2E8F0);
+}
+
+.lembar-baris:last-child { border-bottom: 0; }
+
+.lembar-baris dt {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text-muted, #64748B);
+}
+
+.lembar-baris dd {
+    margin: 0;
+    text-align: right;
+    font-size: 14px;
+    color: var(--text-body, #334155);
+    word-break: break-word;
+}
+
+.lembar-baris dd > * + * { margin-top: 4px; }
+
+.lembar-aksi {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 20px 16px;
+    border-top: 1px solid var(--border-subtle, #E2E8F0);
+}
+
+.lembar-aksi[hidden] { display: none; }
+
+.lembar-aksi > *,
+.lembar-aksi > div > * {
+    flex: 1 1 auto;
+}
+
+.lembar-aksi > div {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+}
+
+.lembar-aksi :is(button, .btn-ui, a.btn-ui) {
+    min-height: 48px;
+    justify-content: center;
+    font-size: 15px !important;
+}
+
+html.lembar-terbuka,
+html.lembar-terbuka body {
+    overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lembar-panel,
+    .lembar-latar { transition: none; }
+}
+
+/* ── Tombol kembali ke atas (dipasang js/responsive-table.js) ── */
+#btn-ke-atas {
+    position: fixed;
+    right: calc(18px + env(safe-area-inset-right, 0px));
+    bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+    z-index: 9990;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border-subtle, #E2E8F0);
+    background: #FFFFFF;
+    color: #0D5C46;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#btn-ke-atas.tampil {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+html.chatbot-layar-penuh #btn-ke-atas {
+    display: none;
+}
+
+/* ── HP layar sempit ── */
+@media (max-width: 400px) {
+    .app-topbar { padding: 0 10px; }
+    .app-main { padding: 14px 10px 96px; }
+
+
+    .topbar-breadcrumbs .current { font-size: 13px; }
+
+    table.tabel-kartu-aktif > tbody > tr > td[data-label],
+    table.tabel-kartu-aktif > tfoot > tr > td[data-label] {
+        grid-template-columns: minmax(0, 42%) minmax(0, 1fr);
+    }
+
+    .metric-value { font-size: 22px !important; }
+}
+
+/* ── Perangkat sentuh: efek hover tidak "nyangkut" setelah disentuh ── */
+@media (hover: none) {
+    .metric-card:hover,
+    .content-card:hover {
+        transform: none;
+    }
+}
+
+/* ── Aplikasi terpasang (PWA standalone) di iPhone: hindari area status bar & home indicator ── */
+@media (display-mode: standalone) {
+    .app-main {
+        padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    }
+}

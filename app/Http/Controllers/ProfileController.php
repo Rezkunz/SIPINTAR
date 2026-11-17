@@ -20,6 +20,11 @@ class ProfileController extends Controller
             return response()->json(['success' => false, 'message' => 'Sesi login tidak valid.'], 401);
         }
 
+        // Nomor HP adalah kunci login: simpan dalam format baku 08xxx agar tetap bisa dipakai login
+        if ($request->filled('no_hp')) {
+            $request->merge(['no_hp' => \App\Support\NomorHp::normalisasi($request->input('no_hp'))]);
+        }
+
         $activeTab = $request->input('active_tab', 'info');
         $isSecurityTab = ($activeTab === 'security') || $request->filled('password') || $request->filled('current_password');
 

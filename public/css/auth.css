@@ -1378,3 +1378,19 @@ body.auth-page-body {
 .sipintar-popup-btn:active {
     transform: translateY(0);
 }
+
+/* ── Penyesuaian HP (iPhone & Android) ── */
+@media (max-width: 860px) {
+    /* Safari iOS memperbesar halaman bila ukuran huruf isian < 16px */
+    .auth-form-input,
+    .auth-form-panel input,
+    .auth-form-panel select,
+    .auth-form-panel textarea {
+        font-size: 16px !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .auth-form-panel { padding: 28px 16px calc(28px + env(safe-area-inset-bottom, 0px)); }
+    .auth-artwork-panel { min-height: 180px; padding: 24px 16px; }
+}

@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\Manager;
 
+use App\Http\Controllers\Concerns\TanganiKesalahanInput;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\AuditLogService;
+use App\Support\NomorHp;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 /**
  * Manajemen akun pengguna oleh Manager (PRD §2: "Manajemen User").
@@ -22,6 +25,8 @@ use Illuminate\Validation\ValidationException;
  */
 class KelolaPenggunaController extends Controller
 {
+    use TanganiKesalahanInput;
+
     /** slug role => [role_id, label, prefix kode pegawai] sesuai tblROLE & PRD */
     public const ROLE = [
         'manager'        => ['id' => 4, 'label' => 'Manager',             'prefix' => 'MGR'],
@@ -89,22 +94,30 @@ class KelolaPenggunaController extends Controller
         $roleSlug = $data['role'];
         $noInduk = $data['no_induk'] ?: $this->kodeBerikutnya(self::ROLE[$roleSlug]['prefix']);
 
-        $user = User::create([
-            'role_id'     => self::ROLE[$roleSlug]['id'],
-            'nasabah_id'  => null,
-            'nama_user'   => $data['nama_user'],
-            'no_induk'    => $noInduk,
-            'no_hp'       => $data['no_hp'],
-            'email'       => $data['email'] ?: null,
-            'password'    => Hash::make($data['password']),
-            'status_akun' => 'aktif',
-        ]);
+        try {
+            $user = DB::transaction(function () use ($data, $roleSlug, $noInduk) {
+                $user = User::create([
+                    'role_id'     => self::ROLE[$roleSlug]['id'],
+                    'nasabah_id'  => null,
+                    'nama_user'   => $data['nama_user'],
+                    'no_induk'    => $noInduk,
+                    'no_hp'       => $data['no_hp'],
+                    'email'       => $data['email'] ?: null,
+                    'password'    => Hash::make($data['password']),
+                    'status_akun' => 'aktif',
+                ]);
 
-        AuditLogService::log(aksi: 'INSERT', entitas: 'tblUSER', entitasId: $user->user_id, dataBaru: $this->jejak($user));
+                AuditLogService::log(aksi: 'INSERT', entitas: 'tblUSER', entitasId: $user->user_id, dataBaru: $this->jejak($user));
+
+                return $user;
+            });
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'membuat akun pengguna');
+        }
 
         return redirect()
             ->route('akun.kelola', ['role' => $roleSlug])
-            ->with('success', "Akun {$user->nama_user} ({$user->roleName()}) berhasil dibuat. Login memakai {$noInduk} atau nomor HP.");
+            ->with('success', "Akun {$user->nama_user} ({$user->roleName()}) berhasil dibuat. Login memakai nomor HP {$user->no_hp}.");
     }
 
     /**
@@ -120,10 +133,16 @@ class KelolaPenggunaController extends Controller
                 'password' => ['required', 'string', 'min:6', 'max:64', 'confirmed'],
             ], $this->pesan());
 
-            $akun->password = Hash::make($data['password']);
-            $akun->save();
+            try {
+                DB::transaction(function () use ($akun, $data) {
+                    $akun->password = Hash::make($data['password']);
+                    $akun->save();
 
-            AuditLogService::log(aksi: 'RESET_PASSWORD', entitas: 'tblUSER', entitasId: $akun->user_id, dataBaru: ['password_diubah' => true]);
+                    AuditLogService::log(aksi: 'RESET_PASSWORD', entitas: 'tblUSER', entitasId: $akun->user_id, dataBaru: ['password_diubah' => true]);
+                });
+            } catch (Throwable $e) {
+                return $this->gagalProses($e, 'mereset kata sandi nasabah');
+            }
 
             return redirect()
                 ->route('akun.kelola', $this->paramKembali($request))
@@ -140,26 +159,33 @@ class KelolaPenggunaController extends Controller
             $this->pastikanMasihAdaManagerAktif($akun);
         }
 
-        $akun->fill([
-            'role_id'   => $roleBaru,
-            'nama_user' => $data['nama_user'],
-            'no_induk'  => $data['no_induk'] ?: $akun->no_induk,
-            'no_hp'     => $data['no_hp'],
-            'email'     => $data['email'] ?: null,
-        ]);
         $gantiSandi = !empty($data['password']);
-        if ($gantiSandi) {
-            $akun->password = Hash::make($data['password']);
-        }
-        $akun->save();
 
-        AuditLogService::log(
-            aksi: 'UPDATE',
-            entitas: 'tblUSER',
-            entitasId: $akun->user_id,
-            dataLama: $lama,
-            dataBaru: $this->jejak($akun) + ($gantiSandi ? ['password_diubah' => true] : [])
-        );
+        try {
+            DB::transaction(function () use ($akun, $data, $roleBaru, $gantiSandi, $lama) {
+                $akun->fill([
+                    'role_id'   => $roleBaru,
+                    'nama_user' => $data['nama_user'],
+                    'no_induk'  => $data['no_induk'] ?: $akun->no_induk,
+                    'no_hp'     => $data['no_hp'],
+                    'email'     => $data['email'] ?: null,
+                ]);
+                if ($gantiSandi) {
+                    $akun->password = Hash::make($data['password']);
+                }
+                $akun->save();
+
+                AuditLogService::log(
+                    aksi: 'UPDATE',
+                    entitas: 'tblUSER',
+                    entitasId: $akun->user_id,
+                    dataLama: $lama,
+                    dataBaru: $this->jejak($akun) + ($gantiSandi ? ['password_diubah' => true] : [])
+                );
+            });
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'memperbarui data akun');
+        }
 
         return redirect()
             ->route('akun.kelola', $this->paramKembali($request))
@@ -189,16 +215,22 @@ class KelolaPenggunaController extends Controller
             }
         }
 
-        $akun->status_akun = $statusBaru;
-        $akun->save();
+        try {
+            DB::transaction(function () use ($akun, $statusBaru) {
+                $akun->status_akun = $statusBaru;
+                $akun->save();
 
-        AuditLogService::log(
-            aksi: 'UPDATE_STATUS',
-            entitas: 'tblUSER',
-            entitasId: $akun->user_id,
-            dataLama: ['status_akun' => $statusBaru === 'aktif' ? 'nonaktif' : 'aktif'],
-            dataBaru: ['status_akun' => $statusBaru]
-        );
+                AuditLogService::log(
+                    aksi: 'UPDATE_STATUS',
+                    entitas: 'tblUSER',
+                    entitasId: $akun->user_id,
+                    dataLama: ['status_akun' => $statusBaru === 'aktif' ? 'nonaktif' : 'aktif'],
+                    dataBaru: ['status_akun' => $statusBaru]
+                );
+            });
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'mengubah status akun');
+        }
 
         return redirect()
             ->route('akun.kelola', $this->paramKembali($request))
@@ -210,7 +242,7 @@ class KelolaPenggunaController extends Controller
         $request->merge([
             'nama_user' => strip_tags(trim((string) $request->input('nama_user', ''))),
             'no_induk'  => strtoupper(strip_tags(trim((string) $request->input('no_induk', '')))),
-            'no_hp'     => preg_replace('/[^0-9+]/', '', (string) $request->input('no_hp', '')),
+            'no_hp'     => NomorHp::normalisasi($request->input('no_hp')),
             'email'     => strtolower(trim((string) $request->input('email', ''))),
         ]);
 
@@ -219,14 +251,14 @@ class KelolaPenggunaController extends Controller
         return $request->validate([
             'role'      => ['required', Rule::in(self::ROLE_PETUGAS)],
             'nama_user' => ['required', 'string', 'min:3', 'max:100', 'regex:/^[a-zA-Z\s\.,\'-]+$/'],
-            // Siswa Praktik login dengan NISN (10 digit); petugas dengan kode pegawai (kosong = dibuat otomatis)
+            // Siswa Praktik memakai NISN (10 digit); petugas memakai kode pegawai (kosong = dibuat otomatis). Login tetap memakai nomor HP.
             'no_induk'  => [
                 Rule::requiredIf($request->input('role') === 'siswa_praktik'),
                 'nullable', 'string', 'max:30',
                 $request->input('role') === 'siswa_praktik' ? 'regex:/^[0-9]{10}$/' : 'regex:/^[A-Z0-9\-\.\/]+$/',
                 Rule::unique('tblUSER', 'no_induk')->ignore($idAbaikan, 'user_id'),
             ],
-            'no_hp'     => ['required', 'string', 'min:10', 'max:15', 'regex:/^[0-9+]+$/', Rule::unique('tblUSER', 'no_hp')->ignore($idAbaikan, 'user_id')],
+            'no_hp'     => ['required', 'string', 'min:10', 'max:15', 'regex:/^0[0-9]+$/', Rule::unique('tblUSER', 'no_hp')->ignore($idAbaikan, 'user_id')],
             'email'     => ['nullable', 'email', 'max:100', Rule::unique('tblUSER', 'email')->ignore($idAbaikan, 'user_id')],
             'password'  => [$akun ? 'nullable' : 'required', 'string', 'min:6', 'max:64', 'confirmed'],
         ], $this->pesan());
@@ -243,11 +275,11 @@ class KelolaPenggunaController extends Controller
             'no_induk.required'  => 'NISN wajib diisi untuk akun Siswa Praktik.',
             'no_induk.regex'     => 'Format nomor induk tidak valid. Siswa Praktik memakai NISN 10 digit; petugas memakai kode seperti TLR-002.',
             'no_induk.unique'    => 'Nomor induk / kode pegawai ini sudah dipakai akun lain.',
-            'no_hp.required'     => 'Nomor HP wajib diisi.',
+            'no_hp.required'     => 'Nomor HP wajib diisi karena dipakai untuk login.',
             'no_hp.min'          => 'Nomor HP minimal 10 digit.',
             'no_hp.max'          => 'Nomor HP maksimal 15 digit.',
             'no_hp.regex'        => 'Nomor HP hanya boleh berisi angka.',
-            'no_hp.unique'       => 'Nomor HP ini sudah dipakai akun lain.',
+            'no_hp.unique'       => 'Nomor HP ini sudah dipakai akun lain. Satu nomor HP hanya untuk satu akun karena dipakai untuk login.',
             'email.email'        => 'Format email tidak valid.',
             'email.unique'       => 'Email ini sudah dipakai akun lain.',
             'password.required'  => 'Kata sandi awal wajib diisi.',

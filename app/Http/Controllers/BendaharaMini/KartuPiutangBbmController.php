@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\BendaharaMini;
 
+use App\Http\Controllers\Concerns\DaftarTerfilter;
 use App\Http\Controllers\Controller;
 use App\Services\PinjamanCalculatorService;
 use Illuminate\Http\Request;
@@ -9,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 
 class KartuPiutangBbmController extends Controller
 {
+    use DaftarTerfilter;
+
     /**
      * Tampilkan Kartu Piutang Digital per peminjam.
      */
@@ -54,9 +57,10 @@ class KartuPiutangBbmController extends Controller
     public function kartu(Request $request)
     {
         $selectedPinjamanId = $request->query('pinjaman_id');
+        $q = trim((string) $request->query('q', ''));
 
-        // Daftar peminjam aktif & riwayat pinjaman untuk galeri kartu
-        $daftarPeminjam = DB::table('tblPINJAMAN as pin')
+        // Daftar peminjam aktif & riwayat pinjaman untuk galeri kartu (dipaginasi; ratusan debitur)
+        $dasar = DB::table('tblPINJAMAN as pin')
             ->join('tblNASABAH as n', 'pin.nasabah_id', '=', 'n.nasabah_id')
             ->leftJoin('tblREKENING as rek', 'n.nasabah_id', '=', 'rek.nasabah_id')
             ->select(
@@ -72,9 +76,36 @@ class KartuPiutangBbmController extends Controller
                 'rek.no_rek'
             )
             ->whereIn('pin.status_pinjaman', ['cair', 'lunas'])
+            ->when($q !== '', fn ($w) => $this->filterCari($w, $q, ['n.nama_nasabah', 'n.kelas_unit', 'rek.no_rek'], 'pin.pinjaman_id'));
+
+        $saringan = [
+            'aktif' => fn ($w) => $w->where('pin.status_pinjaman', 'cair'),
+            'lunas' => fn ($w) => $w->where('pin.status_pinjaman', 'lunas'),
+            'semua' => fn ($w) => $w,
+        ];
+        $jumlahTab = collect($saringan)->map(fn ($f) => $f(clone $dasar)->count());
+        $tab = $this->tabAktif($request, array_keys($saringan), $jumlahTab, 'aktif');
+        $tabs = [
+            'aktif' => ['label' => 'Aktif Berjalan', 'jumlah' => $jumlahTab['aktif'], 'nada' => 'amber'],
+            'lunas' => ['label' => 'Lunas', 'jumlah' => $jumlahTab['lunas'], 'nada' => 'green'],
+            'semua' => ['label' => 'Semua', 'jumlah' => $jumlahTab['semua']],
+        ];
+
+        $daftarPeminjam = $saringan[$tab](clone $dasar)
             ->orderByRaw("CASE WHEN pin.status_pinjaman = 'cair' THEN 1 ELSE 2 END")
             ->orderBy('n.nama_nasabah')
-            ->get();
+            ->orderBy('pin.pinjaman_id')
+            ->paginate(10, ['*'], 'hal_kartu')
+            ->withQueryString();
+
+        // Pilihan "Ganti Debitur" di halaman detail: cukup ID & nama (ringan walau ratusan)
+        $daftarPilihan = $selectedPinjamanId
+            ? DB::table('tblPINJAMAN as pin')
+                ->join('tblNASABAH as n', 'pin.nasabah_id', '=', 'n.nasabah_id')
+                ->whereIn('pin.status_pinjaman', ['cair', 'lunas'])
+                ->orderBy('n.nama_nasabah')
+                ->get(['pin.pinjaman_id', 'n.nama_nasabah'])
+            : collect();
 
         foreach ($daftarPeminjam as $dp) {
             $jadwals = DB::table('tblJADWAL_ANGSURAN')
@@ -146,6 +177,10 @@ class KartuPiutangBbmController extends Controller
 
         return view('bendahara_mini.kartu.index', compact(
             'daftarPeminjam',
+            'daftarPilihan',
+            'tabs',
+            'tab',
+            'q',
             'pinjamanTerpilih',
             'jadwalList',
             'riwayatAngsuran',

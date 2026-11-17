@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\Manager;
 
+use App\Http\Controllers\Concerns\TanganiKesalahanInput;
 use App\Http\Controllers\Controller;
 use App\Services\TutupPeriodeService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
+use Throwable;
 
 class TutupPeriodeController extends Controller
 {
+    use TanganiKesalahanInput;
+
     public function __construct(private TutupPeriodeService $service)
     {
     }
@@ -56,18 +60,22 @@ class TutupPeriodeController extends Controller
             'konfirmasi.accepted' => 'Centang pernyataan bahwa seluruh transaksi bulan ini sudah diperiksa sebelum menutup periode.',
         ]);
 
-        $awalBulan = Carbon::create($data['tahun'], $data['bulan'], 1);
-
         try {
-            $this->service->tutup($awalBulan, $data['catatan'] ?? null);
-        } catch (RuntimeException $e) {
-            return $this->kembali($awalBulan)->with('error', $e->getMessage());
-        }
+            $awalBulan = Carbon::create($data['tahun'], $data['bulan'], 1);
 
-        return $this->kembali($awalBulan)->with(
-            'success',
-            'Periode ' . $awalBulan->translatedFormat('F Y') . ' berhasil ditutup. Saldo kas dibekukan dan transaksi bertanggal di bulan ini kini terkunci.'
-        );
+            try {
+                $this->service->tutup($awalBulan, $data['catatan'] ?? null);
+            } catch (RuntimeException $e) {
+                return $this->kembali($awalBulan)->with('error', $e->getMessage());
+            }
+
+            return $this->kembali($awalBulan)->with(
+                'success',
+                'Periode ' . $awalBulan->translatedFormat('F Y') . ' berhasil ditutup. Saldo kas dibekukan dan transaksi bertanggal di bulan ini kini terkunci.'
+            );
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'menutup periode');
+        }
     }
 
     /**
@@ -84,18 +92,22 @@ class TutupPeriodeController extends Controller
             'alasan.min'      => 'Alasan minimal 10 karakter agar jelas untuk keperluan audit.',
         ]);
 
-        $awalBulan = Carbon::create($data['tahun'], $data['bulan'], 1);
-
         try {
-            $this->service->bukaKembali($awalBulan, trim($data['alasan']));
-        } catch (RuntimeException $e) {
-            return $this->kembali($awalBulan)->with('error', $e->getMessage());
-        }
+            $awalBulan = Carbon::create($data['tahun'], $data['bulan'], 1);
 
-        return $this->kembali($awalBulan)->with(
-            'success',
-            'Periode ' . $awalBulan->translatedFormat('F Y') . ' dibuka kembali. Jangan lupa menutupnya lagi setelah koreksi selesai.'
-        );
+            try {
+                $this->service->bukaKembali($awalBulan, trim($data['alasan']));
+            } catch (RuntimeException $e) {
+                return $this->kembali($awalBulan)->with('error', $e->getMessage());
+            }
+
+            return $this->kembali($awalBulan)->with(
+                'success',
+                'Periode ' . $awalBulan->translatedFormat('F Y') . ' dibuka kembali. Jangan lupa menutupnya lagi setelah koreksi selesai.'
+            );
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'membuka kembali periode');
+        }
     }
 
     private function periodeDariRequest(Request $request): ?Carbon

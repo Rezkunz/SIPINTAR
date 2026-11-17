@@ -11,7 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     {{-- Clean Auth Stylesheet matching Image 3 --}}
-    <link rel="stylesheet" href="{{ asset('css/auth.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('css/auth.css') }}?v={{ @filemtime(public_path('css/auth.css')) ?: 0 }}">
+    @include('partials.pwa_head')
 </head>
 <body class="auth-page-body">
 
@@ -99,16 +100,19 @@
                 <form method="POST" action="{{ route('login') }}" novalidate autocomplete="off">
                     @csrf
 
-                    {{-- 1. Input Nomor Telepon / WhatsApp / NISN --}}
+                    {{-- 1. Input Nomor HP (satu-satunya identitas login) --}}
                     <div class="auth-form-group">
                         <label class="auth-form-label" for="login">Nomor Telepon / WhatsApp</label>
                         <div class="auth-input-wrapper">
                             <input
                                 id="login"
                                 name="login"
-                                type="text"
+                                type="tel"
+                                inputmode="tel"
+                                maxlength="18"
                                 class="auth-form-input @error('login') has-error @enderror"
                                 placeholder="Contoh: 081234567890"
+                                oninput="this.value = this.value.replace(/[^0-9+\s-]/g, '')"
                                 value="{{ old('login') }}"
                                 required
                                 autofocus
@@ -179,6 +183,11 @@
                         Belum memiliki rekening nasabah?
                         <a href="{{ route('register') }}" onclick="event.preventDefault(); smoothNavigate('{{ route('register') }}', 'forward')">Buka Rekening</a>
                     </div>
+
+                    <button type="button" class="auth-btn-install" id="btn-pasang-aplikasi" data-pwa-install hidden>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 7v8"/><polyline points="8.5 11.5 12 15 15.5 11.5"/></svg>
+                        Pasang Aplikasi di Perangkat Ini
+                    </button>
                 </form>
             </div>
         </main>
@@ -376,7 +385,7 @@
 
         (function() {
             @if ($errors->any() || session('error'))
-                const errorMsg = @json(session('error') ?? $errors->first() ?? 'Nomor telepon, identitas, atau kata sandi tidak sesuai.');
+                const errorMsg = @json(session('error') ?? $errors->first() ?? 'Nomor HP atau kata sandi tidak sesuai.');
                 function fireLoginError() {
                     showErrorPopup(errorMsg, 'GAGAL MASUK', 'COBA LAGI');
                 }

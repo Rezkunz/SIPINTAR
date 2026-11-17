@@ -71,7 +71,7 @@
                 @elseif ($isUbah)
                     Kosongkan kata sandi bila tidak ingin menggantinya.
                 @else
-                    Kode pegawai dibuat otomatis bila dikosongkan (format PRD: TLR-001, BND-001, BBM-001, MGR-001). Siswa Praktik login dengan NISN.
+                    Kode pegawai dibuat otomatis bila dikosongkan (format PRD: TLR-001, BND-001, BBM-001, MGR-001). Semua akun login memakai nomor HP, jadi pastikan nomor HP benar dan belum dipakai akun lain.
                 @endif
             </div>
         </div>

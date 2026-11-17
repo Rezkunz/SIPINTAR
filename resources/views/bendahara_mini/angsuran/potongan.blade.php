@@ -565,10 +565,16 @@
         </div>
 
         @if ($calonPotongan->isNotEmpty())
-            <div style="padding:18px 24px; border-top:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
-                <div>
+            {{-- Bilah aksi: di HP menempel di bawah layar (zona ibu jari) --}}
+            <div class="bar-aksi-lengket" style="padding:18px 24px; border-top:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+                <label class="bar-aksi-pilih-semua">
+                    <input type="checkbox" id="checkAllBar" onclick="toggleSelectAll(this)">
+                    Pilih semua
+                </label>
+                <div class="bar-aksi-ringkasan">
                     <span style="font-size:13px; color:var(--text-muted);">Total Rencana Potongan Terpilih:</span>
                     <span style="font-size:18px; font-weight:800; color:#166534; margin-left:8px;" id="dispTotalRencana">Rp 0</span>
+                    <span class="bar-aksi-jumlah" id="dispJumlahTerpilih"></span>
                 </div>
                 <button type="submit" class="btn-ui btn-ui-primary" onclick="return confirm('Terbitkan paket rencana potongan ini dan teruskan ke Bendahara Sekolah?')">
                     Terbitkan Rencana ke Bendahara Sekolah
@@ -945,6 +951,20 @@ function toggleSelectAll(master) {
     recalculateTotal();
 }
 
+// Centang "pilih semua" (judul tabel & bilah bawah) mengikuti kondisi centang tiap baris
+function sinkronPilihSemua() {
+    const semua = document.querySelectorAll('.item-checkbox');
+    const tercentang = document.querySelectorAll('.item-checkbox:checked').length;
+    ['checkAll', 'checkAllBar'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.checked = semua.length > 0 && tercentang === semua.length;
+        el.indeterminate = tercentang > 0 && tercentang < semua.length;
+    });
+    const jumlah = document.getElementById('dispJumlahTerpilih');
+    if (jumlah) jumlah.innerText = tercentang + ' dari ' + semua.length + ' tagihan';
+}
+
 function recalculateTotal() {
     const checkboxes = document.querySelectorAll('.item-checkbox:checked');
     let total = 0;
@@ -955,6 +975,7 @@ function recalculateTotal() {
     if (dispEl) {
         dispEl.innerText = formatRupiah(total);
     }
+    sinkronPilihSemua();
 }
 
 document.addEventListener('DOMContentLoaded', function() {

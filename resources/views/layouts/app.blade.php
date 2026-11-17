@@ -11,25 +11,40 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     {{-- Direct Core Stylesheets with Cache Busting --}}
-    <link rel="stylesheet" href="{{ asset('css/core/variables.css') }}?v={{ time() }}">
-    <link rel="stylesheet" href="{{ asset('css/core/layout.css') }}?v={{ time() }}">
-    <link rel="stylesheet" href="{{ asset('css/core/components.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('css/core/variables.css') }}?v={{ @filemtime(public_path('css/core/variables.css')) ?: 0 }}">
+    <link rel="stylesheet" href="{{ asset('css/core/layout.css') }}?v={{ @filemtime(public_path('css/core/layout.css')) ?: 0 }}">
+    <link rel="stylesheet" href="{{ asset('css/core/components.css') }}?v={{ @filemtime(public_path('css/core/components.css')) ?: 0 }}">
 
     {{-- Role Specific Stylesheet Auto-Loader --}}
     @if (auth()->check() && file_exists(public_path('css/roles/' . auth()->user()->role . '.css')))
-        <link rel="stylesheet" href="{{ asset('css/roles/' . auth()->user()->role . '.css') }}?v={{ time() }}">
+        <link rel="stylesheet" href="{{ asset('css/roles/' . auth()->user()->role . '.css') }}?v={{ @filemtime(public_path('css/roles/' . auth()->user()->role . '.css')) ?: 0 }}">
     @endif
 
     @stack('styles')
     @yield('head')
 
+    {{-- Penyesuaian HP / tablet / desktop: dimuat terakhir agar menang atas CSS peran & halaman --}}
+    <link rel="stylesheet" href="{{ asset('css/core/responsive.css') }}?v={{ @filemtime(public_path('css/core/responsive.css')) ?: 0 }}">
+    <script src="{{ asset('js/responsive-table.js') }}?v={{ @filemtime(public_path('js/responsive-table.js')) ?: 0 }}" defer></script>
+
     <script>
+        // Mode sidebar ringkas (ikon saja) hanya untuk layar lebar. Di tablet/HP sidebar berupa menu geser penuh.
+        window.terapkanSidebarRingkas = function () {
+            let ringkas = false;
+            try {
+                ringkas = localStorage.getItem('sipintar_sidebar_collapsed') === '1'
+                    && window.matchMedia('(min-width: 961px)').matches;
+            } catch (e) {}
+            document.documentElement.classList.toggle('sidebar-collapsed', ringkas);
+            if (document.body) document.body.classList.toggle('sidebar-collapsed', ringkas);
+        };
+        window.terapkanSidebarRingkas();
         try {
-            if (localStorage.getItem('sipintar_sidebar_collapsed') === '1') {
-                document.documentElement.classList.add('sidebar-collapsed');
-            }
-        } catch(e) {}
+            const mq = window.matchMedia('(min-width: 961px)');
+            (mq.addEventListener ? mq.addEventListener.bind(mq, 'change') : mq.addListener.bind(mq))(window.terapkanSidebarRingkas);
+        } catch (e) {}
     </script>
+    @include('partials.pwa_head')
 </head>
 <body>
 
@@ -291,8 +306,10 @@
     {{-- ── TOPBAR (Swiss Modernism Precision) ── --}}
     <header class="app-topbar">
         <div class="topbar-left">
-            <button class="btn-toggle-menu" onclick="toggleSidebarMenu()" aria-label="Buka menu navigasi">
-                Menu
+            <button type="button" class="btn-toggle-menu" onclick="toggleSidebarMenu()" aria-label="Buka menu navigasi" title="Menu">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+                    <line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>
+                </svg>
             </button>
             <div class="topbar-breadcrumbs">
                 <span>SIPINTAR</span>
@@ -468,6 +485,11 @@
                     <button type="button" class="dropdown-item" onclick="openProfileBanner()">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         <span>Edit Profil Saya</span>
+                    </button>
+
+                    <button type="button" class="dropdown-item" id="btn-pasang-aplikasi" data-pwa-install hidden>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 7v8"/><polyline points="8.5 11.5 12 15 15.5 11.5"/></svg>
+                        <span>Pasang Aplikasi SIPINTAR</span>
                     </button>
 
                     <div class="dropdown-divider"></div>
@@ -1042,10 +1064,7 @@
 
         // Sinkronisasi kelas body & otomatisasikan tooltip native untuk nav-link saat collapsed
         document.addEventListener('DOMContentLoaded', function() {
-            if (localStorage.getItem('sipintar_sidebar_collapsed') === '1') {
-                document.body.classList.add('sidebar-collapsed');
-                document.documentElement.classList.add('sidebar-collapsed');
-            }
+            window.terapkanSidebarRingkas();
 
             document.querySelectorAll('.nav-link').forEach(function(link) {
                 const label = link.querySelector('span')?.textContent?.trim();
@@ -1386,16 +1405,36 @@
 
     let chatbotOpen = false;
 
+    // Tinggi area yang benar-benar terlihat (berkurang saat keyboard HP muncul, termasuk Safari iOS)
+    (function () {
+        const vv = window.visualViewport;
+        if (!vv) return;
+        const atur = () => {
+            document.documentElement.style.setProperty('--vv-tinggi', vv.height + 'px');
+            document.documentElement.style.setProperty('--vv-atas', vv.offsetTop + 'px');
+        };
+        vv.addEventListener('resize', atur);
+        vv.addEventListener('scroll', atur);
+        atur();
+    })();
+
     function toggleChatbot() {
         chatbotOpen = !chatbotOpen;
         const win = document.getElementById('chatbot-window');
         const iconOpen = document.getElementById('chatbot-icon-open');
         const iconClose = document.getElementById('chatbot-icon-close');
+        const layarHp = window.matchMedia('(max-width: 720px)').matches;
+        document.getElementById('chatbot-container').classList.toggle('chat-terbuka', chatbotOpen);
+        // Di HP chatbot tampil layar penuh: halaman di belakangnya dikunci agar tidak ikut tergulir
+        document.documentElement.classList.toggle('chatbot-layar-penuh', chatbotOpen && layarHp);
         if (chatbotOpen) {
             win.classList.add('is-open');
             iconOpen.style.display = 'none';
             iconClose.style.display = 'flex';
-            document.getElementById('chatbot-input').focus();
+            // Di perangkat sentuh keyboard tidak langsung dimunculkan; pengguna bisa memilih topik dulu
+            if (!window.matchMedia('(pointer: coarse)').matches) {
+                document.getElementById('chatbot-input').focus();
+            }
         } else {
             win.classList.remove('is-open');
             iconOpen.style.display = 'flex';
