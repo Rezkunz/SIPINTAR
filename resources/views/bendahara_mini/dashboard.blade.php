@@ -5,15 +5,6 @@
 
 @section('content')
 
-@push('styles')
-<style>
-    /* Tombol aksi banner turun ke baris berikutnya di layar sempit (NFR-06: tanpa gulir horizontal) */
-    @media (max-width: 520px) {
-        .dashboard-welcome-banner .welcome-actions { flex-wrap: wrap; }
-    }
-</style>
-@endpush
-
 {{-- ── HERO GREETING BANNER ── --}}
 <div class="dashboard-welcome-banner">
     <div class="welcome-content">

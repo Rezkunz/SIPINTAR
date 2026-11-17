@@ -35,16 +35,9 @@ class TellerVerificationController extends Controller
         return redirect()->route('tabungan.verifikasi')->with('success', 'Draft berhasil disetujui dan transaksi telah dicatat.');
     }
 
-    public function reject(Request $request, Draft $draft, TellerTransactionService $service): RedirectResponse
+    public function reject(Draft $draft, TellerTransactionService $service): RedirectResponse
     {
-        $data = $request->validate([
-            'alasan_penolakan' => ['required', 'string', 'max:500'],
-        ], [
-            'alasan_penolakan.required' => 'Alasan penolakan wajib diisi.',
-            'alasan_penolakan.max'      => 'Alasan penolakan maksimal 500 karakter.',
-        ]);
-
-        $service->rejectDraft($draft->draft_id, (int) auth()->id(), $data['alasan_penolakan']);
+        $service->rejectDraft($draft->draft_id, (int) auth()->id());
 
         return redirect()->route('tabungan.verifikasi')->with('success', 'Draft berhasil ditolak.');
     }

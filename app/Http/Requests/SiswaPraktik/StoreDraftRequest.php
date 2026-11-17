@@ -20,15 +20,10 @@ class StoreDraftRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         if ($this->has('nominal') && is_string($this->nominal)) {
-            // Hapus prefix Rp, spasi, dan titik pemisah ribuan; tanda minus DIPERTAHANKAN
-            // agar nominal negatif ditolak aturan min (bukan diam-diam menjadi positif)
-            $cleanNominal = preg_replace('/[^\d\-]/', '', $this->nominal);
+            // Hapus prefix Rp, spasi, dan titik pemisah ribuan
+            $cleanNominal = preg_replace('/[^\d]/', '', $this->nominal);
             $this->merge([
-                'nominal' => match (true) {
-                    $cleanNominal === ''                         => null,
-                    (bool) preg_match('/^-?\d+$/', $cleanNominal) => (float) $cleanNominal,
-                    default                                      => $this->nominal, // ditolak aturan numeric
-                },
+                'nominal' => $cleanNominal !== '' ? (float) $cleanNominal : 0,
             ]);
         }
     }

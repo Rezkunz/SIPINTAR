@@ -23,14 +23,6 @@ abstract class DuskTestCase extends BaseTestCase
     }
 
     /**
-     * Folder tempat Chrome menyimpan file hasil unduhan selama pengujian.
-     */
-    public static function folderUnduhan(): string
-    {
-        return str_replace('/', DIRECTORY_SEPARATOR, __DIR__ . '/Browser/downloads');
-    }
-
-    /**
      * Create the RemoteWebDriver instance.
      */
     protected function driver(): RemoteWebDriver
@@ -50,12 +42,7 @@ abstract class DuskTestCase extends BaseTestCase
             ]);
         })->all());
 
-        // Folder unduhan untuk menguji ekspor PDF/Excel (TC-14-08) + matikan Password Manager Chrome
         $options->setExperimentalOption('prefs', [
-            'download.default_directory' => static::folderUnduhan(),
-            'download.prompt_for_download' => false,
-            'download.directory_upgrade' => true,
-            'safebrowsing.enabled' => true,
             'credentials_enable_service' => false,
             'profile.password_manager_enabled' => false,
             'profile.password_manager_leak_detection' => false,

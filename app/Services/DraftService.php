@@ -57,21 +57,7 @@ class DraftService
             ]);
         }
 
-        // 4. Draf penarikan tidak boleh melebihi saldo (aturan sisa saldo minimum sama dengan Teller)
-        if ($jenisSlug === 'penarikan') {
-            $sisaMinimum = TellerTransactionService::MINIMUM_REMAINING_BALANCE;
-            $bisaDitarik = max(0, (float) $rekening->saldo - $sisaMinimum);
-
-            if ($nominal > $bisaDitarik) {
-                throw ValidationException::withMessages([
-                    'nominal' => 'Nominal penarikan melebihi saldo yang dapat ditarik (maksimal Rp '
-                        . number_format($bisaDitarik, 0, ',', '.') . '; saldo harus menyisakan minimal Rp '
-                        . number_format($sisaMinimum, 0, ',', '.') . ').',
-                ]);
-            }
-        }
-
-        // 5. Buat draft transaksi (saldo rekening TIDAK diubah)
+        // 4. Buat draft transaksi (saldo rekening TIDAK diubah)
         $draft = Draft::create([
             'rekening_id'        => $rekening->rekening_id,
             'jenis_transaksi_id' => $jenisModel->jenis_transaksi_id,

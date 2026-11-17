@@ -38,14 +38,6 @@ class TellerCorrectionService
                 throw ValidationException::withMessages(['transaksi' => 'Transaksi ini sudah pernah dikoreksi.']);
             }
 
-            // Transaksi pada periode yang sudah ditutup Manajer tidak boleh dikoreksi
-            $periodeAsli = DB::table('tblPERIODE')->where('periode_id', $original->periode_id)->first();
-            if ($periodeAsli && $periodeAsli->status_periode === 'tutup') {
-                throw ValidationException::withMessages([
-                    'transaksi' => self::pesanPeriodeTerkunci((int) $periodeAsli->bulan, (int) $periodeAsli->tahun),
-                ]);
-            }
-
             if ($correctedNominal <= 0) {
                 throw ValidationException::withMessages(['nominal' => 'Nominal koreksi harus lebih besar dari 0.']);
             }
@@ -70,13 +62,7 @@ class TellerCorrectionService
                 throw ValidationException::withMessages(['transaksi' => 'Transaksi tidak memiliki nominal yang dapat dikoreksi.']);
             }
 
-            try {
-                $periode = PeriodeLockService::assertPeriodeTerbuka(now());
-            } catch (\RuntimeException $e) {
-                throw ValidationException::withMessages([
-                    'transaksi' => self::pesanPeriodeTerkunci(now()->month, now()->year),
-                ]);
-            }
+            $periode = PeriodeLockService::assertPeriodeTerbuka(now());
             $originalIsCash = $original->jenis_transaksi_id !== $this->interestTransactionTypeId();
             $correctedIsCash = $correctedType->nama_jenis !== 'jasa_tabungan';
             $kas = null;
@@ -187,11 +173,6 @@ class TellerCorrectionService
 
             return $correctedId;
         });
-    }
-
-    public static function pesanPeriodeTerkunci(int $bulan, int $tahun): string
-    {
-        return "Koreksi ditolak: periode {$bulan}/{$tahun} sudah ditutup Manajer dan terkunci.";
     }
 
     private function recordCashMutation(int $kasId, int $periodeId, int $tellerId, int $transaksiId, float $nominal, string $arah, string $uraian): void

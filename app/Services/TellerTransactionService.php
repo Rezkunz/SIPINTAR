@@ -9,7 +9,7 @@ use Illuminate\Validation\ValidationException;
 
 class TellerTransactionService
 {
-    public const MINIMUM_REMAINING_BALANCE = 10000;
+    private const MINIMUM_REMAINING_BALANCE = 10000;
 
     public function approveDraft(int $draftId, int $tellerId): array
     {
@@ -43,7 +43,7 @@ class TellerTransactionService
                 ]);
             }
 
-            $periode = $this->periodeTerbuka('draft');
+            $periode = PeriodeLockService::assertPeriodeTerbuka(now());
             $nominal = (float) $draft->nominal;
             $kas = $this->lockKas();
             $saldoAkhir = $this->calculateBalance($jenis->nama_jenis, (float) $rekening->saldo, $nominal, (float) $kas->saldo);
@@ -77,16 +77,9 @@ class TellerTransactionService
         });
     }
 
-    public function rejectDraft(int $draftId, int $tellerId, string $alasan): void
+    public function rejectDraft(int $draftId, int $tellerId): void
     {
-        $alasan = trim($alasan);
-        if ($alasan === '') {
-            throw ValidationException::withMessages([
-                'alasan_penolakan' => 'Alasan penolakan wajib diisi.',
-            ]);
-        }
-
-        DB::transaction(function () use ($draftId, $tellerId, $alasan) {
+        DB::transaction(function () use ($draftId, $tellerId) {
             $draft = DB::table('tblDRAFT')->where('draft_id', $draftId)->lockForUpdate()->first();
 
             if (!$draft || $draft->status_verifikasi !== 'pending') {
@@ -98,7 +91,6 @@ class TellerTransactionService
             DB::table('tblDRAFT')->where('draft_id', $draftId)->update([
                 'status_verifikasi' => 'ditolak',
                 'teller_id' => $tellerId,
-                'alasan_penolakan' => $alasan,
             ]);
         });
     }
@@ -124,7 +116,7 @@ class TellerTransactionService
                 ]);
             }
 
-            $periode = $this->periodeTerbuka('nominal');
+            $periode = PeriodeLockService::assertPeriodeTerbuka(now());
             $kas = $this->lockKas();
             $saldoAkhir = $this->calculateBalance($jenis, (float) $rekening->saldo, $nominal, (float) $kas->saldo);
 
@@ -150,20 +142,6 @@ class TellerTransactionService
 
             return ['transaksi_id' => $transaksiId, 'bukti_id' => $receiptId];
         });
-    }
-
-    /**
-     * Periode bulan berjalan harus terbuka; bila sudah ditutup Manajer, tampilkan pesan pada form.
-     */
-    private function periodeTerbuka(string $field): object
-    {
-        try {
-            return PeriodeLockService::assertPeriodeTerbuka(now());
-        } catch (\RuntimeException $e) {
-            throw ValidationException::withMessages([
-                $field => 'Transaksi ditolak: periode ' . now()->month . '/' . now()->year . ' sudah ditutup Manajer dan terkunci.',
-            ]);
-        }
     }
 
     private function lockKas(): object
