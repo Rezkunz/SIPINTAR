@@ -1,0 +1,58 @@
+# Menjaga riwayat branch main tetap bersih.
+#
+# Riwayat repo pernah ditulis ulang (18 Nov 2026) untuk menghapus commit bc4189c yang membawa trailer
+# "Co-Authored-By: Claude". Anggota tim yang masih menyimpan riwayat lama lalu melakukan `git pull` biasa
+# akan membawa commit itu kembali. Pemeriksaan ini menolak PR / push ke main yang membawanya.
+#
+# Cara memperbaiki bila gagal (di laptop yang bersangkutan):
+#   git fetch origin
+#   git checkout <branch-anda>
+#   git reset --hard origin/<branch-anda>     # atau: buat branch baru dari origin/main lalu cherry-pick commit baru
+name: Cek Riwayat Bersih
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  cek-riwayat:
+    name: cek-riwayat
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ambil seluruh riwayat
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tolak riwayat lama / trailer Claude
+        run: |
+          gagal=0
+
+          # Commit lama yang sudah dihapus dari riwayat resmi
+          if git cat-file -e bc4189c58ffc0173fd3cb850c407ddafaaa54097^{commit} 2>/dev/null \
+             && git merge-base --is-ancestor bc4189c58ffc0173fd3cb850c407ddafaaa54097 HEAD; then
+            echo "::error::Riwayat ini masih memuat commit lama bc4189c (riwayat sebelum ditulis ulang)."
+            gagal=1
+          fi
+
+          # Trailer co-author Claude / Anthropic di commit mana pun
+          temuan=$(git log HEAD -i --format='%h %an | %s' \
+                    --grep='Co-Authored-By: Claude' --grep='noreply@anthropic.com')
+          if [ -n "$temuan" ]; then
+            echo "::error::Ditemukan commit dengan trailer Co-Authored-By Claude:"
+            echo "$temuan"
+            gagal=1
+          fi
+
+          if [ "$gagal" = 1 ]; then
+            echo ""
+            echo "Branch ini dibuat dari riwayat LAMA. Jangan di-merge."
+            echo "Perbaiki: git fetch origin && git reset --hard origin/<branch>, lalu ulangi perubahan Anda."
+            exit 1
+          fi
+          echo "Riwayat bersih."
