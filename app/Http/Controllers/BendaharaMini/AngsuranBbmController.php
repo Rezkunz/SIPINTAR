@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\BendaharaMini;
 
+use App\Http\Controllers\Concerns\DaftarTerfilter;
+use App\Http\Controllers\Concerns\TanganiKesalahanInput;
 use App\Http\Controllers\Controller;
 use App\Services\AuditLogService;
 use App\Services\DataTunjanganService;
@@ -11,29 +13,59 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Throwable;
 
 class AngsuranBbmController extends Controller
 {
+    use DaftarTerfilter;
+    use TanganiKesalahanInput;
+
     /**
      * Halaman penerimaan angsuran pembayaran langsung (tunai di loket Bank Mini).
      * Dikelompokkan per paket pinjaman aktif pegawai agar terstruktur dan mudah dipahami.
      */
-    public function catatLangsung()
+    public function catatLangsung(Request $request)
     {
-        // Ambil seluruh pinjaman aktif yang sedang berjalan (status cair)
-        $pinjamanAktifList = DB::table('tblPINJAMAN as pin')
-            ->join('tblNASABAH as n', 'pin.nasabah_id', '=', 'n.nasabah_id')
-            ->where('pin.status_pinjaman', 'cair')
-            ->select(
-                'pin.*',
-                'n.nama_nasabah',
-                'n.kelas_unit',
-                'n.no_hp'
-            )
-            ->orderBy('pin.pinjaman_id', 'asc')
-            ->get();
+        // Tagihan berikutnya (jatuh tempo paling awal yang belum dibayar) per pinjaman
+        $tagihanBerikut = DB::table('tblJADWAL_ANGSURAN')
+            ->where('status_bayar', 'belum')
+            ->groupBy('pinjaman_id')
+            ->select('pinjaman_id', DB::raw('MIN(jatuh_tempo) as jt_berikut'));
 
-        // Hubungkan setiap paket pinjaman dengan jadwal angsuran dan tagihan terdekat
+        $q = trim((string) $request->query('q', ''));
+        $hariIni = now()->toDateString();
+        $akhirBulan = now()->endOfMonth()->toDateString();
+
+        $dasar = DB::table('tblPINJAMAN as pin')
+            ->join('tblNASABAH as n', 'pin.nasabah_id', '=', 'n.nasabah_id')
+            ->leftJoinSub($tagihanBerikut, 'nx', 'nx.pinjaman_id', '=', 'pin.pinjaman_id')
+            ->where('pin.status_pinjaman', 'cair')
+            ->when($q !== '', fn ($w) => $this->filterCari($w, $q, ['n.nama_nasabah', 'n.kelas_unit'], 'pin.pinjaman_id'));
+
+        // Tab status: default "Perlu Dibayar" (jatuh tempo s.d. akhir bulan ini, termasuk yang terlambat)
+        $saringan = [
+            'perlu'     => fn ($w) => $w->where('nx.jt_berikut', '<=', $akhirBulan),
+            'terlambat' => fn ($w) => $w->where('nx.jt_berikut', '<', $hariIni),
+            'semua'     => fn ($w) => $w,
+        ];
+        $jumlahTab = collect($saringan)->map(fn ($f) => $f(clone $dasar)->count());
+        $tab = $this->tabAktif($request, array_keys($saringan), $jumlahTab, 'perlu');
+
+        $tabs = [
+            'perlu'     => ['label' => 'Perlu Dibayar', 'jumlah' => $jumlahTab['perlu'], 'nada' => 'amber'],
+            'terlambat' => ['label' => 'Terlambat', 'jumlah' => $jumlahTab['terlambat'], 'nada' => 'red'],
+            'semua'     => ['label' => 'Semua Berjalan', 'jumlah' => $jumlahTab['semua']],
+        ];
+
+        $pinjamanAktifList = $saringan[$tab](clone $dasar)
+            ->select('pin.*', 'n.nama_nasabah', 'n.kelas_unit', 'n.no_hp', 'nx.jt_berikut')
+            ->orderByRaw('nx.jt_berikut IS NULL')
+            ->orderBy('nx.jt_berikut')
+            ->orderBy('pin.pinjaman_id')
+            ->paginate(10, ['*'], 'hal_paket')
+            ->withQueryString();
+
+        // Hubungkan setiap paket pinjaman (halaman ini saja) dengan jadwal angsuran dan tagihan terdekat
         foreach ($pinjamanAktifList as $p) {
             $jadwals = DB::table('tblJADWAL_ANGSURAN')
                 ->where('pinjaman_id', $p->pinjaman_id)
@@ -65,7 +97,7 @@ class AngsuranBbmController extends Controller
             ->orderByDesc('ang.angsuran_id')
             ->paginate(10);
 
-        return view('bendahara_mini.angsuran.langsung', compact('pinjamanAktifList', 'riwayatLangsung'));
+        return view('bendahara_mini.angsuran.langsung', compact('pinjamanAktifList', 'riwayatLangsung', 'tabs', 'tab', 'q'));
     }
 
     /**
@@ -84,125 +116,129 @@ class AngsuranBbmController extends Controller
             'bayar_pokok.min'             => 'Nominal pokok bayar minimal Rp 1.',
         ]);
 
-        $jadwal = DB::table('tblJADWAL_ANGSURAN')->where('jadwal_angsuran_id', $request->jadwal_angsuran_id)->first();
-        if (!$jadwal || $jadwal->status_bayar === 'lunas') {
-            return back()->with('error', 'Tagihan angsuran ini sudah lunas atau tidak valid.');
-        }
-
-        // Cegah pembayaran ganda: angsuran yang sedang diproses dalam paket potongan tunjangan
-        // tidak boleh dibayar langsung. Bila hasil potongannya "gagal", angsuran boleh dibayar langsung.
-        $paketAktif = $this->paketPotonganAktif((int) $jadwal->jadwal_angsuran_id);
-        if ($paketAktif) {
-            return back()->with('error', "Angsuran ke-{$jadwal->angsuran_ke} sedang diproses dalam paket potongan tunjangan #RP-"
-                . str_pad($paketAktif->rencana_potongan_id, 4, '0', STR_PAD_LEFT)
-                . '. Tunggu hasil potongan dari Bendahara Sekolah; bila potongan gagal, angsuran dapat dibayar langsung.');
-        }
-
-        // Validasi: pokok yang dibayar tidak boleh melebihi sisa piutang (angsuran terkoreksi tidak dihitung)
-        $nominalPinjaman = (float) DB::table('tblPINJAMAN')->where('pinjaman_id', $jadwal->pinjaman_id)->value('nominal_pinjaman');
-        $pokokTerbayar = (float) DB::table('tblANGSURAN as ang')
-            ->join('tblJADWAL_ANGSURAN as ja', 'ang.jadwal_angsuran_id', '=', 'ja.jadwal_angsuran_id')
-            ->leftJoin('tblKOREKSI_ANGSURAN as kor', 'ang.angsuran_id', '=', 'kor.angsuran_id')
-            ->where('ja.pinjaman_id', $jadwal->pinjaman_id)
-            ->whereNull('kor.koreksi_id')
-            ->sum('ang.bayar_pokok');
-        $sisaPiutang = PinjamanCalculatorService::hitungSisaPokok($nominalPinjaman, $pokokTerbayar);
-
-        if ((float) $request->bayar_pokok > $sisaPiutang) {
-            return back()->with('error', 'Pembayaran ditolak: nominal pokok Rp ' . number_format((float) $request->bayar_pokok, 0, ',', '.')
-                . ' melebihi sisa piutang Rp ' . number_format($sisaPiutang, 0, ',', '.') . '.');
-        }
-
-        // Validasi urutan angsuran: Tidak boleh melompati angsuran sebelumnya yang belum lunas
-        $angsuranSebelumnyaBelumLunas = DB::table('tblJADWAL_ANGSURAN')
-            ->where('pinjaman_id', $jadwal->pinjaman_id)
-            ->where('angsuran_ke', '<', $jadwal->angsuran_ke)
-            ->where('status_bayar', '!=', 'lunas')
-            ->orderBy('angsuran_ke', 'asc')
-            ->first();
-
-        if ($angsuranSebelumnyaBelumLunas) {
-            return back()->with('error', "Pembayaran harus berurutan. Angsuran ke-{$angsuranSebelumnyaBelumLunas->angsuran_ke} belum dilunasi, silakan selesaikan tagihan sebelumnya terlebih dahulu.");
-        }
-
-        // Cek penguncian periode
         try {
-            $periode = PeriodeLockService::assertPeriodeTerbuka($request->tgl_bayar);
-        } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
-        }
-
-        $kasTunai = DB::table('tblKAS')->where('jenis_kas', 'kas')->first();
-        if (!$kasTunai) {
-            return back()->with('error', 'Master Kas Tunai tidak ditemukan.');
-        }
-
-        $totalBayar = $request->bayar_pokok + $request->bayar_bunga;
-
-        $angsuranId = null;
-
-        DB::transaction(function () use ($jadwal, $request, $periode, $kasTunai, $totalBayar, &$angsuranId) {
-            // 1. Simpan baris angsuran
-            $angsuranId = DB::table('tblANGSURAN')->insertGetId([
-                'jadwal_angsuran_id' => $jadwal->jadwal_angsuran_id,
-                'detail_potongan_id' => null,
-                'user_id'            => auth()->id(),
-                'tgl_bayar'          => $request->tgl_bayar,
-                'jenis_bayar'        => 'angsuran',
-                'bayar_pokok'        => $request->bayar_pokok,
-                'bayar_bunga'        => $request->bayar_bunga,
-            ], 'angsuran_id');
-
-            // 2. Update status jadwal menjadi lunas
-            DB::table('tblJADWAL_ANGSURAN')
-                ->where('jadwal_angsuran_id', $jadwal->jadwal_angsuran_id)
-                ->update(['status_bayar' => 'lunas']);
-
-            // 3. Catat mutasi kas masuk
-            DB::table('tblMUTASI_KAS')->insert([
-                'kas_id'       => $kasTunai->kas_id,
-                'periode_id'   => $periode->periode_id,
-                'user_id'      => auth()->id(),
-                'transaksi_id' => null,
-                'angsuran_id'  => $angsuranId,
-                'pencairan_id' => null,
-                'tgl_mutasi'   => $request->tgl_bayar,
-                'arah'         => 'masuk',
-                'nominal'      => $totalBayar,
-                'uraian'       => "Penerimaan angsuran langsung ke-{$jadwal->angsuran_ke} pinjaman #PINJ-{$jadwal->pinjaman_id}",
-            ]);
-
-            // 4. Update saldo kas tunai bertambah
-            DB::table('tblKAS')->where('kas_id', $kasTunai->kas_id)->increment('saldo', $totalBayar);
-
-            // 5. Cek apakah seluruh jadwal pinjaman ini sudah lunas
-            $sisaJadwalBelumBayar = DB::table('tblJADWAL_ANGSURAN')
-                ->where('pinjaman_id', $jadwal->pinjaman_id)
-                ->where('status_bayar', 'belum')
-                ->count();
-
-            if ($sisaJadwalBelumBayar === 0) {
-                DB::table('tblPINJAMAN')
-                    ->where('pinjaman_id', $jadwal->pinjaman_id)
-                    ->update(['status_pinjaman' => 'lunas']);
+            $jadwal = DB::table('tblJADWAL_ANGSURAN')->where('jadwal_angsuran_id', $request->jadwal_angsuran_id)->first();
+            if (!$jadwal || $jadwal->status_bayar === 'lunas') {
+                return back()->with('error', 'Tagihan angsuran ini sudah lunas atau tidak valid.');
             }
 
-            AuditLogService::log(
-                aksi: 'CATAT_ANGSURAN_LANGSUNG',
-                entitas: 'tblANGSURAN',
-                entitasId: $angsuranId,
-                dataBaru: [
+            // Cegah pembayaran ganda: angsuran yang sedang diproses dalam paket potongan tunjangan
+            // tidak boleh dibayar langsung. Bila hasil potongannya "gagal", angsuran boleh dibayar langsung.
+            $paketAktif = $this->paketPotonganAktif((int) $jadwal->jadwal_angsuran_id);
+            if ($paketAktif) {
+                return back()->with('error', "Angsuran ke-{$jadwal->angsuran_ke} sedang diproses dalam paket potongan tunjangan #RP-"
+                    . str_pad($paketAktif->rencana_potongan_id, 4, '0', STR_PAD_LEFT)
+                    . '. Tunggu hasil potongan dari Bendahara Sekolah; bila potongan gagal, angsuran dapat dibayar langsung.');
+            }
+
+            // Validasi: pokok yang dibayar tidak boleh melebihi sisa piutang (angsuran terkoreksi tidak dihitung)
+            $nominalPinjaman = (float) DB::table('tblPINJAMAN')->where('pinjaman_id', $jadwal->pinjaman_id)->value('nominal_pinjaman');
+            $pokokTerbayar = (float) DB::table('tblANGSURAN as ang')
+                ->join('tblJADWAL_ANGSURAN as ja', 'ang.jadwal_angsuran_id', '=', 'ja.jadwal_angsuran_id')
+                ->leftJoin('tblKOREKSI_ANGSURAN as kor', 'ang.angsuran_id', '=', 'kor.angsuran_id')
+                ->where('ja.pinjaman_id', $jadwal->pinjaman_id)
+                ->whereNull('kor.koreksi_id')
+                ->sum('ang.bayar_pokok');
+            $sisaPiutang = PinjamanCalculatorService::hitungSisaPokok($nominalPinjaman, $pokokTerbayar);
+
+            if ((float) $request->bayar_pokok > $sisaPiutang) {
+                return back()->with('error', 'Pembayaran ditolak: nominal pokok Rp ' . number_format((float) $request->bayar_pokok, 0, ',', '.')
+                    . ' melebihi sisa piutang Rp ' . number_format($sisaPiutang, 0, ',', '.') . '.');
+            }
+
+            // Validasi urutan angsuran: Tidak boleh melompati angsuran sebelumnya yang belum lunas
+            $angsuranSebelumnyaBelumLunas = DB::table('tblJADWAL_ANGSURAN')
+                ->where('pinjaman_id', $jadwal->pinjaman_id)
+                ->where('angsuran_ke', '<', $jadwal->angsuran_ke)
+                ->where('status_bayar', '!=', 'lunas')
+                ->orderBy('angsuran_ke', 'asc')
+                ->first();
+
+            if ($angsuranSebelumnyaBelumLunas) {
+                return back()->with('error', "Pembayaran harus berurutan. Angsuran ke-{$angsuranSebelumnyaBelumLunas->angsuran_ke} belum dilunasi, silakan selesaikan tagihan sebelumnya terlebih dahulu.");
+            }
+
+            // Cek penguncian periode
+            try {
+                $periode = PeriodeLockService::assertPeriodeTerbuka($request->tgl_bayar);
+            } catch (RuntimeException $e) {
+                return back()->with('error', $e->getMessage());
+            }
+
+            $kasTunai = DB::table('tblKAS')->where('jenis_kas', 'kas')->first();
+            if (!$kasTunai) {
+                return back()->with('error', 'Master Kas Tunai tidak ditemukan.');
+            }
+
+            $totalBayar = $request->bayar_pokok + $request->bayar_bunga;
+
+            $angsuranId = null;
+
+            DB::transaction(function () use ($jadwal, $request, $periode, $kasTunai, $totalBayar, &$angsuranId) {
+                // 1. Simpan baris angsuran
+                $angsuranId = DB::table('tblANGSURAN')->insertGetId([
                     'jadwal_angsuran_id' => $jadwal->jadwal_angsuran_id,
+                    'detail_potongan_id' => null,
+                    'user_id'            => auth()->id(),
+                    'tgl_bayar'          => $request->tgl_bayar,
+                    'jenis_bayar'        => 'angsuran',
                     'bayar_pokok'        => $request->bayar_pokok,
                     'bayar_bunga'        => $request->bayar_bunga,
-                    'total_bayar'        => $totalBayar,
-                ]
-            );
-        });
+                ], 'angsuran_id');
 
-        return redirect()->route('bbm.angsuran.langsung')
-            ->with('success', "Pembayaran angsuran ke-{$jadwal->angsuran_ke} sebesar Rp " . number_format($totalBayar, 0, ',', '.') . ' berhasil dicatat!')
-            ->with('bukti_angsuran_id', $angsuranId);
+                // 2. Update status jadwal menjadi lunas
+                DB::table('tblJADWAL_ANGSURAN')
+                    ->where('jadwal_angsuran_id', $jadwal->jadwal_angsuran_id)
+                    ->update(['status_bayar' => 'lunas']);
+
+                // 3. Catat mutasi kas masuk
+                DB::table('tblMUTASI_KAS')->insert([
+                    'kas_id'       => $kasTunai->kas_id,
+                    'periode_id'   => $periode->periode_id,
+                    'user_id'      => auth()->id(),
+                    'transaksi_id' => null,
+                    'angsuran_id'  => $angsuranId,
+                    'pencairan_id' => null,
+                    'tgl_mutasi'   => $request->tgl_bayar,
+                    'arah'         => 'masuk',
+                    'nominal'      => $totalBayar,
+                    'uraian'       => "Penerimaan angsuran langsung ke-{$jadwal->angsuran_ke} pinjaman #PINJ-{$jadwal->pinjaman_id}",
+                ]);
+
+                // 4. Update saldo kas tunai bertambah
+                DB::table('tblKAS')->where('kas_id', $kasTunai->kas_id)->increment('saldo', $totalBayar);
+
+                // 5. Cek apakah seluruh jadwal pinjaman ini sudah lunas
+                $sisaJadwalBelumBayar = DB::table('tblJADWAL_ANGSURAN')
+                    ->where('pinjaman_id', $jadwal->pinjaman_id)
+                    ->where('status_bayar', 'belum')
+                    ->count();
+
+                if ($sisaJadwalBelumBayar === 0) {
+                    DB::table('tblPINJAMAN')
+                        ->where('pinjaman_id', $jadwal->pinjaman_id)
+                        ->update(['status_pinjaman' => 'lunas']);
+                }
+
+                AuditLogService::log(
+                    aksi: 'CATAT_ANGSURAN_LANGSUNG',
+                    entitas: 'tblANGSURAN',
+                    entitasId: $angsuranId,
+                    dataBaru: [
+                        'jadwal_angsuran_id' => $jadwal->jadwal_angsuran_id,
+                        'bayar_pokok'        => $request->bayar_pokok,
+                        'bayar_bunga'        => $request->bayar_bunga,
+                        'total_bayar'        => $totalBayar,
+                    ]
+                );
+            });
+
+            return redirect()->route('bbm.angsuran.langsung')
+                ->with('success', "Pembayaran angsuran ke-{$jadwal->angsuran_ke} sebesar Rp " . number_format($totalBayar, 0, ',', '.') . ' berhasil dicatat!')
+                ->with('bukti_angsuran_id', $angsuranId);
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'menyimpan pembayaran angsuran langsung');
+        }
     }
 
     /**
@@ -395,69 +431,73 @@ class AngsuranBbmController extends Controller
             'jadwal_ids.required' => 'Pilih minimal satu pegawai untuk dimasukkan dalam rencana potongan.',
         ]);
 
-        $tanggalReferensi = Carbon::createFromDate($request->tahun, $request->bulan, 1)->toDateString();
         try {
-            $periode = PeriodeLockService::assertPeriodeTerbuka($tanggalReferensi);
-        } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
-        }
-
-        // Ambil data jadwal terpilih
-        $jadwals = DB::table('tblJADWAL_ANGSURAN')
-            ->whereIn('jadwal_angsuran_id', $request->jadwal_ids)
-            ->where('status_bayar', 'belum')
-            ->get();
-
-        if ($jadwals->isEmpty()) {
-            return back()->with('error', 'Tidak ada jadwal tagihan valid yang dapat diproses.');
-        }
-
-        // Validasi urutan: Pastikan tidak ada angsuran terdahulu yang terlewat
-        foreach ($jadwals as $j) {
-            $prevUnpaid = DB::table('tblJADWAL_ANGSURAN')
-                ->where('pinjaman_id', $j->pinjaman_id)
-                ->where('angsuran_ke', '<', $j->angsuran_ke)
-                ->where('status_bayar', '!=', 'lunas')
-                ->first();
-
-            if ($prevUnpaid) {
-                return back()->with('error', "Rencana potongan harus berurutan. Angsuran ke-{$prevUnpaid->angsuran_ke} dari salah satu pinjaman belum lunas.");
+            $tanggalReferensi = Carbon::createFromDate($request->tahun, $request->bulan, 1)->toDateString();
+            try {
+                $periode = PeriodeLockService::assertPeriodeTerbuka($tanggalReferensi);
+            } catch (RuntimeException $e) {
+                return back()->with('error', $e->getMessage());
             }
-        }
 
-        $totalRencana = $jadwals->sum(fn ($j) => $j->pokok + $j->bunga);
+            // Ambil data jadwal terpilih
+            $jadwals = DB::table('tblJADWAL_ANGSURAN')
+                ->whereIn('jadwal_angsuran_id', $request->jadwal_ids)
+                ->where('status_bayar', 'belum')
+                ->get();
 
-        DB::transaction(function () use ($jadwals, $periode, $totalRencana) {
-            $rencanaId = DB::table('tblRENCANA_POTONGAN')->insertGetId([
-                'periode_id'      => $periode->periode_id,
-                'user_id'         => auth()->id(),
-                'total_potongan'  => $totalRencana,
-                'status_potongan' => 'dikirim',
-            ], 'rencana_potongan_id');
+            if ($jadwals->isEmpty()) {
+                return back()->with('error', 'Tidak ada jadwal tagihan valid yang dapat diproses.');
+            }
 
+            // Validasi urutan: Pastikan tidak ada angsuran terdahulu yang terlewat
             foreach ($jadwals as $j) {
-                DB::table('tblDETAIL_POTONGAN')->insert([
-                    'rencana_potongan_id' => $rencanaId,
-                    'jadwal_angsuran_id'  => $j->jadwal_angsuran_id,
-                    'nominal_rencana'     => $j->pokok + $j->bunga,
-                    'hasil_potongan'      => null,
-                ]);
+                $prevUnpaid = DB::table('tblJADWAL_ANGSURAN')
+                    ->where('pinjaman_id', $j->pinjaman_id)
+                    ->where('angsuran_ke', '<', $j->angsuran_ke)
+                    ->where('status_bayar', '!=', 'lunas')
+                    ->first();
+
+                if ($prevUnpaid) {
+                    return back()->with('error', "Rencana potongan harus berurutan. Angsuran ke-{$prevUnpaid->angsuran_ke} dari salah satu pinjaman belum lunas.");
+                }
             }
 
-            AuditLogService::log(
-                aksi: 'BUAT_RENCANA_POTONGAN',
-                entitas: 'tblRENCANA_POTONGAN',
-                entitasId: $rencanaId,
-                dataBaru: [
-                    'periode_id'     => $periode->periode_id,
-                    'total_potongan' => $totalRencana,
-                    'jumlah_pegawai' => $jadwals->count(),
-                ]
-            );
-        });
+            $totalRencana = $jadwals->sum(fn ($j) => $j->pokok + $j->bunga);
 
-        return redirect()->route('bbm.angsuran.potongan')
-            ->with('success', 'Rencana potongan bulanan berhasil disusun dan otomatis diteruskan ke Bendahara Sekolah!');
+            DB::transaction(function () use ($jadwals, $periode, $totalRencana) {
+                $rencanaId = DB::table('tblRENCANA_POTONGAN')->insertGetId([
+                    'periode_id'      => $periode->periode_id,
+                    'user_id'         => auth()->id(),
+                    'total_potongan'  => $totalRencana,
+                    'status_potongan' => 'dikirim',
+                ], 'rencana_potongan_id');
+
+                foreach ($jadwals as $j) {
+                    DB::table('tblDETAIL_POTONGAN')->insert([
+                        'rencana_potongan_id' => $rencanaId,
+                        'jadwal_angsuran_id'  => $j->jadwal_angsuran_id,
+                        'nominal_rencana'     => $j->pokok + $j->bunga,
+                        'hasil_potongan'      => null,
+                    ]);
+                }
+
+                AuditLogService::log(
+                    aksi: 'BUAT_RENCANA_POTONGAN',
+                    entitas: 'tblRENCANA_POTONGAN',
+                    entitasId: $rencanaId,
+                    dataBaru: [
+                        'periode_id'     => $periode->periode_id,
+                        'total_potongan' => $totalRencana,
+                        'jumlah_pegawai' => $jadwals->count(),
+                    ]
+                );
+            });
+
+            return redirect()->route('bbm.angsuran.potongan')
+                ->with('success', 'Rencana potongan bulanan berhasil disusun dan otomatis diteruskan ke Bendahara Sekolah!');
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'menerbitkan rencana potongan');
+        }
     }
 
     /**
@@ -516,128 +556,132 @@ class AngsuranBbmController extends Controller
             'tgl_terima.required' => 'Tanggal serah terima/penerimaan uang wajib diisi.',
         ]);
 
-        $rencana = DB::table('tblRENCANA_POTONGAN')->where('rencana_potongan_id', $rencanaId)->first();
-        if (!$rencana) {
-            return back()->with('error', 'Rencana potongan tidak ditemukan.');
-        }
-
-        if ($rencana->status_potongan !== 'menunggu_verifikasi') {
-            return back()->with('error', 'Paket ini tidak dalam status menunggu verifikasi dana.');
-        }
-
         try {
-            $periode = PeriodeLockService::assertPeriodeTerbuka($request->tgl_terima);
-        } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
-        }
+            $rencana = DB::table('tblRENCANA_POTONGAN')->where('rencana_potongan_id', $rencanaId)->first();
+            if (!$rencana) {
+                return back()->with('error', 'Rencana potongan tidak ditemukan.');
+            }
 
-        // Tentukan master kas penampung:
-        // Otomatis 100% mendeteksi dari metode penyerahan Bendahara Sekolah (Opsi A)
-        if ($request->filled('kas_tujuan')) {
-            $jenisKas = ($request->kas_tujuan === 'kas_harian') ? 'kas' : 'bank';
-        } else {
-            $isTransfer = str_contains(strtolower($rencana->metode_penyerahan ?? ''), 'transfer');
-            $jenisKas = $isTransfer ? 'bank' : 'kas';
-        }
+            if ($rencana->status_potongan !== 'menunggu_verifikasi') {
+                return back()->with('error', 'Paket ini tidak dalam status menunggu verifikasi dana.');
+            }
 
-        $kas = DB::table('tblKAS')->where('jenis_kas', $jenisKas)->first();
-        if (!$kas) {
-            $kas = DB::table('tblKAS')->first();
-        }
-        if (!$kas) {
-            return back()->with('error', "Master Kas penampung tidak ditemukan.");
-        }
+            try {
+                $periode = PeriodeLockService::assertPeriodeTerbuka($request->tgl_terima);
+            } catch (RuntimeException $e) {
+                return back()->with('error', $e->getMessage());
+            }
 
-        DB::transaction(function () use ($request, $rencanaId, $rencana, $periode, $kas) {
-            $detailSukses = DB::table('tblDETAIL_POTONGAN as dp')
-                ->join('tblJADWAL_ANGSURAN as ja', 'dp.jadwal_angsuran_id', '=', 'ja.jadwal_angsuran_id')
-                ->where('dp.rencana_potongan_id', $rencanaId)
-                ->where('dp.hasil_potongan', 'berhasil')
-                ->select('dp.*', 'ja.pokok', 'ja.bunga', 'ja.pinjaman_id', 'ja.status_bayar')
-                ->get();
+            // Tentukan master kas penampung:
+            // Otomatis 100% mendeteksi dari metode penyerahan Bendahara Sekolah (Opsi A)
+            if ($request->filled('kas_tujuan')) {
+                $jenisKas = ($request->kas_tujuan === 'kas_harian') ? 'kas' : 'bank';
+            } else {
+                $isTransfer = str_contains(strtolower($rencana->metode_penyerahan ?? ''), 'transfer');
+                $jenisKas = $isTransfer ? 'bank' : 'kas';
+            }
 
-            $totalDibukukan = 0;
+            $kas = DB::table('tblKAS')->where('jenis_kas', $jenisKas)->first();
+            if (!$kas) {
+                $kas = DB::table('tblKAS')->first();
+            }
+            if (!$kas) {
+                return back()->with('error', "Master Kas penampung tidak ditemukan.");
+            }
 
-            foreach ($detailSukses as $detail) {
-                if ($detail->status_bayar === 'lunas') {
-                    continue; // Skip jika sudah lunas
-                }
+            DB::transaction(function () use ($request, $rencanaId, $rencana, $periode, $kas) {
+                $detailSukses = DB::table('tblDETAIL_POTONGAN as dp')
+                    ->join('tblJADWAL_ANGSURAN as ja', 'dp.jadwal_angsuran_id', '=', 'ja.jadwal_angsuran_id')
+                    ->where('dp.rencana_potongan_id', $rencanaId)
+                    ->where('dp.hasil_potongan', 'berhasil')
+                    ->select('dp.*', 'ja.pokok', 'ja.bunga', 'ja.pinjaman_id', 'ja.status_bayar')
+                    ->get();
 
-                // 1. Catat baris angsuran resmi
-                        // 1. Simpan baris angsuran
-        $angsuranId = DB::table('tblANGSURAN')
-            ->insertGetId([
+                $totalDibukukan = 0;
+
+                foreach ($detailSukses as $detail) {
+                    if ($detail->status_bayar === 'lunas') {
+                        continue; // Skip jika sudah lunas
+                    }
+
+                    // 1. Catat baris angsuran resmi
+                            // 1. Simpan baris angsuran
+            $angsuranId = DB::table('tblANGSURAN')
+                ->insertGetId([
 
 
-                    'jadwal_angsuran_id' => $detail->jadwal_angsuran_id,
-                    'detail_potongan_id' => $detail->detail_potongan_id,
-                    'user_id'            => auth()->id(),
-                    'tgl_bayar'          => $request->tgl_terima,
-                    'jenis_bayar'        => 'angsuran',
-                    'bayar_pokok'        => $detail->pokok,
-                    'bayar_bunga'        => $detail->bunga,
-                ], 'angsuran_id');
+                        'jadwal_angsuran_id' => $detail->jadwal_angsuran_id,
+                        'detail_potongan_id' => $detail->detail_potongan_id,
+                        'user_id'            => auth()->id(),
+                        'tgl_bayar'          => $request->tgl_terima,
+                        'jenis_bayar'        => 'angsuran',
+                        'bayar_pokok'        => $detail->pokok,
+                        'bayar_bunga'        => $detail->bunga,
+                    ], 'angsuran_id');
 
-                // 2. Tandai jadwal angsuran lunas
-                DB::table('tblJADWAL_ANGSURAN')
-                    ->where('jadwal_angsuran_id', $detail->jadwal_angsuran_id)
-                    ->update(['status_bayar' => 'lunas']);
+                    // 2. Tandai jadwal angsuran lunas
+                    DB::table('tblJADWAL_ANGSURAN')
+                        ->where('jadwal_angsuran_id', $detail->jadwal_angsuran_id)
+                        ->update(['status_bayar' => 'lunas']);
 
-                $totalDibukukan += ($detail->pokok + $detail->bunga);
+                    $totalDibukukan += ($detail->pokok + $detail->bunga);
 
-                // 3. Cek apakah seluruh jadwal pinjaman ini sudah lunas
-                $sisaBelumBayar = DB::table('tblJADWAL_ANGSURAN')
-                    ->where('pinjaman_id', $detail->pinjaman_id)
-                    ->where('status_bayar', 'belum')
-                    ->count();
-
-                if ($sisaBelumBayar === 0) {
-                    DB::table('tblPINJAMAN')
+                    // 3. Cek apakah seluruh jadwal pinjaman ini sudah lunas
+                    $sisaBelumBayar = DB::table('tblJADWAL_ANGSURAN')
                         ->where('pinjaman_id', $detail->pinjaman_id)
-                        ->update(['status_pinjaman' => 'lunas']);
+                        ->where('status_bayar', 'belum')
+                        ->count();
+
+                    if ($sisaBelumBayar === 0) {
+                        DB::table('tblPINJAMAN')
+                            ->where('pinjaman_id', $detail->pinjaman_id)
+                            ->update(['status_pinjaman' => 'lunas']);
+                    }
                 }
-            }
 
-            // 4. Catat mutasi kas masuk penampung hasil potongan dari Bendahara Sekolah
-            $nominalMasuk = (float) $rencana->total_realisasi;
-            if ($nominalMasuk > 0) {
-                DB::table('tblMUTASI_KAS')->insert([
-                    'kas_id'       => $kas->kas_id,
-                    'periode_id'   => $periode->periode_id,
-                    'user_id'      => auth()->id(),
-                    'transaksi_id' => null,
-                    'angsuran_id'  => null,
-                    'pencairan_id' => null,
-                    'tgl_mutasi'   => $request->tgl_terima,
-                    'arah'         => 'masuk',
-                    'nominal'      => $nominalMasuk,
-                    'uraian'       => "Penerimaan hasil potongan gaji paket #RP-{$rencanaId} dari Bendahara Sekolah (" . strtoupper($rencana->metode_penyerahan ?? 'tunai') . ")",
-                ]);
+                // 4. Catat mutasi kas masuk penampung hasil potongan dari Bendahara Sekolah
+                $nominalMasuk = (float) $rencana->total_realisasi;
+                if ($nominalMasuk > 0) {
+                    DB::table('tblMUTASI_KAS')->insert([
+                        'kas_id'       => $kas->kas_id,
+                        'periode_id'   => $periode->periode_id,
+                        'user_id'      => auth()->id(),
+                        'transaksi_id' => null,
+                        'angsuran_id'  => null,
+                        'pencairan_id' => null,
+                        'tgl_mutasi'   => $request->tgl_terima,
+                        'arah'         => 'masuk',
+                        'nominal'      => $nominalMasuk,
+                        'uraian'       => "Penerimaan hasil potongan gaji paket #RP-{$rencanaId} dari Bendahara Sekolah (" . strtoupper($rencana->metode_penyerahan ?? 'tunai') . ")",
+                    ]);
 
-                // Update saldo master kas bertambah
-                DB::table('tblKAS')->where('kas_id', $kas->kas_id)->increment('saldo', $nominalMasuk);
-            }
+                    // Update saldo master kas bertambah
+                    DB::table('tblKAS')->where('kas_id', $kas->kas_id)->increment('saldo', $nominalMasuk);
+                }
 
-            // 5. Update status rencana potongan menjadi 'selesai'
-            DB::table('tblRENCANA_POTONGAN')
-                ->where('rencana_potongan_id', $rencanaId)
-                ->update(['status_potongan' => 'selesai']);
+                // 5. Update status rencana potongan menjadi 'selesai'
+                DB::table('tblRENCANA_POTONGAN')
+                    ->where('rencana_potongan_id', $rencanaId)
+                    ->update(['status_potongan' => 'selesai']);
 
-            AuditLogService::log(
-                aksi: 'TERIMA_DANA_POTONGAN_SEKOLAH',
-                entitas: 'tblRENCANA_POTONGAN',
-                entitasId: $rencanaId,
-                dataBaru: [
-                    'tgl_terima'     => $request->tgl_terima,
-                    'kas_tujuan'     => $request->kas_tujuan,
-                    'total_diterima' => $nominalMasuk,
-                    'status'         => 'selesai',
-                ]
-            );
-        });
+                AuditLogService::log(
+                    aksi: 'TERIMA_DANA_POTONGAN_SEKOLAH',
+                    entitas: 'tblRENCANA_POTONGAN',
+                    entitasId: $rencanaId,
+                    dataBaru: [
+                        'tgl_terima'     => $request->tgl_terima,
+                        'kas_tujuan'     => $request->kas_tujuan,
+                        'total_diterima' => $nominalMasuk,
+                        'status'         => 'selesai',
+                    ]
+                );
+            });
 
-        return redirect()->route('bbm.angsuran.potongan')
-            ->with('success', "Dana potongan sebesar Rp " . number_format($rencana->total_realisasi, 0, ',', '.') . " berhasil diterima dan dibukukan ke Kas Bank Mini! Seluruh angsuran pegawai terkait otomatis lunas.");
+            return redirect()->route('bbm.angsuran.potongan')
+                ->with('success', "Dana potongan sebesar Rp " . number_format($rencana->total_realisasi, 0, ',', '.') . " berhasil diterima dan dibukukan ke Kas Bank Mini! Seluruh angsuran pegawai terkait otomatis lunas.");
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'mengonfirmasi penerimaan dana potongan');
+        }
     }
 
     /**
@@ -771,152 +815,156 @@ class AngsuranBbmController extends Controller
             'kas_tujuan_id.required_if'  => 'Rekening kas penerima wajib dipilih.',
         ]);
 
-        $angsuran = DB::table('tblANGSURAN')->where('angsuran_id', $angsuranId)->first();
-        if (!$angsuran) {
-            return back()->with('error', 'Transaksi angsuran tidak ditemukan.');
-        }
-
-        // Cek apakah transaksi ini sudah pernah dikoreksi
-        $sudahKoreksi = DB::table('tblKOREKSI_ANGSURAN')->where('angsuran_id', $angsuranId)->exists();
-        if ($sudahKoreksi) {
-            return back()->with('error', 'Transaksi angsuran ini sudah pernah dikoreksi sebelumnya.');
-        }
-
-        // Cek penguncian periode
         try {
-            $tglAksi = ($request->tipe_koreksi === 'ganti' && !empty($request->tgl_bayar_baru))
-                ? $request->tgl_bayar_baru
-                : now()->toDateString();
-            $periode = PeriodeLockService::assertPeriodeTerbuka($tglAksi);
-        } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
-        }
+            $angsuran = DB::table('tblANGSURAN')->where('angsuran_id', $angsuranId)->first();
+            if (!$angsuran) {
+                return back()->with('error', 'Transaksi angsuran tidak ditemukan.');
+            }
 
-        // Cari mutasi kas lama yang terhubung dengan angsuran ini
-        $mutasiLama = DB::table('tblMUTASI_KAS')->where('angsuran_id', $angsuranId)->first();
-        $kasLamaId = $mutasiLama ? $mutasiLama->kas_id : DB::table('tblKAS')->where('jenis_kas', 'kas')->value('kas_id');
-        $kasLama = DB::table('tblKAS')->where('kas_id', $kasLamaId)->first();
+            // Cek apakah transaksi ini sudah pernah dikoreksi
+            $sudahKoreksi = DB::table('tblKOREKSI_ANGSURAN')->where('angsuran_id', $angsuranId)->exists();
+            if ($sudahKoreksi) {
+                return back()->with('error', 'Transaksi angsuran ini sudah pernah dikoreksi sebelumnya.');
+            }
 
-        $totalNominal = (float)$angsuran->bayar_pokok + (float)$angsuran->bayar_bunga;
+            // Cek penguncian periode
+            try {
+                $tglAksi = ($request->tipe_koreksi === 'ganti' && !empty($request->tgl_bayar_baru))
+                    ? $request->tgl_bayar_baru
+                    : now()->toDateString();
+                $periode = PeriodeLockService::assertPeriodeTerbuka($tglAksi);
+            } catch (RuntimeException $e) {
+                return back()->with('error', $e->getMessage());
+            }
 
-        DB::transaction(function () use ($angsuran, $request, $periode, $kasLama, $totalNominal) {
-            $tipeKoreksi = $request->tipe_koreksi;
-            $jadwal = DB::table('tblJADWAL_ANGSURAN')->where('jadwal_angsuran_id', $angsuran->jadwal_angsuran_id)->first();
+            // Cari mutasi kas lama yang terhubung dengan angsuran ini
+            $mutasiLama = DB::table('tblMUTASI_KAS')->where('angsuran_id', $angsuranId)->first();
+            $kasLamaId = $mutasiLama ? $mutasiLama->kas_id : DB::table('tblKAS')->where('jenis_kas', 'kas')->value('kas_id');
+            $kasLama = DB::table('tblKAS')->where('kas_id', $kasLamaId)->first();
 
-            // 1. Catat berita acara koreksi untuk entri lama (tidak pernah menghapus entri lama)
-            $statusBaru = ($tipeKoreksi === 'ganti') ? 'diganti' : 'dibatalkan';
-            $koreksiId = DB::table('tblKOREKSI_ANGSURAN')->insertGetId([
-                'angsuran_id'    => $angsuran->angsuran_id,
-                'user_id'        => auth()->id(),
-                'tgl_koreksi'    => now()->toDateString(),
-                'alasan_koreksi' => $request->alasan_koreksi,
-                'nominal_pokok'  => $angsuran->bayar_pokok,
-                'nominal_bunga'  => $angsuran->bayar_bunga,
-                'nominal_total'  => $totalNominal,
-                'status_koreksi' => $statusBaru,
-            ], 'koreksi_id');
+            $totalNominal = (float)$angsuran->bayar_pokok + (float)$angsuran->bayar_bunga;
 
-            // 2. Catat mutasi kas keluar pembalik (reversal) atas entri lama
-            $uraianPembalik = ($tipeKoreksi === 'ganti')
-                ? "Reversal/koreksi angsuran #ANG-{$angsuran->angsuran_id} (diganti): {$request->alasan_koreksi}"
-                : "Pembatalan/reversal angsuran #ANG-{$angsuran->angsuran_id}: {$request->alasan_koreksi}";
+            DB::transaction(function () use ($angsuran, $request, $periode, $kasLama, $totalNominal) {
+                $tipeKoreksi = $request->tipe_koreksi;
+                $jadwal = DB::table('tblJADWAL_ANGSURAN')->where('jadwal_angsuran_id', $angsuran->jadwal_angsuran_id)->first();
 
-            DB::table('tblMUTASI_KAS')->insert([
-                'kas_id'       => $kasLama->kas_id,
-                'periode_id'   => $periode->periode_id,
-                'user_id'      => auth()->id(),
-                'transaksi_id' => null,
-                'angsuran_id'  => $angsuran->angsuran_id,
-                'pencairan_id' => null,
-                'tgl_mutasi'   => now()->toDateString(),
-                'arah'         => 'keluar',
-                'nominal'      => $totalNominal,
-                'uraian'       => $uraianPembalik,
-            ]);
+                // 1. Catat berita acara koreksi untuk entri lama (tidak pernah menghapus entri lama)
+                $statusBaru = ($tipeKoreksi === 'ganti') ? 'diganti' : 'dibatalkan';
+                $koreksiId = DB::table('tblKOREKSI_ANGSURAN')->insertGetId([
+                    'angsuran_id'    => $angsuran->angsuran_id,
+                    'user_id'        => auth()->id(),
+                    'tgl_koreksi'    => now()->toDateString(),
+                    'alasan_koreksi' => $request->alasan_koreksi,
+                    'nominal_pokok'  => $angsuran->bayar_pokok,
+                    'nominal_bunga'  => $angsuran->bayar_bunga,
+                    'nominal_total'  => $totalNominal,
+                    'status_koreksi' => $statusBaru,
+                ], 'koreksi_id');
 
-            // Saldo kas lama dikurangi sebesar nominal yang dibalik
-            DB::table('tblKAS')->where('kas_id', $kasLama->kas_id)->decrement('saldo', $totalNominal);
+                // 2. Catat mutasi kas keluar pembalik (reversal) atas entri lama
+                $uraianPembalik = ($tipeKoreksi === 'ganti')
+                    ? "Reversal/koreksi angsuran #ANG-{$angsuran->angsuran_id} (diganti): {$request->alasan_koreksi}"
+                    : "Pembatalan/reversal angsuran #ANG-{$angsuran->angsuran_id}: {$request->alasan_koreksi}";
 
-            if ($tipeKoreksi === 'ganti') {
-                // 3a. Buat ENTRI ANGSURAN BARU (tidak menimpa baris lama)
-                $kasTujuanId = (int) $request->kas_tujuan_id;
-                $kasTujuan = DB::table('tblKAS')->where('kas_id', $kasTujuanId)->first() ?? $kasLama;
-
-                $newAngsuranId = DB::table('tblANGSURAN')->insertGetId([
-                    'jadwal_angsuran_id' => $angsuran->jadwal_angsuran_id,
-                    'detail_potongan_id' => null,
-                    'user_id'            => auth()->id(),
-                    'tgl_bayar'          => $request->tgl_bayar_baru,
-                    'jenis_bayar'        => $angsuran->jenis_bayar ?? 'angsuran',
-                    'bayar_pokok'        => $angsuran->bayar_pokok,
-                    'bayar_bunga'        => $angsuran->bayar_bunga,
-                ], 'angsuran_id');
-
-                // 3b. Catat MUTASI KAS MASUK BARU untuk entri baru
                 DB::table('tblMUTASI_KAS')->insert([
-                    'kas_id'       => $kasTujuan->kas_id,
+                    'kas_id'       => $kasLama->kas_id,
                     'periode_id'   => $periode->periode_id,
                     'user_id'      => auth()->id(),
                     'transaksi_id' => null,
-                    'angsuran_id'  => $newAngsuranId,
+                    'angsuran_id'  => $angsuran->angsuran_id,
                     'pencairan_id' => null,
-                    'tgl_mutasi'   => $request->tgl_bayar_baru,
-                    'arah'         => 'masuk',
+                    'tgl_mutasi'   => now()->toDateString(),
+                    'arah'         => 'keluar',
                     'nominal'      => $totalNominal,
-                    'uraian'       => "Penerimaan angsuran pengganti ke-{$jadwal->angsuran_ke} #PINJ-{$jadwal->pinjaman_id} (koreksi #ANG-{$angsuran->angsuran_id})",
+                    'uraian'       => $uraianPembalik,
                 ]);
 
-                // Saldo kas tujuan bertambah sebesar nominal
-                DB::table('tblKAS')->where('kas_id', $kasTujuan->kas_id)->increment('saldo', $totalNominal);
+                // Saldo kas lama dikurangi sebesar nominal yang dibalik
+                DB::table('tblKAS')->where('kas_id', $kasLama->kas_id)->decrement('saldo', $totalNominal);
 
-                // Pastikan status jadwal angsuran tetap 'lunas'
-                DB::table('tblJADWAL_ANGSURAN')
-                    ->where('jadwal_angsuran_id', $angsuran->jadwal_angsuran_id)
-                    ->update(['status_bayar' => 'lunas']);
+                if ($tipeKoreksi === 'ganti') {
+                    // 3a. Buat ENTRI ANGSURAN BARU (tidak menimpa baris lama)
+                    $kasTujuanId = (int) $request->kas_tujuan_id;
+                    $kasTujuan = DB::table('tblKAS')->where('kas_id', $kasTujuanId)->first() ?? $kasLama;
 
-                AuditLogService::log(
-                    aksi: 'KOREKSI_ANGSURAN_REPLACEMENT',
-                    entitas: 'tblANGSURAN',
-                    entitasId: $newAngsuranId,
-                    dataLama: ['angsuran_id_lama' => $angsuran->angsuran_id],
-                    dataBaru: [
-                        'angsuran_id_baru' => $newAngsuranId,
-                        'tgl_bayar_baru'   => $request->tgl_bayar_baru,
-                        'kas_id'           => $kasTujuan->kas_id,
-                        'alasan'           => $request->alasan_koreksi,
-                    ]
-                );
-            } else {
-                // 3c. Opsi Batal: Kembalikan status jadwal angsuran menjadi 'belum'
-                DB::table('tblJADWAL_ANGSURAN')
-                    ->where('jadwal_angsuran_id', $angsuran->jadwal_angsuran_id)
-                    ->update(['status_bayar' => 'belum']);
+                    $newAngsuranId = DB::table('tblANGSURAN')->insertGetId([
+                        'jadwal_angsuran_id' => $angsuran->jadwal_angsuran_id,
+                        'detail_potongan_id' => null,
+                        'user_id'            => auth()->id(),
+                        'tgl_bayar'          => $request->tgl_bayar_baru,
+                        'jenis_bayar'        => $angsuran->jenis_bayar ?? 'angsuran',
+                        'bayar_pokok'        => $angsuran->bayar_pokok,
+                        'bayar_bunga'        => $angsuran->bayar_bunga,
+                    ], 'angsuran_id');
 
-                // Kembalikan status pinjaman menjadi 'cair' jika sebelumnya 'lunas'
-                if ($jadwal) {
-                    DB::table('tblPINJAMAN')
-                        ->where('pinjaman_id', $jadwal->pinjaman_id)
-                        ->update(['status_pinjaman' => 'cair']);
+                    // 3b. Catat MUTASI KAS MASUK BARU untuk entri baru
+                    DB::table('tblMUTASI_KAS')->insert([
+                        'kas_id'       => $kasTujuan->kas_id,
+                        'periode_id'   => $periode->periode_id,
+                        'user_id'      => auth()->id(),
+                        'transaksi_id' => null,
+                        'angsuran_id'  => $newAngsuranId,
+                        'pencairan_id' => null,
+                        'tgl_mutasi'   => $request->tgl_bayar_baru,
+                        'arah'         => 'masuk',
+                        'nominal'      => $totalNominal,
+                        'uraian'       => "Penerimaan angsuran pengganti ke-{$jadwal->angsuran_ke} #PINJ-{$jadwal->pinjaman_id} (koreksi #ANG-{$angsuran->angsuran_id})",
+                    ]);
+
+                    // Saldo kas tujuan bertambah sebesar nominal
+                    DB::table('tblKAS')->where('kas_id', $kasTujuan->kas_id)->increment('saldo', $totalNominal);
+
+                    // Pastikan status jadwal angsuran tetap 'lunas'
+                    DB::table('tblJADWAL_ANGSURAN')
+                        ->where('jadwal_angsuran_id', $angsuran->jadwal_angsuran_id)
+                        ->update(['status_bayar' => 'lunas']);
+
+                    AuditLogService::log(
+                        aksi: 'KOREKSI_ANGSURAN_REPLACEMENT',
+                        entitas: 'tblANGSURAN',
+                        entitasId: $newAngsuranId,
+                        dataLama: ['angsuran_id_lama' => $angsuran->angsuran_id],
+                        dataBaru: [
+                            'angsuran_id_baru' => $newAngsuranId,
+                            'tgl_bayar_baru'   => $request->tgl_bayar_baru,
+                            'kas_id'           => $kasTujuan->kas_id,
+                            'alasan'           => $request->alasan_koreksi,
+                        ]
+                    );
+                } else {
+                    // 3c. Opsi Batal: Kembalikan status jadwal angsuran menjadi 'belum'
+                    DB::table('tblJADWAL_ANGSURAN')
+                        ->where('jadwal_angsuran_id', $angsuran->jadwal_angsuran_id)
+                        ->update(['status_bayar' => 'belum']);
+
+                    // Kembalikan status pinjaman menjadi 'cair' jika sebelumnya 'lunas'
+                    if ($jadwal) {
+                        DB::table('tblPINJAMAN')
+                            ->where('pinjaman_id', $jadwal->pinjaman_id)
+                            ->update(['status_pinjaman' => 'cair']);
+                    }
+
+                    AuditLogService::log(
+                        aksi: 'KOREKSI_ANGSURAN_REVERSAL',
+                        entitas: 'tblKOREKSI_ANGSURAN',
+                        entitasId: $koreksiId,
+                        dataBaru: [
+                            'angsuran_id'    => $angsuran->angsuran_id,
+                            'alasan_koreksi' => $request->alasan_koreksi,
+                            'nominal_total'  => $totalNominal,
+                        ]
+                    );
                 }
+            });
 
-                AuditLogService::log(
-                    aksi: 'KOREKSI_ANGSURAN_REVERSAL',
-                    entitas: 'tblKOREKSI_ANGSURAN',
-                    entitasId: $koreksiId,
-                    dataBaru: [
-                        'angsuran_id'    => $angsuran->angsuran_id,
-                        'alasan_koreksi' => $request->alasan_koreksi,
-                        'nominal_total'  => $totalNominal,
-                    ]
-                );
-            }
-        });
+            $pesan = ($request->tipe_koreksi === 'ganti')
+                ? 'Data angsuran berhasil diperbaiki! Jurnal lama dibalik dan entri angsuran baru telah diterbitkan di pembukuan.'
+                : 'Transaksi angsuran berhasil dibatalkan melalui transaksi pembalik penyeimbang kas.';
 
-        $pesan = ($request->tipe_koreksi === 'ganti')
-            ? 'Data angsuran berhasil diperbaiki! Jurnal lama dibalik dan entri angsuran baru telah diterbitkan di pembukuan.'
-            : 'Transaksi angsuran berhasil dibatalkan melalui transaksi pembalik penyeimbang kas.';
-
-        return redirect()->route('bbm.angsuran.koreksi')->with('success', $pesan);
+            return redirect()->route('bbm.angsuran.koreksi')->with('success', $pesan);
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'memproses koreksi angsuran');
+        }
     }
 }
 

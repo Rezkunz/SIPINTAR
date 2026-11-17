@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PwaController;
 use App\Http\Controllers\SiswaPraktik\BukaRekeningController;
 use App\Http\Controllers\SiswaPraktik\DraftTransaksiController;
 use App\Http\Controllers\Teller\TellerTransactionController;
@@ -32,6 +33,10 @@ use Illuminate\Support\Facades\Route;
 | Autentikasi (Login & Logout)
 |--------------------------------------------------------------------------
 */
+// Progressive Web App (tanpa login, agar aplikasi dapat dipasang dari halaman login)
+Route::get('/manifest.webmanifest', [PwaController::class, 'manifest'])->name('pwa.manifest');
+Route::get('/sw.js', [PwaController::class, 'serviceWorker'])->name('pwa.sw');
+
 Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');

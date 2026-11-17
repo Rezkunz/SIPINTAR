@@ -52,10 +52,23 @@ abstract class SipintarDuskTestCase extends DuskTestCase
         $browser->driver->manage()->deleteAllCookies();
 
         $browser->visit('/login')->waitFor('#login');
-        $this->isi($browser, '#login', $email);
+        $this->isi($browser, '#login', $this->noHpLogin($email));
         $this->isi($browser, '#password', DuskSeeder::PASSWORD);
 
         return $browser->press('#btn-submit')->waitForLocation('/dashboard', 15);
+    }
+
+    /**
+     * Login SIPINTAR hanya memakai nomor HP. Konstanta akun test tetap berupa email agar mudah dibaca,
+     * jadi email diterjemahkan ke nomor HP akun tersebut.
+     */
+    protected function noHpLogin(string $akun): string
+    {
+        if (! str_contains($akun, '@')) {
+            return $akun;
+        }
+
+        return (string) DB::table('tblUSER')->where('email', $akun)->value('no_hp');
     }
 
     /**

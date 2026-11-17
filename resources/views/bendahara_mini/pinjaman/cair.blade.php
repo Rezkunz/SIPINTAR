@@ -34,15 +34,13 @@
             <h2 class="card-heading">Pinjaman Berstatus Layak (Siap Dicairkan)</h2>
             <div style="font-size:12px; color:var(--text-muted);">Pencairan otomatis memotong saldo Kas Tunai hari ini dan membentuk jadwal tagihan cicilan</div>
         </div>
-        <div style="display:flex; align-items:center; gap:10px;">
-            <div style="position:relative; width:260px;">
-                <input type="text" class="form-input" placeholder="Cari nama atau ID pinjaman..." 
-                       oninput="filterTableRows(this, 'tableSiapCair')"
-                       style="padding:6px 12px; font-size:12.5px; border-radius:6px; width:100%;">
-            </div>
-            <span class="badge-pill green">{{ $siapCair->count() }} Siap Cair</span>
-        </div>
+        <span class="badge-pill green">{{ $siapCair->total() }} Siap Cair</span>
     </div>
+
+    @include('partials.daftar_toolbar', [
+        'id' => 'cair', 'tabs' => [], 'tab' => null, 'q' => $q, 'pageName' => 'hal_cair',
+        'placeholder' => 'Cari nama, unit, atau ID pinjaman',
+    ])
 
     <div class="table-responsive">
         <table class="financial-table" id="tableSiapCair">
@@ -102,6 +100,10 @@
             </tbody>
         </table>
     </div>
+
+    @if ($siapCair->hasPages())
+        <div style="padding: 0 20px 12px;">{{ $siapCair->links() }}</div>
+    @endif
 </div>
 
 {{-- ── 10 RIWAYAT PENCAIRAN TERAKHIR ── --}}

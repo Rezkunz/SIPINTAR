@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Bendahara;
 
+use App\Http\Controllers\Concerns\TanganiKesalahanInput;
 use App\Http\Controllers\Controller;
 use App\Services\AuditLogService;
 use App\Services\PeriodeLockService;
@@ -9,9 +10,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
 
 class PotonganSekolahController extends Controller
 {
+    use TanganiKesalahanInput;
+
     /**
      * Tampilkan daftar rencana potongan tunjangan gaji (Read-Only).
      */
@@ -169,90 +173,94 @@ class PotonganSekolahController extends Controller
             'bukti_transfer.max'         => 'Ukuran file bukti transfer maksimal 5 MB.',
         ]);
 
-        $rencana = DB::table('tblRENCANA_POTONGAN')->where('rencana_potongan_id', $rencanaId)->first();
-        if (!$rencana) {
-            return back()->with('error', 'Data rencana potongan tidak ditemukan.');
-        }
-
         try {
-            PeriodeLockService::assertPeriodeTerbuka($request->tgl_potongan);
-        } catch (RuntimeException $e) {
-            return back()->with('error', $e->getMessage());
-        }
-
-        // Simpan file bukti transfer jika diunggah
-        $pathBukti = null;
-        if ($request->hasFile('bukti_transfer') && $request->file('bukti_transfer')->isValid()) {
-            $pathBukti = $request->file('bukti_transfer')->store('bukti_transfer', 'public');
-        }
-
-        DB::transaction(function () use ($request, $rencanaId, $pathBukti) {
-            $totalRealisasi = 0;
-
-            foreach ($request->hasil as $detailId => $statusHasil) {
-                if (!in_array($statusHasil, ['berhasil', 'gagal'])) {
-                    continue;
-                }
-
-                $detail = DB::table('tblDETAIL_POTONGAN')
-                    ->where('detail_potongan_id', $detailId)
-                    ->where('rencana_potongan_id', $rencanaId)
-                    ->first();
-
-                if (!$detail) {
-                    continue;
-                }
-
-                $nominalRealisasi = ($statusHasil === 'berhasil') ? $detail->nominal_rencana : 0;
-                $keteranganItem = $request->keterangan[$detailId] ?? null;
-
-                DB::table('tblDETAIL_POTONGAN')
-                    ->where('detail_potongan_id', $detailId)
-                    ->update([
-                        'hasil_potongan'    => $statusHasil,
-                        'nominal_realisasi' => $nominalRealisasi,
-                        'keterangan'        => $keteranganItem,
-                    ]);
-
-                if ($statusHasil === 'berhasil') {
-                    $totalRealisasi += $nominalRealisasi;
-                }
+            $rencana = DB::table('tblRENCANA_POTONGAN')->where('rencana_potongan_id', $rencanaId)->first();
+            if (!$rencana) {
+                return back()->with('error', 'Data rencana potongan tidak ditemukan.');
             }
 
-            // Update status paket rencana potongan menjadi 'menunggu_verifikasi'
-            $updatePayload = [
-                'tgl_potongan'      => $request->tgl_potongan,
-                'total_realisasi'   => $totalRealisasi,
-                'metode_penyerahan' => $request->metode_penyerahan,
-                'catatan_sekolah'   => $request->catatan_sekolah,
-                'status_potongan'   => 'menunggu_verifikasi',
-            ];
-
-            if ($pathBukti) {
-                $updatePayload['bukti_transfer'] = $pathBukti;
+            try {
+                PeriodeLockService::assertPeriodeTerbuka($request->tgl_potongan);
+            } catch (RuntimeException $e) {
+                return back()->with('error', $e->getMessage());
             }
 
-            DB::table('tblRENCANA_POTONGAN')
-                ->where('rencana_potongan_id', $rencanaId)
-                ->update($updatePayload);
+            // Simpan file bukti transfer jika diunggah
+            $pathBukti = null;
+            if ($request->hasFile('bukti_transfer') && $request->file('bukti_transfer')->isValid()) {
+                $pathBukti = $request->file('bukti_transfer')->store('bukti_transfer', 'public');
+            }
 
-            AuditLogService::log(
-                aksi: 'CATAT_HASIL_POTONGAN_SEKOLAH',
-                entitas: 'tblRENCANA_POTONGAN',
-                entitasId: $rencanaId,
-                dataBaru: [
+            DB::transaction(function () use ($request, $rencanaId, $pathBukti) {
+                $totalRealisasi = 0;
+
+                foreach ($request->hasil as $detailId => $statusHasil) {
+                    if (!in_array($statusHasil, ['berhasil', 'gagal'])) {
+                        continue;
+                    }
+
+                    $detail = DB::table('tblDETAIL_POTONGAN')
+                        ->where('detail_potongan_id', $detailId)
+                        ->where('rencana_potongan_id', $rencanaId)
+                        ->first();
+
+                    if (!$detail) {
+                        continue;
+                    }
+
+                    $nominalRealisasi = ($statusHasil === 'berhasil') ? $detail->nominal_rencana : 0;
+                    $keteranganItem = $request->keterangan[$detailId] ?? null;
+
+                    DB::table('tblDETAIL_POTONGAN')
+                        ->where('detail_potongan_id', $detailId)
+                        ->update([
+                            'hasil_potongan'    => $statusHasil,
+                            'nominal_realisasi' => $nominalRealisasi,
+                            'keterangan'        => $keteranganItem,
+                        ]);
+
+                    if ($statusHasil === 'berhasil') {
+                        $totalRealisasi += $nominalRealisasi;
+                    }
+                }
+
+                // Update status paket rencana potongan menjadi 'menunggu_verifikasi'
+                $updatePayload = [
                     'tgl_potongan'      => $request->tgl_potongan,
                     'total_realisasi'   => $totalRealisasi,
                     'metode_penyerahan' => $request->metode_penyerahan,
                     'catatan_sekolah'   => $request->catatan_sekolah,
-                    'bukti_transfer'    => $pathBukti,
-                    'status'            => 'menunggu_verifikasi',
-                ]
-            );
-        });
+                    'status_potongan'   => 'menunggu_verifikasi',
+                ];
 
-        return redirect()->route('bendahara.potongan.index')
-            ->with('success', 'Hasil pemotongan gaji berhasil disimpan! Dana telah diserahkan dan kini menunggu konfirmasi penerimaan dari Bendahara Bank Mini.');
+                if ($pathBukti) {
+                    $updatePayload['bukti_transfer'] = $pathBukti;
+                }
+
+                DB::table('tblRENCANA_POTONGAN')
+                    ->where('rencana_potongan_id', $rencanaId)
+                    ->update($updatePayload);
+
+                AuditLogService::log(
+                    aksi: 'CATAT_HASIL_POTONGAN_SEKOLAH',
+                    entitas: 'tblRENCANA_POTONGAN',
+                    entitasId: $rencanaId,
+                    dataBaru: [
+                        'tgl_potongan'      => $request->tgl_potongan,
+                        'total_realisasi'   => $totalRealisasi,
+                        'metode_penyerahan' => $request->metode_penyerahan,
+                        'catatan_sekolah'   => $request->catatan_sekolah,
+                        'bukti_transfer'    => $pathBukti,
+                        'status'            => 'menunggu_verifikasi',
+                    ]
+                );
+            });
+
+            return redirect()->route('bendahara.potongan.index')
+                ->with('success', 'Hasil pemotongan gaji berhasil disimpan! Dana telah diserahkan dan kini menunggu konfirmasi penerimaan dari Bendahara Bank Mini.');
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'menyimpan hasil potongan');
+        }
     }
 
     /**

@@ -48,8 +48,8 @@
           jawab: '📞 <strong>Hubungi Bank Mini Sekolah:</strong><br>• Loket Teller – Gedung Keuangan<br>• WhatsApp: <strong>0812-3456-7890</strong><br>• Email: <strong>bankmini@sipintar.sch.id</strong>' },
 
         { id: 'login', peran: ['semua'], tanya: 'Cara login ke SIPINTAR?',
-          kunci: ['cara login', 'cara masuk', 'gagal login', 'tidak bisa login', 'gak bisa login', 'ga bisa masuk', 'tidak bisa masuk', 'login pakai apa', 'login'],
-          jawab: '🔑 <strong>Login</strong> memakai salah satu: <strong>nomor HP</strong>, <strong>NISN/NIP/kode pegawai</strong>, atau <strong>email</strong>, ditambah kata sandi.<br>• Salah 5 kali berturut-turut → tunggu <strong>60 detik</strong> sebelum mencoba lagi.<br>• Akun <strong>nonaktif</strong> tidak bisa login; hubungi Manajer Bank Mini.' },
+          kunci: ['cara login', 'cara masuk', 'gagal login', 'tidak bisa login', 'gak bisa login', 'ga bisa masuk', 'tidak bisa masuk', 'login pakai apa', 'login pakai email', 'login email', 'nomor hp', 'login'],
+          jawab: '🔑 <strong>Login</strong> hanya memakai <strong>nomor HP</strong> yang terdaftar (boleh ditulis 08…, 62… atau +62…) ditambah kata sandi. Email dan NISN/NIP <strong>tidak</strong> dapat dipakai untuk login.<br>• Nomor HP Anda berubah? Minta Manajer Bank Mini memperbaruinya di Kelola Pengguna.<br>• Salah 5 kali berturut-turut → tunggu <strong>60 detik</strong> sebelum mencoba lagi.<br>• Akun <strong>nonaktif</strong> tidak bisa login; hubungi Manajer Bank Mini.' },
 
         { id: 'lupa-sandi', peran: ['semua'], tanya: 'Saya lupa kata sandi',
           kunci: ['lupa sandi', 'lupa password', 'lupa kata sandi', 'reset password', 'reset sandi', 'sandi lupa', 'password lupa', 'lupa'],

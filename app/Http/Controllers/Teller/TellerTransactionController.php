@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Teller;
 
+use App\Http\Controllers\Concerns\TanganiKesalahanInput;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\SiswaPraktik\BukaRekeningController;
 use App\Http\Requests\Teller\StoreTellerTransactionRequest;
@@ -12,9 +13,12 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Throwable;
 
 class TellerTransactionController extends Controller
 {
+    use TanganiKesalahanInput;
+
     public function bukaRekening(Request $request)
     {
         if ($request->user()->hasRole('teller')) {
@@ -44,16 +48,24 @@ class TellerTransactionController extends Controller
 
     public function storeSetoran(StoreTellerTransactionRequest $request, TellerTransactionService $service): RedirectResponse
     {
-        $result = $service->storeDirect((int) auth()->id(), $request->validated('no_rek'), (float) $request->validated('nominal'), 'setoran');
+        try {
+            $result = $service->storeDirect((int) auth()->id(), $request->validated('no_rek'), (float) $request->validated('nominal'), 'setoran');
 
-        return redirect()->route('tabungan.bukti.show', $result['transaksi_id'])->with('success', 'Setoran berhasil dicatat.');
+            return redirect()->route('tabungan.bukti.show', $result['transaksi_id'])->with('success', 'Setoran berhasil dicatat.');
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'menyimpan setoran tabungan');
+        }
     }
 
     public function storePenarikan(StoreTellerTransactionRequest $request, TellerTransactionService $service): RedirectResponse
     {
-        $result = $service->storeDirect((int) auth()->id(), $request->validated('no_rek'), (float) $request->validated('nominal'), 'penarikan');
+        try {
+            $result = $service->storeDirect((int) auth()->id(), $request->validated('no_rek'), (float) $request->validated('nominal'), 'penarikan');
 
-        return redirect()->route('tabungan.bukti.show', $result['transaksi_id'])->with('success', 'Penarikan berhasil dicatat.');
+            return redirect()->route('tabungan.bukti.show', $result['transaksi_id'])->with('success', 'Penarikan berhasil dicatat.');
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'menyimpan penarikan tabungan');
+        }
     }
 
     public function searchRekening(Request $request): JsonResponse

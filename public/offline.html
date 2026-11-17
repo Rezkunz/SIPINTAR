@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0D5C46">
+    <title>Sedang Offline — SIPINTAR</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            padding: 24px; background: #F8FAFC; color: #334155;
+            font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+        .kartu {
+            width: 100%; max-width: 420px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px;
+            padding: 32px 28px; text-align: center; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+        .kartu img { width: 72px; height: 72px; }
+        h1 { margin: 16px 0 8px; font-size: 20px; color: #0F172A; }
+        p { margin: 0 0 12px; font-size: 14px; line-height: 1.6; }
+        .catatan {
+            margin: 18px 0 22px; padding: 12px 14px; border-radius: 10px; background: #FEF3C7; color: #92400E;
+            font-size: 12.5px; line-height: 1.55; text-align: left;
+        }
+        button {
+            width: 100%; padding: 12px 16px; border: 0; border-radius: 10px; background: #0D5C46; color: #FFFFFF;
+            font-size: 14px; font-weight: 700; cursor: pointer;
+        }
+        button:hover { background: #0A4A38; }
+        button:focus-visible { outline: 3px solid #A7F3D0; outline-offset: 2px; }
+        .status { margin-top: 12px; font-size: 12px; color: #64748B; min-height: 16px; }
+    </style>
+</head>
+<body>
+    <main class="kartu">
+        <img src="/icons/icon-192.png" alt="SIPINTAR">
+        <h1>Anda sedang offline</h1>
+        <p>SIPINTAR membutuhkan koneksi internet untuk menampilkan data rekening, pinjaman, dan kas terbaru.</p>
+        <div class="catatan">
+            Demi keamanan, data keuangan tidak disimpan di perangkat ini, dan transaksi tidak dapat diproses
+            selama offline. Halaman akan dimuat ulang otomatis saat koneksi kembali.
+        </div>
+        <button type="button" id="cobaLagi">Coba Lagi</button>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+    </main>
+    <script>
+        const status = document.getElementById('status');
+        function muatUlang() {
+            status.textContent = 'Menghubungkan kembali…';
+            window.location.reload();
+        }
+        document.getElementById('cobaLagi').addEventListener('click', function () {
+            if (!navigator.onLine) {
+                status.textContent = 'Masih belum ada koneksi internet. Periksa Wi-Fi atau data seluler Anda.';
+                return;
+            }
+            muatUlang();
+        });
+        window.addEventListener('online', muatUlang);
+    </script>
+</body>
+</html>

@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\BendaharaMini;
 
+use App\Http\Controllers\Concerns\TanganiKesalahanInput;
 use App\Http\Controllers\Controller;
 use App\Services\AuditLogService;
 use App\Services\PeriodeLockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Throwable;
 
 class KasController extends Controller
 {
+    use TanganiKesalahanInput;
+
     /**
      * Resolve filter periode transaksi (harian, bulanan, tahunan, atau semua).
      */
@@ -168,52 +172,56 @@ class KasController extends Controller
         ]);
 
         try {
-            $periode = PeriodeLockService::assertPeriodeTerbuka($request->tgl_mutasi);
-        } catch (RuntimeException $e) {
-            return back()->withInput()->with('error', $e->getMessage());
-        }
-
-        $kasFisik = DB::table('tblKAS')->where('jenis_kas', 'kas')->first();
-
-        // Validasi kecukupan saldo jika keluar
-        if ($request->arah === 'keluar' && $kasFisik->saldo < $request->nominal) {
-            return back()->withInput()->with('error', 'Saldo kas tunai tidak mencukupi untuk transaksi pengeluaran ini.');
-        }
-
-        DB::transaction(function () use ($kasFisik, $periode, $request) {
-            $mutasiId = DB::table('tblMUTASI_KAS')->insertGetId([
-                'kas_id'       => $kasFisik->kas_id,
-                'periode_id'   => $periode->periode_id,
-                'user_id'      => auth()->id(),
-                'transaksi_id' => null,
-                'angsuran_id'  => null,
-                'pencairan_id' => null,
-                'tgl_mutasi'   => $request->tgl_mutasi,
-                'arah'         => $request->arah,
-                'nominal'      => $request->nominal,
-                'uraian'       => $request->uraian,
-            ], 'mutasi_kas_id');
-
-            if ($request->arah === 'masuk') {
-                DB::table('tblKAS')->where('kas_id', $kasFisik->kas_id)->increment('saldo', $request->nominal);
-            } else {
-                DB::table('tblKAS')->where('kas_id', $kasFisik->kas_id)->decrement('saldo', $request->nominal);
+            try {
+                $periode = PeriodeLockService::assertPeriodeTerbuka($request->tgl_mutasi);
+            } catch (RuntimeException $e) {
+                return back()->withInput()->with('error', $e->getMessage());
             }
 
-            AuditLogService::log(
-                aksi: 'MUTASI_KAS_HARIAN',
-                entitas: 'tblMUTASI_KAS',
-                entitasId: $mutasiId,
-                dataBaru: [
-                    'kas_id'  => $kasFisik->kas_id,
-                    'arah'    => $request->arah,
-                    'nominal' => $request->nominal,
-                    'uraian'  => $request->uraian,
-                ]
-            );
-        });
+            $kasFisik = DB::table('tblKAS')->where('jenis_kas', 'kas')->first();
 
-        return redirect()->route('kas.harian')->with('success', 'Transaksi kas harian berhasil dicatat.');
+            // Validasi kecukupan saldo jika keluar
+            if ($request->arah === 'keluar' && $kasFisik->saldo < $request->nominal) {
+                return back()->withInput()->with('error', 'Saldo kas tunai tidak mencukupi untuk transaksi pengeluaran ini.');
+            }
+
+            DB::transaction(function () use ($kasFisik, $periode, $request) {
+                $mutasiId = DB::table('tblMUTASI_KAS')->insertGetId([
+                    'kas_id'       => $kasFisik->kas_id,
+                    'periode_id'   => $periode->periode_id,
+                    'user_id'      => auth()->id(),
+                    'transaksi_id' => null,
+                    'angsuran_id'  => null,
+                    'pencairan_id' => null,
+                    'tgl_mutasi'   => $request->tgl_mutasi,
+                    'arah'         => $request->arah,
+                    'nominal'      => $request->nominal,
+                    'uraian'       => $request->uraian,
+                ], 'mutasi_kas_id');
+
+                if ($request->arah === 'masuk') {
+                    DB::table('tblKAS')->where('kas_id', $kasFisik->kas_id)->increment('saldo', $request->nominal);
+                } else {
+                    DB::table('tblKAS')->where('kas_id', $kasFisik->kas_id)->decrement('saldo', $request->nominal);
+                }
+
+                AuditLogService::log(
+                    aksi: 'MUTASI_KAS_HARIAN',
+                    entitas: 'tblMUTASI_KAS',
+                    entitasId: $mutasiId,
+                    dataBaru: [
+                        'kas_id'  => $kasFisik->kas_id,
+                        'arah'    => $request->arah,
+                        'nominal' => $request->nominal,
+                        'uraian'  => $request->uraian,
+                    ]
+                );
+            });
+
+            return redirect()->route('kas.harian')->with('success', 'Transaksi kas harian berhasil dicatat.');
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'mencatat mutasi kas tunai');
+        }
     }
 
     /**
@@ -275,51 +283,55 @@ class KasController extends Controller
         ]);
 
         try {
-            $periode = PeriodeLockService::assertPeriodeTerbuka($request->tgl_mutasi);
-        } catch (RuntimeException $e) {
-            return back()->withInput()->with('error', $e->getMessage());
-        }
-
-        $kasBank = DB::table('tblKAS')->where('jenis_kas', 'bank')->first();
-
-        if ($request->arah === 'keluar' && $kasBank->saldo < $request->nominal) {
-            return back()->withInput()->with('error', 'Saldo kas bank tidak mencukupi untuk transaksi penarikan/transfer ini.');
-        }
-
-        DB::transaction(function () use ($kasBank, $periode, $request) {
-            $mutasiId = DB::table('tblMUTASI_KAS')->insertGetId([
-                'kas_id'       => $kasBank->kas_id,
-                'periode_id'   => $periode->periode_id,
-                'user_id'      => auth()->id(),
-                'transaksi_id' => null,
-                'angsuran_id'  => null,
-                'pencairan_id' => null,
-                'tgl_mutasi'   => $request->tgl_mutasi,
-                'arah'         => $request->arah,
-                'nominal'      => $request->nominal,
-                'uraian'       => $request->uraian,
-            ], 'mutasi_kas_id');
-
-            if ($request->arah === 'masuk') {
-                DB::table('tblKAS')->where('kas_id', $kasBank->kas_id)->increment('saldo', $request->nominal);
-            } else {
-                DB::table('tblKAS')->where('kas_id', $kasBank->kas_id)->decrement('saldo', $request->nominal);
+            try {
+                $periode = PeriodeLockService::assertPeriodeTerbuka($request->tgl_mutasi);
+            } catch (RuntimeException $e) {
+                return back()->withInput()->with('error', $e->getMessage());
             }
 
-            AuditLogService::log(
-                aksi: 'MUTASI_KAS_BANK',
-                entitas: 'tblMUTASI_KAS',
-                entitasId: $mutasiId,
-                dataBaru: [
-                    'kas_id'  => $kasBank->kas_id,
-                    'arah'    => $request->arah,
-                    'nominal' => $request->nominal,
-                    'uraian'  => $request->uraian,
-                ]
-            );
-        });
+            $kasBank = DB::table('tblKAS')->where('jenis_kas', 'bank')->first();
 
-        return redirect()->route('kas.bank')->with('success', 'Transaksi kas bank berhasil dicatat.');
+            if ($request->arah === 'keluar' && $kasBank->saldo < $request->nominal) {
+                return back()->withInput()->with('error', 'Saldo kas bank tidak mencukupi untuk transaksi penarikan/transfer ini.');
+            }
+
+            DB::transaction(function () use ($kasBank, $periode, $request) {
+                $mutasiId = DB::table('tblMUTASI_KAS')->insertGetId([
+                    'kas_id'       => $kasBank->kas_id,
+                    'periode_id'   => $periode->periode_id,
+                    'user_id'      => auth()->id(),
+                    'transaksi_id' => null,
+                    'angsuran_id'  => null,
+                    'pencairan_id' => null,
+                    'tgl_mutasi'   => $request->tgl_mutasi,
+                    'arah'         => $request->arah,
+                    'nominal'      => $request->nominal,
+                    'uraian'       => $request->uraian,
+                ], 'mutasi_kas_id');
+
+                if ($request->arah === 'masuk') {
+                    DB::table('tblKAS')->where('kas_id', $kasBank->kas_id)->increment('saldo', $request->nominal);
+                } else {
+                    DB::table('tblKAS')->where('kas_id', $kasBank->kas_id)->decrement('saldo', $request->nominal);
+                }
+
+                AuditLogService::log(
+                    aksi: 'MUTASI_KAS_BANK',
+                    entitas: 'tblMUTASI_KAS',
+                    entitasId: $mutasiId,
+                    dataBaru: [
+                        'kas_id'  => $kasBank->kas_id,
+                        'arah'    => $request->arah,
+                        'nominal' => $request->nominal,
+                        'uraian'  => $request->uraian,
+                    ]
+                );
+            });
+
+            return redirect()->route('kas.bank')->with('success', 'Transaksi kas bank berhasil dicatat.');
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'mencatat mutasi kas bank');
+        }
     }
 }
 

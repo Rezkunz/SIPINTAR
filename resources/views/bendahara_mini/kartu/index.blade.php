@@ -25,18 +25,16 @@
                 <div style="font-size:12px; color:var(--text-muted);">Pilih kartu debitur untuk melihat detail matriks jadwal tagihan dan riwayat transaksi</div>
             </div>
             
-            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                <div style="width:280px; position:relative;">
-                    <input type="text" id="searchKartu" class="form-input" placeholder="Cari nama, unit, ID pinjaman..." 
-                           oninput="filterKartuDebitur(this.value)"
-                           style="padding:8px 14px; font-size:13px; border-radius:8px; width:100%;">
-                </div>
-                <span class="badge-pill green">{{ $daftarPeminjam->count() }} Debitur Terdaftar</span>
-            </div>
+            <span class="badge-pill green">{{ $tabs['semua']['jumlah'] }} Debitur Terdaftar</span>
         </div>
 
+        @include('partials.daftar_toolbar', [
+            'id' => 'kartu', 'tabs' => $tabs, 'tab' => $tab, 'q' => $q, 'pageName' => 'hal_kartu',
+            'placeholder' => 'Cari nama, unit, no. rekening, atau ID pinjaman',
+        ])
+
         {{-- Grid Kartu Nasabah --}}
-        <div id="gridKartuDebitur" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap:20px; padding:6px 0;">
+        <div id="gridKartuDebitur" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap:16px; padding:16px 20px;">
             @forelse ($daftarPeminjam as $dp)
                 @php
                     $isLunas = $dp->status_pinjaman === 'lunas';
@@ -46,7 +44,7 @@
                      style="background: #FFFFFF; border: 1.5px solid {{ $isLunas ? '#E2E8F0' : '#A7F3D0' }}; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05); display: flex; flex-direction: column; transition: transform 0.15s ease, box-shadow 0.15s ease;">
                     
                     {{-- Header Kartu (Gaya Fintech Passbook) --}}
-                    <div style="background: {{ $isLunas ? 'linear-gradient(135deg, #475569 0%, #334155 100%)' : 'linear-gradient(135deg, #0D5C46 0%, #064030 100%)' }}; padding: 16px 18px; color: #FFFFFF; position: relative; overflow: hidden;">
+                    <div class="kartu-kepala" style="background: {{ $isLunas ? 'linear-gradient(135deg, #475569 0%, #334155 100%)' : 'linear-gradient(135deg, #0D5C46 0%, #064030 100%)' }}; padding: 16px 18px; color: #FFFFFF; position: relative; overflow: hidden;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; position: relative; z-index: 1;">
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <div style="width:24px; height:24px; border-radius:5px; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center;">
@@ -83,13 +81,18 @@
                                 <div style="font-weight: 800; font-size: 15px; color: var(--text-heading); line-height: 1.3;">
                                     {{ $dp->nama_nasabah }}
                                 </div>
-                                <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">
+                                <div class="kartu-unit" style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">
                                     {{ $dp->kelas_unit ?? 'Pegawai SMKN 1 Lemahabang' }} &bull; Rek: <span style="font-family:monospace;">{{ $dp->no_rek ?? '-' }}</span>
+                                </div>
+                                {{-- Ringkasan untuk HP (header kartu disembunyikan di layar kecil) --}}
+                                <div class="kartu-hp-meta">
+                                    #PINJ-{{ str_pad($dp->pinjaman_id, 4, '0', STR_PAD_LEFT) }} &bull; {{ $dp->tenor }} Bln &bull; {{ $dp->metode_bayar === 'potong_gaji' ? 'Payroll' : 'Tunai' }}
+                                    <span class="badge-pill {{ $isLunas ? 'gray' : 'green' }}">{{ $isLunas ? 'Lunas' : 'Aktif' }}</span>
                                 </div>
                             </div>
 
                             {{-- Financial Metrics 3 Kolom --}}
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px 12px; margin-bottom: 14px;">
+                            <div class="kartu-metrik" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 10px 12px; margin-bottom: 14px;">
                                 <div>
                                     <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Plafon</div>
                                     <div style="font-size: 13px; font-weight: 800; color: var(--text-heading); margin-top: 2px;">
@@ -111,7 +114,7 @@
                             </div>
 
                             {{-- Progress Bar Angsuran --}}
-                            <div style="margin-bottom: 16px;">
+                            <div class="kartu-progres" style="margin-bottom: 16px;">
                                 <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px; margin-bottom:5px;">
                                     <span style="color:var(--text-muted);">Kemajuan Pelunasan:</span>
                                     <strong style="color:var(--text-heading);">{{ $dp->lunas_jadwal }} dari {{ $dp->total_jadwal }} Bulan ({{ $dp->persen_lunas }}%)</strong>
@@ -123,7 +126,7 @@
                         </div>
 
                         {{-- Tombol Buka Kartu --}}
-                        <div style="padding-top: 12px; border-top: 1px dashed #CBD5E1;">
+                        <div class="kartu-tombol" style="padding-top: 12px; border-top: 1px dashed #CBD5E1;">
                             <a href="{{ route('bbm.kartu.index', ['pinjaman_id' => $dp->pinjaman_id]) }}" 
                                class="btn-ui btn-ui-sm {{ $isLunas ? 'btn-ui-outline' : 'btn-ui-primary' }}" 
                                style="width: 100%; justify-content: center; font-weight: 700; padding: 9px 14px; text-decoration: none;">
@@ -136,10 +139,18 @@
                 </div>
             @empty
                 <div style="grid-column: 1 / -1; padding: 48px; text-align: center; color: var(--text-muted);">
-                    Belum ada fasilitas pinjaman yang dicairkan.
+                    @if ($q !== '')
+                        Tidak ada debitur yang cocok dengan "{{ $q }}".
+                    @else
+                        Belum ada fasilitas pinjaman pada kategori ini.
+                    @endif
                 </div>
             @endforelse
         </div>
+
+        @if ($daftarPeminjam->hasPages())
+            <div style="padding: 0 20px 12px;">{{ $daftarPeminjam->links() }}</div>
+        @endif
     </div>
 
 @else
@@ -162,7 +173,7 @@
             </a>
             <span style="font-size:12px; color:var(--text-muted);">Ganti Debitur:</span>
             <select class="form-select" onchange="if(this.value) window.location.href='{{ route('bbm.kartu.index') }}?pinjaman_id=' + this.value;" style="padding:6px 12px; font-size:12.5px; border-radius:6px;">
-                @foreach ($daftarPeminjam as $dp)
+                @foreach ($daftarPilihan as $dp)
                     <option value="{{ $dp->pinjaman_id }}" {{ $pinjamanTerpilih->pinjaman_id == $dp->pinjaman_id ? 'selected' : '' }}>
                         {{ $dp->nama_nasabah }} (#PINJ-{{ $dp->pinjaman_id }})
                     </option>

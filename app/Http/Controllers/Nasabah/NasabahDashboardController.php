@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers\Nasabah;
 
+use App\Http\Controllers\Concerns\TanganiKesalahanInput;
 use App\Http\Controllers\Controller;
 use App\Models\Nasabah;
 use App\Models\Rekening;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class NasabahDashboardController extends Controller
 {
+    use TanganiKesalahanInput;
+
     /**
      * Tampilkan dashboard informasi rekening mandiri nasabah.
      * Siswa (non_pegawai) → dashboard_siswa (tabungan & tarik tunai saja)
@@ -250,49 +254,53 @@ class NasabahDashboardController extends Controller
             'metode_bayar.required' => 'Metode pengembalian angsuran wajib dipilih.',
         ]);
 
-        $pinjamanAktif = DB::table('tblPINJAMAN')
-            ->where('nasabah_id', $nasabah->nasabah_id)
-            ->whereIn('status_pinjaman', ['diajukan', 'layak', 'cair'])
-            ->first();
-
-        if ($pinjamanAktif) {
-            return redirect()->route('nasabah.pinjaman')
-                ->with('error', "Pengajuan ditolak: Anda masih memiliki fasilitas pinjaman yang sedang berjalan (#PINJ-{$pinjamanAktif->pinjaman_id}). Seluruh kewajiban angsuran harus dilunasi terlebih dahulu.");
-        }
-
         try {
-            \App\Services\PeriodeLockService::assertPeriodeTerbuka(now()->toDateString());
-        } catch (\RuntimeException $e) {
-            return back()->withInput()->with('error', $e->getMessage());
-        }
+            $pinjamanAktif = DB::table('tblPINJAMAN')
+                ->where('nasabah_id', $nasabah->nasabah_id)
+                ->whereIn('status_pinjaman', ['diajukan', 'layak', 'cair'])
+                ->first();
 
-        $pinjamanId = DB::table('tblPINJAMAN')->insertGetId([
-            'nasabah_id'       => $nasabah->nasabah_id,
-            'user_id'          => $user->user_id,
-            'nominal_pinjaman' => $request->nominal_pinjaman,
-            'tenor'            => $request->tenor,
-            'bunga_persen'     => 2.00,
-            'tgl_pengajuan'    => now()->toDateString(),
-            'metode_bayar'     => $request->metode_bayar,
-            'keperluan'        => trim(strip_tags($request->keperluan)),
-            'status_pinjaman'  => 'diajukan',
-        ], 'pinjaman_id');
+            if ($pinjamanAktif) {
+                return redirect()->route('nasabah.pinjaman')
+                    ->with('error', "Pengajuan ditolak: Anda masih memiliki fasilitas pinjaman yang sedang berjalan (#PINJ-{$pinjamanAktif->pinjaman_id}). Seluruh kewajiban angsuran harus dilunasi terlebih dahulu.");
+            }
 
-        \App\Services\AuditLogService::log(
-            aksi: 'PENGAJUAN_PINJAMAN_NASABAH',
-            entitas: 'tblPINJAMAN',
-            entitasId: $pinjamanId,
-            dataBaru: [
+            try {
+                \App\Services\PeriodeLockService::assertPeriodeTerbuka(now()->toDateString());
+            } catch (\RuntimeException $e) {
+                return back()->withInput()->with('error', $e->getMessage());
+            }
+
+            $pinjamanId = DB::table('tblPINJAMAN')->insertGetId([
                 'nasabah_id'       => $nasabah->nasabah_id,
+                'user_id'          => $user->user_id,
                 'nominal_pinjaman' => $request->nominal_pinjaman,
                 'tenor'            => $request->tenor,
+                'bunga_persen'     => 2.00,
+                'tgl_pengajuan'    => now()->toDateString(),
                 'metode_bayar'     => $request->metode_bayar,
-                'keperluan'        => $request->keperluan,
-            ]
-        );
+                'keperluan'        => trim(strip_tags($request->keperluan)),
+                'status_pinjaman'  => 'diajukan',
+            ], 'pinjaman_id');
 
-        return redirect()->route('nasabah.pinjaman')
-            ->with('success', 'Permohonan pinjaman Anda berhasil diajukan! Saat ini sedang dalam antrean verifikasi & penilaian kelayakan oleh Komite Bank Mini.');
+            \App\Services\AuditLogService::log(
+                aksi: 'PENGAJUAN_PINJAMAN_NASABAH',
+                entitas: 'tblPINJAMAN',
+                entitasId: $pinjamanId,
+                dataBaru: [
+                    'nasabah_id'       => $nasabah->nasabah_id,
+                    'nominal_pinjaman' => $request->nominal_pinjaman,
+                    'tenor'            => $request->tenor,
+                    'metode_bayar'     => $request->metode_bayar,
+                    'keperluan'        => $request->keperluan,
+                ]
+            );
+
+            return redirect()->route('nasabah.pinjaman')
+                ->with('success', 'Permohonan pinjaman Anda berhasil diajukan! Saat ini sedang dalam antrean verifikasi & penilaian kelayakan oleh Komite Bank Mini.');
+        } catch (Throwable $e) {
+            return $this->gagalProses($e, 'mengajukan pinjaman');
+        }
     }
 
     /**

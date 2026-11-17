@@ -160,7 +160,7 @@ class KelolaPenggunaTest extends TestCase
             ->assertRedirect(route('login'));
         $this->assertGuest();
 
-        $this->post(route('login.post'), ['login' => 'TLR-001', 'password' => 'password'])
+        $this->post(route('login.post'), ['login' => '081200000001', 'password' => 'password'])
             ->assertSessionHasErrors('login');
 
         // Aktifkan kembali
