@@ -58,11 +58,25 @@ class LaporanTahunanController extends Controller
             fputcsv($output, ['PENDAPATAN'], ';');
             fputcsv($output, ['Pendapatan Jasa Pinjaman', $t['jasa_pinjaman']], ';');
             fputcsv($output, ['Pendapatan Lain-lain (kas manual)', $t['pendapatan_lain']], ';');
+            foreach ($laporan['kasManual']->where('arah', 'masuk') as $k) {
+                fputcsv($output, [
+                    '   - ' . Carbon::parse($k->tgl_mutasi)->format('d/m/Y') . ' ' . ($k->uraian ?: 'Tanpa keterangan')
+                        . ' (' . ($k->jenis_kas === 'bank' ? 'Bank' : 'Tunai') . ')',
+                    (float) $k->nominal,
+                ], ';');
+            }
             fputcsv($output, ['Total Pendapatan', $t['pendapatan']], ';');
             fputcsv($output, ['BEBAN'], ';');
             fputcsv($output, ['Beban Jasa Tabungan Guru/Karyawan', $t['jasa_guru']], ';');
             fputcsv($output, ['Beban Jasa Tabungan Siswa', $t['jasa_siswa']], ';');
             fputcsv($output, ['Beban Operasional (kas manual)', $t['beban_operasional']], ';');
+            foreach ($laporan['kasManual']->where('arah', 'keluar') as $k) {
+                fputcsv($output, [
+                    '   - ' . Carbon::parse($k->tgl_mutasi)->format('d/m/Y') . ' ' . ($k->uraian ?: 'Tanpa keterangan')
+                        . ' (' . ($k->jenis_kas === 'bank' ? 'Bank' : 'Tunai') . ')',
+                    (float) $k->nominal,
+                ], ';');
+            }
             fputcsv($output, ['Total Beban', $t['beban']], ';');
             fputcsv($output, [$t['laba'] >= 0 ? 'LABA BERSIH' : 'RUGI BERSIH', $t['laba']], ';');
 
@@ -102,15 +116,26 @@ class LaporanTahunanController extends Controller
         $t       = $laporan['total'];
         $baris   = fn (array $sel, ?string $gaya = null) => EksporLaporanService::baris($sel, $gaya);
 
+        // Rincian pendapatan lain-lain (kas manual masuk) & beban operasional (kas manual keluar), otomatis
+        $rincianKas = fn (string $arah) => $laporan['kasManual']->where('arah', $arah)->values()->map(fn ($k) => $baris([
+            '        - ' . Carbon::parse($k->tgl_mutasi)->format('d/m/Y') . ' ' . ($k->uraian ?: 'Tanpa keterangan')
+                . ' (' . ($k->jenis_kas === 'bank' ? 'Bank' : 'Tunai') . ')',
+            (float) $k->nominal, null,
+        ]))->all();
+        $rincianLain  = $rincianKas('masuk');
+        $rincianBeban = $rincianKas('keluar');
+
         $labaRugi = [
             $baris(['PENDAPATAN', null, null], 'grup'),
             $baris(['   Pendapatan Jasa Pinjaman (Interest Revenue)', $t['jasa_pinjaman'], null]),
             $baris(['   Pendapatan Lain-lain (kas manual masuk)', $t['pendapatan_lain'], null]),
+            ...$rincianLain,
             $baris(['Total Pendapatan', null, $t['pendapatan']], 'subtotal'),
             $baris(['BEBAN', null, null], 'grup'),
             $baris(['   Beban Jasa Tabungan Guru/Karyawan (Interest Takar Expense)', $t['jasa_guru'], null]),
             $baris(['   Beban Jasa Tabungan Siswa (Interest Tapel Expense)', $t['jasa_siswa'], null]),
             $baris(['   Beban Operasional (kas manual keluar)', $t['beban_operasional'], null]),
+            ...$rincianBeban,
             $baris(['Total Beban', null, -$t['beban']], 'subtotal'),
             $baris([$t['laba'] >= 0 ? 'LABA BERSIH (Net Profit)' : 'RUGI BERSIH (Net Loss)', null, $t['laba']], 'total'),
         ];
