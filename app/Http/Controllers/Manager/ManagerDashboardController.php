@@ -17,9 +17,14 @@ class ManagerDashboardController extends Controller
         $hariIni   = now();
         $awalBulan = $hariIni->copy()->startOfMonth();
 
-        // 1. Dana Pihak Ketiga = saldo tabungan dari riwayat transaksi (sumber Neraca & Rekap Bulanan)
-        $tabunganSiswa = JasaTabunganService::totalSaldo('siswa', $hariIni->copy()->endOfDay());
-        $tabunganGuru  = JasaTabunganService::totalSaldo('guru', $hariIni->copy()->endOfDay());
+        // 1. Dana Pihak Ketiga = saldo rekening aktif (sumber yang sama dengan dashboard Bendahara BBM)
+        $saldoAktif = fn (string $kategori) => (float) DB::table('tblREKENING')
+            ->join('tblNASABAH', 'tblREKENING.nasabah_id', '=', 'tblNASABAH.nasabah_id')
+            ->where('tblREKENING.status_rekening', 'aktif')
+            ->where('tblNASABAH.jenis_nasabah', JasaTabunganService::KATEGORI[$kategori]['jenis'])
+            ->sum('tblREKENING.saldo');
+        $tabunganSiswa = $saldoAktif('siswa');
+        $tabunganGuru  = $saldoAktif('guru');
         $totalTabungan = $tabunganSiswa + $tabunganGuru;
 
         $jumlahRekeningAktif = DB::table('tblREKENING')->where('status_rekening', 'aktif')->count();
