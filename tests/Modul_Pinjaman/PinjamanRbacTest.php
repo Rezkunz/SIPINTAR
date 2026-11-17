@@ -191,6 +191,7 @@ class PinjamanRbacTest extends TestCase
 
         // Uji submit pengajuan pinjaman oleh BBM
         $postResp = $this->post(route('bbm.pinjaman.store'), [
+            'keperluan'        => 'Biaya pendidikan anak (uji)',
             'nasabah_id'       => $this->nasabah1->nasabah_id,
             'nominal_pinjaman' => 5000000,
             'tenor'            => 10,
@@ -467,6 +468,7 @@ class PinjamanRbacTest extends TestCase
 
         // Submit pengajuan pinjaman
         $postResp = $this->post(route('nasabah.pinjaman.store'), [
+            'keperluan'        => 'Biaya pendidikan anak (uji)',
             'nominal_pinjaman' => 5000000,
             'tenor'            => 10,
             'metode_bayar'     => 'potong_gaji',
@@ -548,6 +550,7 @@ class PinjamanRbacTest extends TestCase
 
         // D. Cek jika BBM mencoba submit pinjaman untuk nasabah pending: Ditolak dengan pesan error
         $respBbmStore = $this->post(route('bbm.pinjaman.store'), [
+            'keperluan'        => 'Biaya pendidikan anak (uji)',
             'nasabah_id'       => $nasabahPending->nasabah_id,
             'nominal_pinjaman' => 3000000,
             'tenor'            => 10,
@@ -585,6 +588,7 @@ class PinjamanRbacTest extends TestCase
 
         // Percobaan submit form juga harus ditolak
         $respSubmit = $this->post(route('nasabah.pinjaman.store'), [
+            'keperluan'        => 'Biaya pendidikan anak (uji)',
             'nominal_pinjaman' => 1000000,
             'tenor'            => 3,
             'metode_bayar'     => 'potong_gaji',
@@ -602,6 +606,7 @@ class PinjamanRbacTest extends TestCase
 
         // BBM submit permohonan baru untuk nasabah tersebut harus ditolak
         $respBbmStore = $this->post(route('bbm.pinjaman.store'), [
+            'keperluan'        => 'Biaya pendidikan anak (uji)',
             'nasabah_id'       => $this->nasabah1->nasabah_id,
             'nominal_pinjaman' => 1500000,
             'tenor'            => 4,
@@ -672,6 +677,7 @@ class PinjamanRbacTest extends TestCase
 
         // 4. Koreksi / batalkan angsuran tersebut
         $koreksiResp = $this->post(route('bbm.angsuran.koreksi.proses', $angsuran1->angsuran_id), [
+            'tipe_koreksi'   => 'batal',
             'alasan_koreksi' => 'Salah input nasabah pembayar di loket',
         ]);
         $koreksiResp->assertSessionHas('success');

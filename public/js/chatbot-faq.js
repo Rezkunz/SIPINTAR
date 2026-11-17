@@ -245,7 +245,8 @@
 
         { id: 'tunjangan', peran: ['bendahara'], tanya: 'Bagaimana memperbarui data gaji/tunjangan pegawai?',
           kunci: ['tunjangan', 'data gaji', 'gaji pegawai', 'data tunjangan', 'update gaji'],
-          jawab: 'ℹ️ Data gaji pokok & tunjangan pegawai saat ini tersimpan di data nasabah dan diperbarui oleh <strong>Bendahara Bank Mini</strong> saat pengajuan/penilaian pinjaman. Serahkan perubahan data tunjangan kepada Bendahara Bank Mini.' },
+          jawab: '🧾 Menu <strong>Data Tunjangan</strong>: pilih bulan, isi gaji pokok, tunjangan, dan <strong>potongan lain</strong> (mis. pajak) tiap pegawai, lalu <strong>Simpan</strong>. Bisa juga <strong>Salin dari Bulan Lalu</strong> atau <strong>Impor CSV</strong> (unduh templatenya dulu). Kolom <em>tunjangan bersih</em> langsung menunjukkan pegawai yang tunjangannya tidak cukup untuk dipotong angsuran. Data ini dipakai Bendahara Bank Mini saat menilai kelayakan dan menyusun rencana potongan.',
+          menu: [['Data Tunjangan', '/bendahara/tunjangan']] },
 
         // ───────────────────────── BENDAHARA BANK MINI ─────────────────────────
         { id: 'pengajuan-bbm', peran: ['bendahara_mini'], tanya: 'Cara menginput pengajuan pinjaman pegawai?',

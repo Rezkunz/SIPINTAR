@@ -290,34 +290,15 @@ class PinjamanKasDemoSeeder extends Seeder
             'tgl_nilai'       => $twoMonthsAgo->copy()->startOfMonth()->addDays(1)->toDateString(),
         ]);
 
-        DB::table('tblPENCAIRAN')->insert([
-            'pinjaman_id'   => $pinj3Id,
-            'user_id'       => $bbmUser->user_id,
-            'tgl_cair'      => $tglCair3,
-            'nominal_cair'  => 6000000,
-        ]);
+        $this->catatPencairan($pinj3Id, 6000000, $tglCair3, $bbmUser->user_id);
 
         $jadwal3 = PinjamanCalculatorService::generateJadwalAngsuran($pinj3Id, 6000000, 6, $tglCair3, 2.0);
         foreach ($jadwal3 as $row) {
             DB::table('tblJADWAL_ANGSURAN')->insert($row);
         }
 
-        // Bulan ke-1 (Oktober 2026) sudah lunas melalui paket potongan Oktober
+        // Bulan ke-1 (Oktober 2026) dilunasi melalui paket potongan Oktober (dibukukan di bagian paket di bawah)
         $jadwalBulan1 = DB::table('tblJADWAL_ANGSURAN')->where('pinjaman_id', $pinj3Id)->where('angsuran_ke', 1)->first();
-        if ($jadwalBulan1) {
-            DB::table('tblANGSURAN')->insert([
-                'jadwal_angsuran_id' => $jadwalBulan1->jadwal_angsuran_id,
-                'detail_potongan_id' => null,
-                'user_id'            => $bbmUser->user_id,
-                'tgl_bayar'          => $jadwalBulan1->jatuh_tempo,
-                'jenis_bayar'        => 'angsuran',
-                'bayar_pokok'        => $jadwalBulan1->pokok,
-                'bayar_bunga'        => $jadwalBulan1->bunga,
-            ]);
-            DB::table('tblJADWAL_ANGSURAN')
-                ->where('jadwal_angsuran_id', $jadwalBulan1->jadwal_angsuran_id)
-                ->update(['status_bayar' => 'lunas']);
-        }
 
         // =========================================================================
         // SKENARIO 4: Aktif Berjalan — Jalur Bayar Langsung / Tunai Loket BBM
@@ -347,12 +328,7 @@ class PinjamanKasDemoSeeder extends Seeder
             'tgl_nilai'       => $prevMonth->copy()->startOfMonth()->addDays(3)->toDateString(),
         ]);
 
-        DB::table('tblPENCAIRAN')->insert([
-            'pinjaman_id'   => $pinj4Id,
-            'user_id'       => $bbmUser->user_id,
-            'tgl_cair'      => $tglCair4,
-            'nominal_cair'  => 4000000,
-        ]);
+        $this->catatPencairan($pinj4Id, 4000000, $tglCair4, $bbmUser->user_id);
 
         $jadwal4 = PinjamanCalculatorService::generateJadwalAngsuran($pinj4Id, 4000000, 4, $tglCair4, 2.0);
         foreach ($jadwal4 as $row) {
@@ -362,18 +338,7 @@ class PinjamanKasDemoSeeder extends Seeder
         // Bayar 1x angsuran langsung ke kas tunai BBM
         $jadwal4_1 = DB::table('tblJADWAL_ANGSURAN')->where('pinjaman_id', $pinj4Id)->where('angsuran_ke', 1)->first();
         if ($jadwal4_1) {
-            DB::table('tblANGSURAN')->insert([
-                'jadwal_angsuran_id' => $jadwal4_1->jadwal_angsuran_id,
-                'detail_potongan_id' => null,
-                'user_id'            => $bbmUser->user_id,
-                'tgl_bayar'          => $jadwal4_1->jatuh_tempo,
-                'jenis_bayar'        => 'angsuran',
-                'bayar_pokok'        => $jadwal4_1->pokok,
-                'bayar_bunga'        => $jadwal4_1->bunga,
-            ]);
-            DB::table('tblJADWAL_ANGSURAN')
-                ->where('jadwal_angsuran_id', $jadwal4_1->jadwal_angsuran_id)
-                ->update(['status_bayar' => 'lunas']);
+            $this->catatAngsuranLangsung($jadwal4_1, $jadwal4_1->jatuh_tempo, $bbmUser->user_id);
         }
 
         // =========================================================================
@@ -394,27 +359,13 @@ class PinjamanKasDemoSeeder extends Seeder
             'status_pinjaman'  => 'lunas',
         ], 'pinjaman_id');
 
-        DB::table('tblPENCAIRAN')->insert([
-            'pinjaman_id'   => $pinj5Id,
-            'user_id'       => $bbmUser->user_id,
-            'tgl_cair'      => $tglCair5,
-            'nominal_cair'  => 2000000,
-        ]);
+        $this->catatPencairan($pinj5Id, 2000000, $tglCair5, $bbmUser->user_id);
 
         $jadwal5 = PinjamanCalculatorService::generateJadwalAngsuran($pinj5Id, 2000000, 2, $tglCair5, 2.0);
         foreach ($jadwal5 as $row) {
-            $row['status_bayar'] = 'lunas';
             $jId = DB::table('tblJADWAL_ANGSURAN')->insertGetId($row, 'jadwal_angsuran_id');
-
-            DB::table('tblANGSURAN')->insert([
-                'jadwal_angsuran_id' => $jId,
-                'detail_potongan_id' => null,
-                'user_id'            => $bbmUser->user_id,
-                'tgl_bayar'          => $row['jatuh_tempo'],
-                'jenis_bayar'        => 'angsuran',
-                'bayar_pokok'        => $row['pokok'],
-                'bayar_bunga'        => $row['bunga'],
-            ]);
+            $jadwal = DB::table('tblJADWAL_ANGSURAN')->where('jadwal_angsuran_id', $jId)->first();
+            $this->catatAngsuranLangsung($jadwal, $row['jatuh_tempo'], $bbmUser->user_id);
         }
 
         // =========================================================================
@@ -446,12 +397,7 @@ class PinjamanKasDemoSeeder extends Seeder
             'tgl_nilai'       => $twoMonthsAgo->copy()->startOfMonth()->addDays(5)->toDateString(),
         ]);
 
-        DB::table('tblPENCAIRAN')->insert([
-            'pinjaman_id'   => $pinj6Id,
-            'user_id'       => $bbmUser->user_id,
-            'tgl_cair'      => $tglCair6,
-            'nominal_cair'  => 6000000,
-        ]);
+        $this->catatPencairan($pinj6Id, 6000000, $tglCair6, $bbmUser->user_id);
 
         $jadwal6 = PinjamanCalculatorService::generateJadwalAngsuran($pinj6Id, 6000000, 6, $tglCair6, 2.0);
         foreach ($jadwal6 as $row) {
@@ -487,12 +433,7 @@ class PinjamanKasDemoSeeder extends Seeder
             'tgl_nilai'       => $twoMonthsAgo->copy()->startOfMonth()->addDays(10)->toDateString(),
         ]);
 
-        DB::table('tblPENCAIRAN')->insert([
-            'pinjaman_id'   => $pinj7Id,
-            'user_id'       => $bbmUser->user_id,
-            'tgl_cair'      => $tglCair7,
-            'nominal_cair'  => 4000000,
-        ]);
+        $this->catatPencairan($pinj7Id, 4000000, $tglCair7, $bbmUser->user_id);
 
         $jadwal7 = PinjamanCalculatorService::generateJadwalAngsuran($pinj7Id, 4000000, 4, $tglCair7, 2.0);
         foreach ($jadwal7 as $row) {
@@ -528,12 +469,7 @@ class PinjamanKasDemoSeeder extends Seeder
             'tgl_nilai'       => $prevMonth->copy()->startOfMonth()->addDays(2)->toDateString(),
         ]);
 
-        DB::table('tblPENCAIRAN')->insert([
-            'pinjaman_id'   => $pinj8Id,
-            'user_id'       => $bbmUser->user_id,
-            'tgl_cair'      => $tglCair8,
-            'nominal_cair'  => 3000000,
-        ]);
+        $this->catatPencairan($pinj8Id, 3000000, $tglCair8, $bbmUser->user_id);
 
         $jadwal8 = PinjamanCalculatorService::generateJadwalAngsuran($pinj8Id, 3000000, 6, $tglCair8, 2.0);
         foreach ($jadwal8 as $row) {
@@ -566,14 +502,16 @@ class PinjamanKasDemoSeeder extends Seeder
                 'status_potongan'   => 'selesai',
             ], 'rencana_potongan_id');
 
-            DB::table('tblDETAIL_POTONGAN')->insert([
+            $detailOktId = DB::table('tblDETAIL_POTONGAN')->insertGetId([
                 'rencana_potongan_id' => $rpOktId,
                 'jadwal_angsuran_id'  => $jadwalBulan1->jadwal_angsuran_id,
                 'nominal_rencana'     => $nomOkt,
                 'hasil_potongan'      => 'berhasil',
                 'nominal_realisasi'   => $nomOkt,
                 'keterangan'          => 'Lunas dipotong utuh',
-            ]);
+            ], 'detail_potongan_id');
+
+            $this->bukukanPaketPotongan($rpOktId, $periodeOkt->periode_id, $bbmUser->user_id, $prevMonth->copy()->endOfMonth()->toDateString());
         }
 
         $jadwalBulan2 = DB::table('tblJADWAL_ANGSURAN')->where('pinjaman_id', $pinj3Id)->where('angsuran_ke', 2)->first();
@@ -604,6 +542,144 @@ class PinjamanKasDemoSeeder extends Seeder
                 'keterangan'          => 'Dipotong penuh dari tunjangan',
             ]);
         }
+    }
+
+    /**
+     * Pencairan seperti di aplikasi: catat pencairan, mutasi kas keluar, dan kurangi saldo kas tunai.
+     */
+    private function catatPencairan(int $pinjamanId, float $nominal, string $tglCair, int $userId): void
+    {
+        $kas = DB::table('tblKAS')->where('jenis_kas', 'kas')->first();
+        $pinjaman = DB::table('tblPINJAMAN as p')
+            ->join('tblNASABAH as n', 'p.nasabah_id', '=', 'n.nasabah_id')
+            ->where('p.pinjaman_id', $pinjamanId)
+            ->select('p.tenor', 'n.nama_nasabah')
+            ->first();
+
+        $pencairanId = DB::table('tblPENCAIRAN')->insertGetId([
+            'pinjaman_id'  => $pinjamanId,
+            'user_id'      => $userId,
+            'tgl_cair'     => $tglCair,
+            'nominal_cair' => $nominal,
+            'metode_cair'  => 'cash',
+        ], 'pencairan_id');
+
+        DB::table('tblMUTASI_KAS')->insert([
+            'kas_id'       => $kas->kas_id,
+            'periode_id'   => $this->periodeId($userId, $tglCair),
+            'user_id'      => $userId,
+            'transaksi_id' => null,
+            'angsuran_id'  => null,
+            'pencairan_id' => $pencairanId,
+            'tgl_mutasi'   => $tglCair,
+            'arah'         => 'keluar',
+            'nominal'      => $nominal,
+            'uraian'       => "Pencairan pinjaman Tunai (Cash) #PINJ-{$pinjamanId} a.n. {$pinjaman->nama_nasabah} ({$pinjaman->tenor} bln)",
+        ]);
+
+        DB::table('tblKAS')->where('kas_id', $kas->kas_id)->decrement('saldo', $nominal);
+    }
+
+    /**
+     * Angsuran langsung seperti di aplikasi: catat angsuran, tandai lunas, mutasi kas masuk, tambah saldo kas tunai.
+     */
+    private function catatAngsuranLangsung(object $jadwal, string $tglBayar, int $userId): void
+    {
+        $kas = DB::table('tblKAS')->where('jenis_kas', 'kas')->first();
+        $total = (float) $jadwal->pokok + (float) $jadwal->bunga;
+
+        $angsuranId = DB::table('tblANGSURAN')->insertGetId([
+            'jadwal_angsuran_id' => $jadwal->jadwal_angsuran_id,
+            'detail_potongan_id' => null,
+            'user_id'            => $userId,
+            'tgl_bayar'          => $tglBayar,
+            'jenis_bayar'        => 'angsuran',
+            'bayar_pokok'        => $jadwal->pokok,
+            'bayar_bunga'        => $jadwal->bunga,
+        ], 'angsuran_id');
+
+        DB::table('tblJADWAL_ANGSURAN')->where('jadwal_angsuran_id', $jadwal->jadwal_angsuran_id)->update(['status_bayar' => 'lunas']);
+
+        DB::table('tblMUTASI_KAS')->insert([
+            'kas_id'       => $kas->kas_id,
+            'periode_id'   => $this->periodeId($userId, $tglBayar),
+            'user_id'      => $userId,
+            'transaksi_id' => null,
+            'angsuran_id'  => $angsuranId,
+            'pencairan_id' => null,
+            'tgl_mutasi'   => $tglBayar,
+            'arah'         => 'masuk',
+            'nominal'      => $total,
+            'uraian'       => "Penerimaan angsuran langsung ke-{$jadwal->angsuran_ke} pinjaman #PINJ-{$jadwal->pinjaman_id}",
+        ]);
+
+        DB::table('tblKAS')->where('kas_id', $kas->kas_id)->increment('saldo', $total);
+
+        $this->tandaiLunasBilaSelesai((int) $jadwal->pinjaman_id);
+    }
+
+    /**
+     * Paket potongan yang sudah diterima Bank Mini: angsuran tiap detail "berhasil" dibukukan
+     * dengan detail_potongan_id, lalu satu mutasi kas bank gabungan per paket (seperti konfirmasi di aplikasi).
+     */
+    private function bukukanPaketPotongan(int $rencanaId, int $periodeId, int $userId, string $tglTerima): void
+    {
+        $kasBank = DB::table('tblKAS')->where('jenis_kas', 'bank')->first();
+        $total = 0.0;
+
+        $details = DB::table('tblDETAIL_POTONGAN as dp')
+            ->join('tblJADWAL_ANGSURAN as ja', 'dp.jadwal_angsuran_id', '=', 'ja.jadwal_angsuran_id')
+            ->where('dp.rencana_potongan_id', $rencanaId)
+            ->where('dp.hasil_potongan', 'berhasil')
+            ->select('dp.detail_potongan_id', 'ja.*')
+            ->get();
+
+        foreach ($details as $d) {
+            DB::table('tblANGSURAN')->insert([
+                'jadwal_angsuran_id' => $d->jadwal_angsuran_id,
+                'detail_potongan_id' => $d->detail_potongan_id,
+                'user_id'            => $userId,
+                'tgl_bayar'          => $tglTerima,
+                'jenis_bayar'        => 'angsuran',
+                'bayar_pokok'        => $d->pokok,
+                'bayar_bunga'        => $d->bunga,
+            ]);
+            DB::table('tblJADWAL_ANGSURAN')->where('jadwal_angsuran_id', $d->jadwal_angsuran_id)->update(['status_bayar' => 'lunas']);
+            $total += (float) $d->pokok + (float) $d->bunga;
+            $this->tandaiLunasBilaSelesai((int) $d->pinjaman_id);
+        }
+
+        if ($total > 0) {
+            DB::table('tblMUTASI_KAS')->insert([
+                'kas_id'       => $kasBank->kas_id,
+                'periode_id'   => $periodeId,
+                'user_id'      => $userId,
+                'transaksi_id' => null,
+                'angsuran_id'  => null,
+                'pencairan_id' => null,
+                'tgl_mutasi'   => $tglTerima,
+                'arah'         => 'masuk',
+                'nominal'      => $total,
+                'uraian'       => "Penerimaan hasil potongan gaji paket #RP-{$rencanaId} dari Bendahara Sekolah (TRANSFER)",
+            ]);
+            DB::table('tblKAS')->where('kas_id', $kasBank->kas_id)->increment('saldo', $total);
+        }
+    }
+
+    private function tandaiLunasBilaSelesai(int $pinjamanId): void
+    {
+        $sisa = DB::table('tblJADWAL_ANGSURAN')->where('pinjaman_id', $pinjamanId)->where('status_bayar', 'belum')->count();
+        if ($sisa === 0) {
+            DB::table('tblPINJAMAN')->where('pinjaman_id', $pinjamanId)->update(['status_pinjaman' => 'lunas']);
+        }
+    }
+
+    private function periodeId(int $userId, string $tanggal): int
+    {
+        $tgl = Carbon::parse($tanggal);
+        $this->ensurePeriode($userId, $tgl->year, $tgl->month);
+
+        return (int) DB::table('tblPERIODE')->where('tahun', $tgl->year)->where('bulan', $tgl->month)->value('periode_id');
     }
 
     private function ensurePeriode(int $userId, int $tahun, int $bulan): void

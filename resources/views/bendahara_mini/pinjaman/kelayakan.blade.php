@@ -71,10 +71,21 @@
                         <td>
                             <div style="font-weight:700; color:var(--text-heading);">{{ $p->nama_nasabah }}</div>
                             <div style="font-size:11px; color:var(--text-muted);">{{ $p->kelas_unit ?? 'Pegawai' }}</div>
+                            <div class="keperluan-antrean" style="font-size:11.5px; color:#0369A1; margin-top:3px;">Keperluan: {{ $p->keperluan ?: '-' }}</div>
                         </td>
                         <td style="text-align: right;">
                             <div style="font-weight:600; color:var(--text-heading);">Rp {{ number_format($totalPenghasilan, 0, ',', '.') }}</div>
                             <div style="font-size:11px; color:var(--text-muted);">Gaji: Rp {{ number_format($p->gaji_pokok, 0, ',', '.') }}</div>
+                            @php $dt = $p->data_tunjangan ?? null; @endphp
+                            <div class="sumber-tunjangan" style="font-size:10.5px; margin-top:3px; font-weight:700; color:{{ !$dt || $dt->usang ? '#B45309' : '#047857' }};">
+                                @if (!$dt)
+                                    Belum ada data tunjangan dari Bendahara Sekolah
+                                @elseif ($dt->usang)
+                                    Data tunjangan terakhir {{ $dt->periode_label }} (perlu diperbarui)
+                                @else
+                                    Data tunjangan {{ $dt->periode_label }} &bull; Bendahara Sekolah
+                                @endif
+                            </div>
                         </td>
                         <td style="text-align: right; font-weight:700; color:var(--text-heading);">
                             Rp {{ number_format($p->nominal_pinjaman, 0, ',', '.') }}
@@ -88,7 +99,9 @@
                         </td>
                         <td style="text-align: center;">
                             <button type="button" class="btn-ui btn-ui-sm btn-ui-primary"
-                                    onclick="openAssessmentModal({{ $p->pinjaman_id }}, '{{ addslashes($p->nama_nasabah) }}', '{{ addslashes($p->kelas_unit ?? 'Pegawai') }}', {{ $totalPenghasilan }}, {{ $p->nominal_pinjaman }}, {{ $p->tenor }}, {{ $estCicilan }})">
+                                    data-keperluan="{{ $p->keperluan ?: '-' }}"
+                                    data-sumber="{{ !$dt ? 'Belum ada data tunjangan dari Bendahara Sekolah. Verifikasi penghasilan secara manual.' : ($dt->usang ? 'Data tunjangan terakhir ' . $dt->periode_label . ' (perlu diperbarui Bendahara Sekolah).' : 'Data tunjangan ' . $dt->periode_label . ' dari Bendahara Sekolah. Potongan lain: Rp ' . number_format($dt->potongan_lain, 0, ',', '.') . '.') }}"
+                                    onclick="openAssessmentModal({{ $p->pinjaman_id }}, '{{ addslashes($p->nama_nasabah) }}', '{{ addslashes($p->kelas_unit ?? 'Pegawai') }}', {{ $totalPenghasilan }}, {{ $p->nominal_pinjaman }}, {{ $p->tenor }}, {{ $estCicilan }}, this.dataset.keperluan, this.dataset.sumber)">
                                 Beri Penilaian
                             </button>
                         </td>
@@ -213,6 +226,11 @@
                         <div id="modalCicilan" style="font-size:13px; font-weight:800; color:#0D5C46; margin-top:2px;">Rp 0</div>
                     </div>
                 </div>
+
+                <div style="margin-top:8px; background:#F0F9FF; border:1px solid #BAE6FD; border-radius:8px; padding:8px 12px; font-size:12.5px; color:#0C4A6E;">
+                    <strong>Keperluan:</strong> <span id="modalKeperluan">-</span>
+                </div>
+                <div id="modalSumberTunjangan" style="margin-top:6px; font-size:12px; color:#475569;">-</div>
             </div>
 
             {{-- Input Pendapatan Bulanan Terverifikasi --}}
@@ -333,7 +351,7 @@ function formatRupiah(num) {
     return 'Rp ' + Math.round(num).toLocaleString('id-ID');
 }
 
-function openAssessmentModal(pinjamanId, nama, unit, totalGaji, plafon, tenor, cicilan) {
+function openAssessmentModal(pinjamanId, nama, unit, totalGaji, plafon, tenor, cicilan, keperluan, sumber) {
     const modal = document.getElementById('assessmentModal');
     const form = document.getElementById('assessmentForm');
 
@@ -348,6 +366,8 @@ function openAssessmentModal(pinjamanId, nama, unit, totalGaji, plafon, tenor, c
     document.getElementById('modalInitials').innerText = initials || 'PG';
     document.getElementById('modalNama').innerText = nama;
     document.getElementById('modalUnit').innerText = unit || 'Pegawai SMKN 1 Lemahabang';
+    document.getElementById('modalKeperluan').innerText = keperluan || '-';
+    document.getElementById('modalSumberTunjangan').innerText = sumber || '-';
 
     document.getElementById('modalPlafon').innerText = formatRupiah(plafon);
     document.getElementById('modalTenor').innerText = tenor + ' Bulan';

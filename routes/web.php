@@ -14,6 +14,7 @@ use App\Http\Controllers\BendaharaMini\AngsuranBbmController;
 use App\Http\Controllers\BendaharaMini\KartuPiutangBbmController;
 use App\Http\Controllers\BendaharaMini\KasController;
 use App\Http\Controllers\Bendahara\PotonganSekolahController;
+use App\Http\Controllers\Bendahara\DataTunjanganController;
 use App\Http\Controllers\Nasabah\NasabahDashboardController;
 use App\Http\Controllers\Manager\LaporanTabunganController;
 use App\Http\Controllers\Manager\LaporanKasHarianController;
@@ -125,6 +126,15 @@ Route::middleware(['auth', 'akun.aktif', 'no.cache'])->group(function () {
             Route::get('/bast/{rencana}', [PotonganSekolahController::class, 'cetakBast'])->name('bast');
             Route::get('/hasil/{rencana}', [PotonganSekolahController::class, 'formHasil'])->name('hasil');
             Route::post('/hasil/{rencana}', [PotonganSekolahController::class, 'simpanHasil'])->name('simpan');
+        });
+
+        // FR-16 Data tunjangan pegawai per bulan
+        Route::prefix('bendahara/tunjangan')->name('bendahara.tunjangan.')->group(function () {
+            Route::get('/', [DataTunjanganController::class, 'index'])->name('index');
+            Route::post('/', [DataTunjanganController::class, 'simpan'])->name('simpan');
+            Route::post('/salin', [DataTunjanganController::class, 'salinBulanLalu'])->name('salin');
+            Route::get('/template', [DataTunjanganController::class, 'templateCsv'])->name('template');
+            Route::post('/impor', [DataTunjanganController::class, 'imporCsv'])->name('impor');
         });
     });
 

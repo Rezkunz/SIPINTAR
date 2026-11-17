@@ -177,6 +177,10 @@
                     <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                     <span>Rencana & Hasil Potongan</span>
                 </a>
+                <a href="{{ route('bendahara.tunjangan.index') }}" class="nav-link {{ request()->routeIs('bendahara.tunjangan.*') ? 'active' : '' }}">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>
+                    <span>Data Tunjangan</span>
+                </a>
             @endif
 
             {{-- ── BENDAHARA BANK MINI ── --}}
@@ -319,14 +323,21 @@
             </div>
 
             {{-- ── GLOBAL NOTIFICATION CENTER DROPDOWN (ALL ROLES) ── --}}
+            @php
+                // Modul pinjaman: notifikasi "tugas tertunda" dihitung dari data (null = peran lain, tampilan lama)
+                $notifPinjaman = auth()->check() ? \App\Services\NotifikasiPinjamanService::untuk(auth()->user()) : null;
+                $jumlahNotif = is_array($notifPinjaman) ? count($notifPinjaman) : 3;
+            @endphp
             <div class="topbar-notif-container" id="topbar-notif-container">
                 <button type="button" class="topbar-notif-btn" id="topbar-notif-btn" onclick="toggleAppNotification(event)" aria-label="Notifikasi Sistem" title="Pusat Pemberitahuan Sistem">
                     <svg class="notif-bell-svg animate-bounce-subtle" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                     </svg>
-                    <span class="topbar-notif-badge" id="topbar-notif-badge">3</span>
-                    <span class="topbar-notif-pulse" id="topbar-notif-pulse"></span>
+                    @if ($jumlahNotif > 0)
+                        <span class="topbar-notif-badge" id="topbar-notif-badge">{{ $jumlahNotif }}</span>
+                        <span class="topbar-notif-pulse" id="topbar-notif-pulse"></span>
+                    @endif
                 </button>
 
                 <div class="topbar-notif-dropdown" id="topbar-notif-dropdown">
@@ -334,12 +345,30 @@
                         <div class="notif-dropdown-title">
                             <div class="notif-header-dot"></div>
                             <span>Pusat Notifikasi</span>
-                            <span class="notif-count-badge" id="notif-count-badge">3 Baru</span>
+                            <span class="notif-count-badge" id="notif-count-badge">{{ $jumlahNotif }} Baru</span>
                         </div>
                         <button type="button" class="notif-mark-read-btn" onclick="markAllNotifsRead(event)">Tandai Dibaca</button>
                     </div>
 
                     <div class="notif-dropdown-body">
+                        @if (is_array($notifPinjaman))
+                            @forelse ($notifPinjaman as $notif)
+                                <a href="{{ $notif['url'] }}" class="notif-card-item unread" data-notif="{{ $notif['kode'] }}" style="text-decoration:none;">
+                                    <div class="notif-card-icon {{ $notif['warna'] }}">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    </div>
+                                    <div class="notif-card-content">
+                                        <div class="notif-card-head">
+                                            <span class="notif-source" style="font-weight:700;">{{ $notif['judul'] }}</span>
+                                            <span class="notif-time">{{ $notif['label'] }}</span>
+                                        </div>
+                                        <p class="notif-msg">{!! $notif['pesan'] !!}</p>
+                                    </div>
+                                </a>
+                            @empty
+                                <div class="notif-empty" id="notif-kosong">Tidak ada tugas tertunda. Semua pekerjaan sudah beres.</div>
+                            @endforelse
+                        @else
                         @if (auth()->check() && (auth()->user()->role === 'bendahara_mini' || auth()->user()->role_id == 3))
                             @php
                                 $notifPaketCount = \Illuminate\Support\Facades\DB::table('tblRENCANA_POTONGAN')->where('status_potongan', 'menunggu_verifikasi')->count();
@@ -399,6 +428,7 @@
                                 <p class="notif-msg">Operasional loket Bank Mini Sekolah hari Senin-Jumat pukul 08:00 s.d 15:00 WIB.</p>
                             </div>
                         </div>
+                        @endif
                     </div>
 
                     <div class="notif-dropdown-footer">
