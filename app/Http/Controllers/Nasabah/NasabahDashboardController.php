@@ -239,7 +239,10 @@ class NasabahDashboardController extends Controller
             'nominal_pinjaman' => 'required|numeric|min:500000|max:30000000',
             'tenor'            => 'required|integer|min:1|max:36',
             'metode_bayar'     => 'required|in:potong_gaji,tunai',
+            'keperluan'        => 'required|string|min:5|max:255',
         ], [
+            'keperluan.required'    => 'Keperluan pinjaman wajib diisi.',
+            'keperluan.min'         => 'Keperluan pinjaman minimal 5 karakter.',
             'nominal_pinjaman.min'  => 'Nominal pinjaman minimal Rp 500.000.',
             'nominal_pinjaman.max'  => 'Nominal pinjaman maksimal Rp 30.000.000.',
             'tenor.min'             => 'Tenor pinjaman minimal 1 bulan.',
@@ -271,6 +274,7 @@ class NasabahDashboardController extends Controller
             'bunga_persen'     => 2.00,
             'tgl_pengajuan'    => now()->toDateString(),
             'metode_bayar'     => $request->metode_bayar,
+            'keperluan'        => trim(strip_tags($request->keperluan)),
             'status_pinjaman'  => 'diajukan',
         ], 'pinjaman_id');
 
@@ -283,6 +287,7 @@ class NasabahDashboardController extends Controller
                 'nominal_pinjaman' => $request->nominal_pinjaman,
                 'tenor'            => $request->tenor,
                 'metode_bayar'     => $request->metode_bayar,
+                'keperluan'        => $request->keperluan,
             ]
         );
 

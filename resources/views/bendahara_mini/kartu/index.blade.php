@@ -225,6 +225,9 @@
                     </h2>
                     <div style="font-size:12.5px; color:var(--text-muted); margin-top:2px;">
                         Unit: <strong>{{ $pinjamanTerpilih->kelas_unit ?? 'Pegawai SMKN 1 Lemahabang' }}</strong> &bull; No. HP: {{ $pinjamanTerpilih->no_hp ?? '-' }} &bull; Akad: #PINJ-{{ str_pad($pinjamanTerpilih->pinjaman_id, 4, '0', STR_PAD_LEFT) }}
+                        @if (!empty($pinjamanTerpilih->keperluan))
+                            <br>Keperluan: <strong id="kartuKeperluan">{{ $pinjamanTerpilih->keperluan }}</strong>
+                        @endif
                     </div>
                 </div>
             </div>

@@ -505,7 +505,7 @@
                 <thead>
                     <tr>
                         <th style="width:40px; text-align:center;">
-                            <input type="checkbox" id="checkAll" onclick="toggleSelectAll(this)" checked>
+                            <input type="checkbox" id="checkAll" onclick="toggleSelectAll(this)" {{ $calonPotongan->contains('tunjangan_kurang', true) ? '' : 'checked' }}>
                         </th>
                         <th>Jatuh Tempo</th>
                         <th>Nama Pegawai / Unit</th>
@@ -513,6 +513,7 @@
                         <th style="text-align: right;">Pokok</th>
                         <th style="text-align: right;">Jasa 2%</th>
                         <th style="text-align: right;">Total Potongan</th>
+                        <th style="text-align: right;">Tunjangan Bersih</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -521,7 +522,7 @@
                             <td style="text-align:center;">
                                 <input type="checkbox" name="jadwal_ids[]" value="{{ $cp->jadwal_angsuran_id }}" 
                                        class="item-checkbox" data-nominal="{{ $cp->total_angsuran }}" 
-                                       onchange="recalculateTotal()" checked>
+                                       onchange="recalculateTotal()" {{ $cp->tunjangan_kurang ? '' : 'checked' }}>
                             </td>
                             <td>{{ \Carbon\Carbon::parse($cp->jatuh_tempo)->format('d/m/Y') }}</td>
                             <td>
@@ -536,10 +537,23 @@
                             <td style="text-align: right; font-weight:700; color:var(--text-heading);">
                                 Rp {{ number_format($cp->total_angsuran, 0, ',', '.') }}
                             </td>
+                            <td style="text-align: right;" id="tunj-status-{{ $cp->jadwal_angsuran_id }}">
+                                @if (!$cp->data_tunjangan)
+                                    <span class="badge-pill gray" style="font-size:10.5px;">Belum ada data tunjangan</span>
+                                @else
+                                    <div style="font-weight:700;">Rp {{ number_format($cp->data_tunjangan->tunjangan_bersih, 0, ',', '.') }}</div>
+                                    <div style="font-size:10.5px; color:var(--text-muted);">{{ $cp->data_tunjangan->periode_label }}</div>
+                                    @if ($cp->tunjangan_kurang)
+                                        <span class="badge-pill red" style="font-size:10.5px;" title="Tunjangan bersih lebih kecil dari angsuran. Sarankan pegawai membayar langsung di loket.">Tidak cukup &rarr; sarankan bayar langsung</span>
+                                    @else
+                                        <span class="badge-pill green" style="font-size:10.5px;">Cukup</span>
+                                    @endif
+                                @endif
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7">
+                            <td colspan="8">
                                 <div class="empty-placeholder" style="padding:32px 16px; text-align:center;">
                                     Tidak ada jadwal tagihan potong gaji yang jatuh tempo pada bulan berjalan.
                                 </div>

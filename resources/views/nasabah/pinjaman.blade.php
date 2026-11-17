@@ -136,6 +136,10 @@
                     {{ $pinjamanAktif->metode_bayar === 'potong_gaji' ? 'Potong Tunjangan' : 'Setor Tunai' }}
                 </div>
             </div>
+            <div>
+                <div style="font-size:11px; color:var(--text-muted);">Keperluan</div>
+                <div style="font-size:1rem; font-weight:600; margin-top:2px;">{{ $pinjamanAktif->keperluan ?: '-' }}</div>
+            </div>
         </div>
         @if ($pinjamanAktif->status_pinjaman === 'layak')
             {{-- Panduan Lengkap Pencairan Dana --}}

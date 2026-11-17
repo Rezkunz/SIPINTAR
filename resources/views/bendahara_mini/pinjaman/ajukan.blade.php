@@ -278,6 +278,8 @@
                     Metode Pengembalian & Tanggal Efektif
                 </div>
 
+                @include('partials.pinjaman_keperluan')
+
                 {{-- Metode Pembayaran Cards --}}
                 <div style="margin-bottom: 18px;">
                     <label class="form-label" style="display:block; font-size:13px; font-weight:700; color:var(--text-heading); margin-bottom:8px;">
@@ -567,6 +569,13 @@ function konfirmasiSimpanPengajuan() {
     const nama = opt.dataset.nama || 'Pegawai';
     const plafon = parseFloat(document.getElementById('nominal_pinjaman').value) || 0;
     const tenor = document.getElementById('tenor').value;
+
+    const keperluan = document.getElementById('keperluan').value.trim();
+    if (keperluan.length < 5) {
+        alert('Keperluan pinjaman wajib diisi (minimal 5 karakter).');
+        document.getElementById('keperluan').focus();
+        return;
+    }
 
     sipintarConfirm({
         title: 'Konfirmasi Pengajuan Pinjaman',

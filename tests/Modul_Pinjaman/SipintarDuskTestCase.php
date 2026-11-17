@@ -133,6 +133,7 @@ abstract class SipintarDuskTestCase extends DuskTestCase
             'bunga_persen'     => 2.00,
             'tgl_pengajuan'    => now()->toDateString(),
             'metode_bayar'     => $metode,
+            'keperluan'        => 'Biaya pendidikan anak (data uji)',
             'status_pinjaman'  => $status,
         ], 'pinjaman_id');
     }

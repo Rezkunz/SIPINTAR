@@ -4,6 +4,7 @@ namespace App\Http\Controllers\BendaharaMini;
 
 use App\Http\Controllers\Controller;
 use App\Services\AuditLogService;
+use App\Services\DataTunjanganService;
 use App\Services\PeriodeLockService;
 use App\Services\PinjamanCalculatorService;
 use Carbon\Carbon;
@@ -302,12 +303,25 @@ class AngsuranBbmController extends Controller
                 'ja.*',
                 'pin.nominal_pinjaman',
                 'pin.tenor',
+                'pin.nasabah_id',
                 'n.nama_nasabah',
                 'n.kelas_unit',
                 DB::raw('(ja.pokok + ja.bunga) as total_angsuran')
             )
             ->orderBy('n.nama_nasabah', 'asc')
             ->get();
+
+        // Peringatan dini: tunjangan bersih (tunjangan - potongan lain/pajak) dari Bendahara Sekolah
+        // dibandingkan dengan angsuran. Bila tidak cukup, angsuran disarankan dibayar langsung.
+        $dataTunjangan = DataTunjanganService::terbaruUntuk(
+            $calonPotongan->pluck('nasabah_id')->unique()->all(),
+            Carbon::create($tahunSekarang, $bulanSekarang, 1)
+        );
+        foreach ($calonPotongan as $cp) {
+            $cp->data_tunjangan = $dataTunjangan->get($cp->nasabah_id);
+            $cp->tunjangan_kurang = $cp->data_tunjangan
+                && $cp->data_tunjangan->tunjangan_bersih < (float) $cp->total_angsuran;
+        }
 
         // Riwayat paket rencana potongan dengan filter bulan, tahun, dan status verifikasi
         $filterBulan = $request->query('filter_bulan');

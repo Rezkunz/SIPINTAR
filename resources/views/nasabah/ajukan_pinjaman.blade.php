@@ -339,6 +339,8 @@
                         Metode Pengembalian Angsuran & Tanggal Pengajuan
                     </div>
 
+                    @include('partials.pinjaman_keperluan')
+
                     {{-- Info Tanggal Otomatis Hari Ini --}}
                     <div style="display:flex; justify-content:space-between; align-items:center; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:10px 14px; margin-bottom:16px;">
                         <span style="font-size:12.5px; color:var(--text-muted);">Tanggal Pengajuan Permohonan:</span>
@@ -560,12 +562,19 @@
             return;
         }
 
+        const keperluan = document.getElementById('keperluan').value.trim();
+        if (keperluan.length < 5) {
+            alert('Keperluan pinjaman wajib diisi (minimal 5 karakter).');
+            document.getElementById('keperluan').focus();
+            return;
+        }
+
         const metodeBayar = document.querySelector('input[name="metode_bayar"]:checked').value;
         const metodeLabel = metodeBayar === 'potong_gaji' ? 'Potong Tunjangan / Payroll' : 'Setor Tunai di Loket';
 
         sipintarConfirm({
             title: 'Kirim Permohonan Pinjaman?',
-            message: `Ajukan pinjaman sebesar ${formatRupiah(plafon)} dengan tenor ${tenor} bulan melalui metode ${metodeLabel}? Permohonan akan diteruskan ke Bendahara Bank Mini untuk dinilai kelayakannya.`,
+            message: `Ajukan pinjaman sebesar ${formatRupiah(plafon)} dengan tenor ${tenor} bulan melalui metode ${metodeLabel} untuk keperluan "${keperluan.replace(/[<>&"]/g, '')}"? Permohonan akan diteruskan ke Bendahara Bank Mini untuk dinilai kelayakannya.`,
             confirmText: 'Ya, Kirim Permohonan',
             cancelText: 'Periksa Kembali',
             confirmColor: '#0D5C46',
