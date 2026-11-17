@@ -172,9 +172,9 @@ class LaporanKasBendaharaController extends Controller
             ->pluck('kas_id')
             ->all();
 
-        // Saldo awal dihitung mundur dari saldo kas saat ini. Dana tabungan nasabah yang ikut tersimpan
-        // di kas (mutasi bertaut tblTRANSAKSI) bukan bagian Buku Kas Bendahara (acuan data_contoh/KAS
-        // BENDAHARA), jadi dikeluarkan dari saldo maupun baris; dana itu dilaporkan di Laporan Tabungan
+        // Saldo awal dihitung mundur dari saldo kas saat ini (tblKAS, sama dengan dashboard Bendahara BBM).
+        // Dana tabungan nasabah yang ikut tersimpan di kas (mutasi bertaut tblTRANSAKSI) bukan bagian
+        // Buku Kas Bendahara, jadi dikeluarkan dari saldo maupun baris; dana itu dilaporkan di Laporan Tabungan
         $netto = DB::raw("CASE WHEN arah = 'masuk' THEN nominal ELSE -nominal END");
         $danaTabungan = (float) DB::table('tblMUTASI_KAS')
             ->whereIn('kas_id', $kasIds)
@@ -211,8 +211,9 @@ class LaporanKasBendaharaController extends Controller
             'potong'  => ['label' => 'Potong Gaji',     'jumlah' => 0, 'pokok' => 0.0, 'jasa' => 0.0],
             'koreksi' => ['label' => 'Koreksi Angsuran (pembalik)', 'jumlah' => 0, 'pokok' => 0.0, 'jasa' => 0.0],
         ];
+        $kelebihanPotongan = ['jumlah' => 0, 'nominal' => 0.0];
 
-        $baris = $mutasi->map(function ($m) use (&$saldo, &$rekap, $pokokJasaPaket) {
+        $baris = $mutasi->map(function ($m) use (&$saldo, &$rekap, &$kelebihanPotongan, $pokokJasaPaket) {
             $nominal = (float) $m->nominal;
             $b = (object) [
                 'tanggal'     => Carbon::parse($m->tgl_mutasi),
@@ -223,6 +224,7 @@ class LaporanKasBendaharaController extends Controller
                 'pokok'       => 0.0,
                 'jasa'        => 0.0,
                 'pengeluaran' => 0.0,
+                'kelebihan'   => 0.0,
             ];
 
             if ($m->arah === 'masuk') {
@@ -232,12 +234,21 @@ class LaporanKasBendaharaController extends Controller
                     $b->jasa  = (float) $m->bayar_bunga;
                     $this->tambahRekap($rekap['loket'], $b->pokok, $b->jasa);
                 } elseif (isset($pokokJasaPaket[$m->mutasi_kas_id])) {
+                    $paket    = $pokokJasaPaket[$m->mutasi_kas_id];
                     $b->jenis = 'potongan';
-                    $b->pokok = $pokokJasaPaket[$m->mutasi_kas_id]['pokok'];
-                    $b->jasa  = $pokokJasaPaket[$m->mutasi_kas_id]['jasa'];
-                    $this->tambahRekap($rekap['potong'], $b->pokok, $b->jasa);
+                    $b->pokok = $paket['pokok'];
+                    $b->jasa  = $paket['jasa'];
+                    if ($b->pokok + $b->jasa > 0) {
+                        $this->tambahRekap($rekap['potong'], $b->pokok, $b->jasa);
+                    }
+                    // Dana potongan yang tidak menjadi angsuran (mis. angsuran sudah lunas di loket)
+                    $b->kelebihan = max(0.0, round($nominal - $b->pokok - $b->jasa, 2));
+                    if ($b->kelebihan > 0) {
+                        $kelebihanPotongan['jumlah']++;
+                        $kelebihanPotongan['nominal'] += $b->kelebihan;
+                    }
                 }
-                // Selisih (atau seluruh nominal untuk kas manual) dicatat sebagai lain-lain
+                // Kas manual dicatat sebagai lain-lain; kelebihan potongan juga masuk kolom ini dengan tanda khusus
                 $b->lain_lain = round($nominal - $b->pokok - $b->jasa, 2);
                 $saldo += $nominal;
             } else {
@@ -286,8 +297,10 @@ class LaporanKasBendaharaController extends Controller
             'baris'         => $baris,
             'total'         => $total,
             'rekapAngsuran' => $rekapAngsuran,
+            'kelebihanPotongan' => $kelebihanPotongan,
         ];
     }
+
 
     /**
      * Mutasi penerimaan paket potong gaji hanya mencatat total; pokok & jasa diambil dari
@@ -310,24 +323,22 @@ class LaporanKasBendaharaController extends Controller
 
         // Koreksi yang terjadi kemudian dicatat sebagai mutasi keluar tersendiri, jadi di sini
         // seluruh angsuran paket dihitung sesuai kondisi saat dana diterima
-        $perPaket = DB::table('tblANGSURAN as ang')
+        $angsuranPaket = DB::table('tblANGSURAN as ang')
             ->join('tblDETAIL_POTONGAN as dp', 'ang.detail_potongan_id', '=', 'dp.detail_potongan_id')
             ->whereIn('dp.rencana_potongan_id', $paketPerMutasi->values()->unique()->all())
-            ->groupBy('dp.rencana_potongan_id')
-            ->select(
-                'dp.rencana_potongan_id',
-                DB::raw('SUM(ang.bayar_pokok) as pokok'),
-                DB::raw('SUM(ang.bayar_bunga) as jasa')
-            )
-            ->get()
-            ->keyBy('rencana_potongan_id');
+            ->get(['dp.rencana_potongan_id', 'ang.bayar_pokok', 'ang.bayar_bunga'])
+            ->groupBy('rencana_potongan_id');
 
+        // Paket yang dikenali selalu dikembalikan; paket tanpa angsuran bernilai pokok/jasa nol
         return $paketPerMutasi
-            ->filter(fn ($rencanaId) => $perPaket->has($rencanaId))
-            ->map(fn ($rencanaId) => [
-                'pokok' => (float) $perPaket[$rencanaId]->pokok,
-                'jasa'  => (float) $perPaket[$rencanaId]->jasa,
-            ])
+            ->map(function ($rencanaId) use ($angsuranPaket) {
+                $angsuran = $angsuranPaket->get($rencanaId, collect());
+
+                return [
+                    'pokok' => (float) $angsuran->sum('bayar_pokok'),
+                    'jasa'  => (float) $angsuran->sum('bayar_bunga'),
+                ];
+            })
             ->all();
     }
 

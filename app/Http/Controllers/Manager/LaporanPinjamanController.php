@@ -252,19 +252,28 @@ class LaporanPinjamanController extends Controller
             ->map(function ($p) use ($jadwalPerPinjaman, $bayarPerJadwal, $tanggalPosisi) {
                 $jadwal = $jadwalPerPinjaman->get($p->pinjaman_id, collect());
 
-                $dibayar   = $jadwal->filter(fn ($j) => $bayarPerJadwal->has($j->jadwal_angsuran_id));
-                $tertunggak = $jadwal->filter(fn ($j) => !$bayarPerJadwal->has($j->jadwal_angsuran_id)
+                // Total pembayaran sah per jadwal; jadwal baru lunas bila pembayarannya menutup pokok + jasa
+                $dibayarPada = fn ($j) => $bayarPerJadwal->has($j->jadwal_angsuran_id)
+                    ? (float) $bayarPerJadwal[$j->jadwal_angsuran_id]->pokok + (float) $bayarPerJadwal[$j->jadwal_angsuran_id]->bunga
+                    : 0.0;
+                $kurangBayar = fn ($j) => max(0.0, round((float) $j->pokok + (float) $j->bunga - $dibayarPada($j), 2));
+
+                $lunas      = $jadwal->filter(fn ($j) => $kurangBayar($j) <= 0);
+                $tertunggak = $jadwal->filter(fn ($j) => $kurangBayar($j) > 0
                     && Carbon::parse($j->jatuh_tempo)->lt($tanggalPosisi));
+                $adaBayar   = $jadwal->filter(fn ($j) => $bayarPerJadwal->has($j->jadwal_angsuran_id));
 
                 $p->no_pinjaman       = '#PINJ-' . str_pad($p->pinjaman_id, 4, '0', STR_PAD_LEFT);
                 $p->label_metode      = $p->metode_bayar === 'potong_gaji' ? 'Potong Gaji' : 'Tunai';
                 $p->total_angsuran    = $jadwal->count();
-                $p->angsuran_dibayar  = $dibayar->count();
-                $p->pokok_terbayar    = (float) $dibayar->sum(fn ($j) => $bayarPerJadwal[$j->jadwal_angsuran_id]->pokok);
-                $p->jasa_terbayar     = (float) $dibayar->sum(fn ($j) => $bayarPerJadwal[$j->jadwal_angsuran_id]->bunga);
+                $p->angsuran_dibayar  = $lunas->count();
+                // Pokok & jasa terbayar mencakup pembayaran sebagian
+                $p->pokok_terbayar    = (float) $adaBayar->sum(fn ($j) => $bayarPerJadwal[$j->jadwal_angsuran_id]->pokok);
+                $p->jasa_terbayar     = (float) $adaBayar->sum(fn ($j) => $bayarPerJadwal[$j->jadwal_angsuran_id]->bunga);
                 $p->sisa_pokok        = PinjamanCalculatorService::hitungSisaPokok($p->nominal_pinjaman, $p->pokok_terbayar);
                 $p->bulan_tunggakan   = $tertunggak->count();
-                $p->nominal_tunggakan = (float) $tertunggak->sum(fn ($j) => (float) $j->pokok + (float) $j->bunga);
+                // Tunggakan = kekurangan bayar pada jadwal yang sudah jatuh tempo (bukan nilai penuh bila sudah dicicil)
+                $p->nominal_tunggakan = (float) $tertunggak->sum($kurangBayar);
 
                 $jatuhTempoTertua    = $tertunggak->min('jatuh_tempo');
                 $p->jatuh_tempo_tertunggak = $jatuhTempoTertua;
