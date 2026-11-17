@@ -62,6 +62,16 @@
     </div>
 </div>
 
+{{-- ── PERINGATAN KESESUAIAN DATA ── --}}
+@if ($kelebihanPotongan['jumlah'] > 0)
+    <div dusk="peringatan-data" style="font-size:12.5px; color:#92400E; background:#FFFBEB; border:1px solid #FDE68A; border-radius:10px; padding:12px 16px; margin-bottom:20px; line-height:1.6;">
+        <div style="font-weight:800; margin-bottom:4px;">Perlu diperiksa Bendahara</div>
+        @if ($kelebihanPotongan['jumlah'] > 0)
+            <div>&bull; {{ $kelebihanPotongan['jumlah'] }} penerimaan potong gaji berisi dana Rp {{ $rp($kelebihanPotongan['nominal']) }} yang tidak menjadi angsuran (angsurannya sudah lunas atau tidak tercatat). Dana ini tercatat di kolom Lain-lain.</div>
+        @endif
+    </div>
+@endif
+
 {{-- ── REKAP PENERIMAAN ANGSURAN ── --}}
 <div class="content-card">
     <div class="card-header-bar">
@@ -147,6 +157,9 @@
                             <div style="font-weight:600; color:var(--text-heading); line-height:1.4;">{{ $b->uraian }}</div>
                             <div style="margin-top:3px; display:flex; gap:4px;">
                                 <span class="badge-pill {{ $labelJenis[$b->jenis]['warna'] }}" style="font-size:10px; padding:1px 7px;">{{ $labelJenis[$b->jenis]['label'] }}</span>
+                                @if ($b->kelebihan > 0)
+                                    <span class="badge-pill amber" dusk="kelebihan-potongan" style="font-size:10px; padding:1px 7px;" title="Dana potongan yang tidak menjadi angsuran">Kelebihan potongan Rp {{ $rp($b->kelebihan) }}</span>
+                                @endif
                                 <span class="badge-pill gray" style="font-size:10px; padding:1px 7px;">{{ $b->label_kas }}</span>
                             </div>
                         </td>
