@@ -41,6 +41,8 @@
         </div>
         <div class="metric-value" dusk="dashboard-simpanan"><span class="curr-prefix">Rp</span>{{ number_format($totalTabungan, 0, ',', '.') }}</div>
         <div class="metric-rincian" style="margin-top: 8px; font-size: 11.5px; color: var(--text-muted); line-height: 1.6; position: relative; z-index: 1;">
+            <div>Siswa: Rp {{ number_format($tabunganSiswa, 0, ',', '.') }}</div>
+            <div>Guru / Karyawan: Rp {{ number_format($tabunganGuru, 0, ',', '.') }}</div>
             <div>Dari {{ number_format($jumlahRekeningAktif, 0, ',', '.') }} rekening aktif</div>
         </div>
     </div>
@@ -92,7 +94,7 @@
         <div class="card-header-bar">
             <div>
                 <h2 class="card-heading">Pengawasan Transaksi Tabungan Terbesar</h2>
-                <div style="font-size: 12px; color: var(--text-muted);">Audit mutasi dengan nominal signifikan pada periode aktif</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Lima mutasi dengan nominal terbesar pada {{ $awalBulan->translatedFormat('F Y') }}</div>
             </div>
             <a href="{{ route('laporan.tabungan') }}" class="btn-ui btn-ui-outline btn-ui-sm">Buku Laporan</a>
         </div>
@@ -116,9 +118,13 @@
                                 <div style="font-size: 11px; color: var(--text-muted); font-family: ui-monospace, SFMono-Regular, monospace;">{{ $t->no_rek }}</div>
                             </td>
                             <td>
-                                <span class="badge-pill {{ $t->kredit > 0 ? 'green' : 'amber' }}">
-                                    {{ $t->nama_jenis_transaksi ?? ($t->kredit > 0 ? 'Setor Tunai' : 'Penarikan') }}
-                                </span>
+                                @if ($t->pembalik)
+                                    <span class="badge-pill red" title="Transaksi pembalik dari koreksi Teller">Pembalik koreksi</span>
+                                @else
+                                    <span class="badge-pill {{ $t->kredit > 0 ? 'green' : 'amber' }}">
+                                        {{ ['setoran' => 'Setoran', 'penarikan' => 'Penarikan', 'jasa_tabungan' => 'Jasa Tabungan'][$t->nama_jenis_transaksi] ?? ucfirst($t->nama_jenis_transaksi) }}
+                                    </span>
+                                @endif
                             </td>
                             <td style="text-align: right; font-weight: 700; color: {{ $t->kredit > 0 ? 'var(--color-success)' : 'var(--color-danger)' }};">
                                 {{ $t->kredit > 0 ? '+ Rp ' . number_format($t->kredit, 0, ',', '.') : '- Rp ' . number_format($t->debit, 0, ',', '.') }}
@@ -132,7 +138,7 @@
                             <td colspan="5">
                                 <div class="empty-placeholder">
                                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 8px; color: var(--text-faint); display: block;"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                                    Belum ada transaksi signifikan tercatat pada periode ini.
+                                    Belum ada transaksi tabungan pada {{ $awalBulan->translatedFormat('F Y') }}.
                                 </div>
                             </td>
                         </tr>
@@ -142,39 +148,8 @@
         </div>
     </div>
 
-    {{-- ── KESEHATAN BANK MINI & STATUS PERIODE ── --}}
+    {{-- ── STATUS PERIODE ── --}}
     <div style="display: flex; flex-direction: column; gap: 20px;">
-        <div class="content-card" style="margin-bottom: 0;">
-            <div class="card-header-bar">
-                <h2 class="card-heading">Kesehatan Bank Mini</h2>
-            </div>
-            <div class="card-body-content">
-                <div class="ratio-meter-card" style="border: none; padding: 0; box-shadow: none;">
-                    <div class="ratio-label-row">
-                        <span style="color: var(--text-body);">Rasio Likuiditas Kas</span>
-                        <span style="color: var(--brand-primary);">Sehat (100%)</span>
-                    </div>
-                    <div class="ratio-progress-track">
-                        <div class="ratio-progress-fill" style="width: 100%;"></div>
-                    </div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px;">
-                        Ketersediaan dana kas fisik dan tabungan berada pada batas aman.
-                    </div>
-
-                    <div class="ratio-label-row">
-                        <span style="color: var(--text-body);">Rasio Kredit terhadap DPK (LDR)</span>
-                        <span style="color: var(--brand-accent);">Terkendali</span>
-                    </div>
-                    <div class="ratio-progress-track">
-                        <div class="ratio-progress-fill warning" style="width: 45%;"></div>
-                    </div>
-                    <div style="font-size: 11px; color: var(--text-muted);">
-                        Penyaluran pembiayaan tidak melampaui total himpunan tabungan.
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="content-card" style="margin-bottom: 0;">
             <div class="card-header-bar">
                 <h2 class="card-heading">Status Pembukuan Periode</h2>
@@ -182,13 +157,25 @@
             <div class="card-body-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                     <div>
-                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Periode Aktif</div>
+                        <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Periode Bulan Berjalan</div>
                         <div style="font-size: 15px; font-weight: 800; color: var(--text-heading);">
-                            {{ $periodeAktif ? "Bulan {$periodeAktif->bulan} / Tahun {$periodeAktif->tahun}" : 'Tahun 2026' }}
+                            {{ $awalBulan->translatedFormat('F Y') }}
                         </div>
                     </div>
-                    <span class="badge-pill green">Terbuka</span>
+                    @if (!$periodeAktif)
+                        <span class="badge-pill amber" dusk="status-periode">Belum dibuat</span>
+                    @elseif ($periodeAktif->status_periode === 'tutup')
+                        <span class="badge-pill red" dusk="status-periode">Ditutup</span>
+                    @else
+                        <span class="badge-pill green" dusk="status-periode">Terbuka</span>
+                    @endif
                 </div>
+                @if ($periodeBelumDitutup->isNotEmpty())
+                    <div dusk="periode-belum-ditutup" style="font-size: 12px; color: #92400E; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 8px 12px; margin-bottom: 12px;">
+                        Periode lampau belum ditutup:
+                        {{ $periodeBelumDitutup->map(fn ($p) => \Carbon\Carbon::create($p->tahun, $p->bulan, 1)->translatedFormat('F Y'))->implode(', ') }}
+                    </div>
+                @endif
                 <a href="{{ route('periode.tutup') }}" class="btn-ui btn-ui-outline" style="width: 100%; text-align: center;">
                     Kelola Tutup Periode
                 </a>

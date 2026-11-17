@@ -72,6 +72,7 @@ class LaporanTabunganBulananTest extends TestCase
             $trx(1, 3, 0, 150, 150150, '2026-03-31 16:00:00'),        // jasa Maret yang sudah dibukukan
             $trx(1, 1, 0, 99999, 250149, '2026-04-01 09:00:00'),      // bulan berikutnya
             $trx(3, 1, 0, 50000, 50000, '2026-04-02 09:00:00'),
+            $trx(4, 1, 0, 30000, 30000, '2020-07-01 09:00:00'),       // setoran awal pembukaan rekening
             $trx(4, 2, 30000, 0, 0, '2026-01-15 09:00:00'),
             $trx(5, 1, 0, 5600000, 5600000, '2026-03-03 09:00:00'),
         ]);
@@ -149,7 +150,8 @@ class LaporanTabunganBulananTest extends TestCase
 
         $csv = $response->streamedContent();
         $this->assertStringContainsString('"JASA 0,1%"', $csv);
-        $this->assertStringContainsString('1836/TP/BM/2013;"RISKA RISMAYANTI";150000;150;150150', $csv);
+        // Kolom: pokok; jasa (hak bulan ini); jasa yang sudah dibukukan; total
+        $this->assertStringContainsString('1836/TP/BM/2013;"RISKA RISMAYANTI";150000;150;150;150150', $csv);
     }
 
     public function test_selain_manager_ditolak(): void
