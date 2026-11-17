@@ -23,7 +23,7 @@ class JasaTabunganService
     public const JENIS_JASA_TABUNGAN = 3;
 
     /**
-     * Pokok = saldo_akhir transaksi terakhir s.d. akhir bulan, dikurangi jasa yang sudah
+     * Pokok = jumlah transaksi s.d. akhir bulan, dikurangi jasa yang sudah
      * dibukukan pada bulan itu, agar jasa bulan berjalan tidak terhitung dua kali.
      *
      * @param  callable|null  $filterTambahan  dipanggil dengan query rekening (mis. filter pencarian)
@@ -51,12 +51,14 @@ class JasaTabunganService
             ->where('jenis_transaksi_id', self::JENIS_JASA_TABUNGAN)
             ->whereBetween('tgl_transaksi', [$awalBulan, $akhirBulan])
             ->groupBy('rekening_id')
-            ->select('rekening_id', DB::raw('SUM(kredit) as total'))
+            ->select('rekening_id', DB::raw('SUM(kredit - debit) as total'))
             ->pluck('total', 'rekening_id');
 
         return $rekeningList
             ->map(function ($rek) use ($saldoAkhir, $jasaDibukukan, $persenJasa) {
-                $rek->pokok = (float) ($saldoAkhir[$rek->rekening_id] ?? 0) - (float) ($jasaDibukukan[$rek->rekening_id] ?? 0);
+                $rek->jasa_dibukukan = (float) ($jasaDibukukan[$rek->rekening_id] ?? 0);
+                $rek->pokok = (float) ($saldoAkhir[$rek->rekening_id] ?? 0) - $rek->jasa_dibukukan;
+                // Jasa = hak nasabah bulan ini menurut tarif; jasa_dibukukan = yang benar-benar sudah masuk rekening
                 $rek->jasa  = $rek->pokok > 0 ? round($rek->pokok * $persenJasa / 100) : 0.0;
                 $rek->total = $rek->pokok + $rek->jasa;
 
@@ -68,22 +70,19 @@ class JasaTabunganService
     }
 
     /**
-     * Saldo dari transaksi terakhir tiap rekening s.d. batas waktu → [rekening_id => saldo_akhir].
+     * Saldo tiap rekening s.d. batas waktu = jumlah seluruh transaksinya (kredit - debit):
+     * setoran + jasa - penarikan, termasuk pembalik koreksi → [rekening_id => saldo].
+     * Dihitung dari arus transaksi (bukan kolom saldo_akhir) agar selalu sama dengan Buku Kas
+     * dan tidak terpengaruh saldo yang diisi langsung tanpa transaksi.
      */
     public static function saldoAkhirPerRekening(array $rekeningIds, Carbon $batas): Collection
     {
-        return DB::table('tblTRANSAKSI as t')
-            ->whereIn('t.rekening_id', $rekeningIds)
-            ->where('t.transaksi_id', function ($q) use ($batas) {
-                $q->select('t2.transaksi_id')
-                  ->from('tblTRANSAKSI as t2')
-                  ->whereColumn('t2.rekening_id', 't.rekening_id')
-                  ->where('t2.tgl_transaksi', '<=', $batas)
-                  ->orderByDesc('t2.tgl_transaksi')
-                  ->orderByDesc('t2.transaksi_id')
-                  ->limit(1);
-            })
-            ->pluck('t.saldo_akhir', 't.rekening_id');
+        return DB::table('tblTRANSAKSI')
+            ->whereIn('rekening_id', $rekeningIds)
+            ->where('tgl_transaksi', '<=', $batas)
+            ->groupBy('rekening_id')
+            ->select('rekening_id', DB::raw('SUM(kredit - debit) as saldo'))
+            ->pluck('saldo', 'rekening_id');
     }
 
     /**
@@ -108,6 +107,6 @@ class JasaTabunganService
         return (float) DB::table('tblTRANSAKSI')
             ->where('jenis_transaksi_id', self::JENIS_JASA_TABUNGAN)
             ->whereBetween('tgl_transaksi', [$dari, $sampai])
-            ->sum('kredit');
+            ->sum(DB::raw('kredit - debit'));
     }
 }
