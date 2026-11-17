@@ -9,7 +9,7 @@ use Illuminate\Validation\ValidationException;
 
 class TellerTransactionService
 {
-    private const MINIMUM_REMAINING_BALANCE = 10000;
+    public const MINIMUM_REMAINING_BALANCE = 10000;
 
     public function approveDraft(int $draftId, int $tellerId): array
     {
