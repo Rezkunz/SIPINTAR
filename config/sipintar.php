@@ -62,4 +62,13 @@ return [
         'default_password' => env('NASABAH_DEFAULT_PASSWORD', 'sipintar123'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Ambang Minimum Kas Tunai (Notifikasi Teller)
+    |--------------------------------------------------------------------------
+    */
+    'kas' => [
+        'min_saldo' => env('KAS_MIN_SALDO', 500000),
+    ],
+
 ];

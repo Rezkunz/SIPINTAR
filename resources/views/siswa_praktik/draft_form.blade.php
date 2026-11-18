@@ -63,28 +63,70 @@
                 </div>
             </div>
 
-            {{-- 2. Rekening Nasabah --}}
+            {{-- 2. Rekening Nasabah (Dropdown + Search) --}}
+            <style>
+                .draft-rek-wrap { position: relative; }
+                .draft-rek-input { padding-right: 38px !important; cursor: pointer; }
+                .draft-rek-chevron {
+                    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+                    background: none; border: none; padding: 6px; cursor: pointer;
+                    color: #64748B; display: flex; align-items: center; justify-content: center;
+                    border-radius: 6px;
+                }
+                .draft-rek-chevron:hover { background: #F1F5F9; color: #0F172A; }
+                .draft-rek-dropdown {
+                    position: absolute; top: 100%; left: 0; right: 0; z-index: 40;
+                    background: #fff; border: 1px solid var(--border-medium, #CBD5E1);
+                    border-radius: 10px; box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+                    max-height: 260px; overflow-y: auto; margin-top: 4px; display: none;
+                }
+                .draft-rek-dropdown.open { display: block; }
+                .draft-rek-option {
+                    padding: 10px 14px; font-size: 13px; cursor: pointer;
+                    border-bottom: 1px solid #F1F5F9; color: #0F172A;
+                    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+                }
+                .draft-rek-option:last-child { border-bottom: none; }
+                .draft-rek-option:hover, .draft-rek-option.active { background: #ECFDF5; color: #065F46; }
+                .draft-rek-empty { padding: 12px 14px; font-size: 13px; color: var(--text-muted); }
+            </style>
+            @php
+                $initialNoRek = old('no_rek', $selectedRekening->no_rek ?? '');
+                $draftRekOptions = $rekeningList->map(function ($r) {
+                    $nama = $r->nasabah->nama_nasabah ?? '-';
+                    $kategori = ($r->nasabah->jenis_nasabah ?? '') === 'pegawai' ? 'Pegawai' : 'Siswa';
+                    return [
+                        'no_rek' => $r->no_rek,
+                        'nama' => $nama,
+                        'kategori' => $kategori,
+                        'kelas' => $r->nasabah->kelas_unit ?? '-',
+                        'saldo_formatted' => 'Rp ' . number_format($r->saldo, 0, ',', '.'),
+                        'label' => "{$r->no_rek} — {$nama} ({$kategori})",
+                    ];
+                })->values();
+                $initialOption = $draftRekOptions->firstWhere('no_rek', $initialNoRek);
+            @endphp
             <div class="profile-field-group" style="margin-bottom: 20px;">
-                <label for="no_rek" class="profile-field-label">
+                <label for="rekSearchDraftInput" class="profile-field-label">
                     <span>Rekening Nasabah <span class="required-mark">*</span></span>
                     <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Hanya rekening berstatus aktif</span>
                 </label>
-                <div class="profile-input-wrap">
-                    <svg class="profile-input-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="11" y2="16"/></svg>
-                    <select id="no_rek" name="no_rek" class="profile-input" required onchange="onRekeningSelected(this)">
-                        <option value="">Pilih Nomor Rekening Nasabah...</option>
-                        @foreach ($rekeningList as $r)
-                            <option value="{{ $r->no_rek }}"
-                                data-nama="{{ $r->nasabah->nama_nasabah ?? '-' }}"
-                                data-kategori="{{ ($r->nasabah->jenis_nasabah ?? '') === 'pegawai' ? 'Pegawai' : 'Siswa' }}"
-                                data-kelas="{{ $r->nasabah->kelas_unit ?? '-' }}"
-                                data-saldo="{{ (float) $r->saldo }}"
-                                data-saldo-formatted="Rp {{ number_format($r->saldo, 0, ',', '.') }}"
-                                {{ (old('no_rek', $selectedRekening->no_rek ?? '') === $r->no_rek) ? 'selected' : '' }}>
-                                {{ $r->no_rek }} &mdash; {{ $r->nasabah->nama_nasabah ?? '-' }} ({{ ($r->nasabah->jenis_nasabah ?? '') === 'pegawai' ? 'Pegawai' : 'Siswa' }})
-                            </option>
-                        @endforeach
-                    </select>
+                <div class="draft-rek-wrap">
+                    <input type="hidden" id="no_rek" name="no_rek" value="{{ $initialNoRek }}">
+                    <div class="profile-input-wrap">
+                        <svg class="profile-input-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="11" y2="16"/></svg>
+                        <input id="rekSearchDraftInput"
+                               type="text"
+                               class="profile-input draft-rek-input"
+                               autocomplete="off"
+                               placeholder="Pilih atau ketik nomor rekening / nama nasabah..."
+                               value="{{ $initialOption['label'] ?? '' }}"
+                               required>
+                        <button type="button" id="rekChevronDraftBtn" class="draft-rek-chevron" aria-label="Buka daftar rekening">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                    </div>
+                    <div id="rekDraftDropdown" class="draft-rek-dropdown"></div>
                 </div>
                 @error('no_rek')
                     <span class="profile-error-msg">{{ $message }}</span>
@@ -193,27 +235,23 @@
 </div>
 
 <script>
+    const DRAFT_REK_OPTIONS = @json($draftRekOptions);
+
     // ── INTERAKTIF PILIHAN REKENING & TAMPILAN SALDO ──
-    function onRekeningSelected(selectEl) {
-        const selectedOption = selectEl.options[selectEl.selectedIndex];
+    function onRekeningSelectedByData(item) {
         const box = document.getElementById('rekening-info-box');
         const namaEl = document.getElementById('info-nama-nasabah');
         const detailEl = document.getElementById('info-detail-nasabah');
         const saldoEl = document.getElementById('info-saldo');
 
-        if (!selectedOption || !selectedOption.value) {
+        if (!item) {
             if (box) box.style.display = 'none';
             return;
         }
 
-        const nama = selectedOption.getAttribute('data-nama') || '-';
-        const kategori = selectedOption.getAttribute('data-kategori') || '-';
-        const kelas = selectedOption.getAttribute('data-kelas') || '-';
-        const saldoFormatted = selectedOption.getAttribute('data-saldo-formatted') || 'Rp 0';
-
-        if (namaEl) namaEl.textContent = nama;
-        if (detailEl) detailEl.textContent = `${kategori} • ${kelas}`;
-        if (saldoEl) saldoEl.textContent = saldoFormatted;
+        if (namaEl) namaEl.textContent = item.nama || '-';
+        if (detailEl) detailEl.textContent = `${item.kategori || '-'} • ${item.kelas || '-'}`;
+        if (saldoEl) saldoEl.textContent = item.saldo_formatted || 'Rp 0';
         if (box) box.style.display = 'block';
     }
 
@@ -268,11 +306,97 @@
         if (display) display.value = new Intl.NumberFormat('id-ID').format(nominal);
     }
 
-    // ── PROTEKSI DOUBLE SUBMIT & TRIGGER INITIAL SELECTION ──
+    // ── PROTEKSI DOUBLE SUBMIT & SEARCHABLE REKENING DROPDOWN ──
     document.addEventListener('DOMContentLoaded', function() {
-        const selectRek = document.getElementById('no_rek');
-        if (selectRek && selectRek.value) {
-            onRekeningSelected(selectRek);
+        const hiddenRek = document.getElementById('no_rek');
+        const searchInput = document.getElementById('rekSearchDraftInput');
+        const chevronBtn = document.getElementById('rekChevronDraftBtn');
+        const dropdown = document.getElementById('rekDraftDropdown');
+
+        if (hiddenRek && hiddenRek.value) {
+            const matched = DRAFT_REK_OPTIONS.find(o => o.no_rek === hiddenRek.value);
+            if (matched) onRekeningSelectedByData(matched);
+        }
+
+        if (hiddenRek && searchInput && dropdown) {
+            const renderOptions = (items) => {
+                dropdown.innerHTML = '';
+                if (!items || items.length === 0) {
+                    dropdown.innerHTML = '<div class="draft-rek-empty">Rekening aktif tidak ditemukan.</div>';
+                } else {
+                    const currentNoRek = hiddenRek.value;
+                    items.forEach((item) => {
+                        const div = document.createElement('div');
+                        div.className = 'draft-rek-option' + (item.no_rek === currentNoRek ? ' active' : '');
+                        div.dataset.noRek = item.no_rek;
+
+                        const leftSpan = document.createElement('span');
+                        leftSpan.textContent = item.label;
+
+                        const rightSpan = document.createElement('span');
+                        rightSpan.style.fontSize = '12px';
+                        rightSpan.style.fontWeight = '700';
+                        rightSpan.style.color = '#0D5C46';
+                        rightSpan.textContent = item.saldo_formatted;
+
+                        div.appendChild(leftSpan);
+                        div.appendChild(rightSpan);
+
+                        div.addEventListener('mousedown', (e) => {
+                            e.preventDefault();
+                            hiddenRek.value = item.no_rek;
+                            searchInput.value = item.label;
+                            searchInput.setCustomValidity('');
+                            dropdown.classList.remove('open');
+                            onRekeningSelectedByData(item);
+                        });
+                        dropdown.appendChild(div);
+                    });
+                }
+                dropdown.classList.add('open');
+            };
+
+            const doSearch = (q, showAll = false) => {
+                const term = showAll ? '' : q.trim().toLowerCase();
+                const filtered = term === ''
+                    ? DRAFT_REK_OPTIONS
+                    : DRAFT_REK_OPTIONS.filter((o) =>
+                        o.no_rek.toLowerCase().includes(term) ||
+                        o.nama.toLowerCase().includes(term) ||
+                        o.label.toLowerCase().includes(term)
+                    );
+                renderOptions(filtered);
+            };
+
+            searchInput.addEventListener('focus', () => doSearch('', true));
+            searchInput.addEventListener('click', () => doSearch('', true));
+            chevronBtn?.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (dropdown.classList.contains('open')) {
+                    dropdown.classList.remove('open');
+                } else {
+                    searchInput.focus();
+                    doSearch('', true);
+                }
+            });
+            searchInput.addEventListener('input', () => {
+                const raw = searchInput.value.trim();
+                const exact = DRAFT_REK_OPTIONS.find(o => o.no_rek === raw || o.label === raw);
+                if (exact) {
+                    hiddenRek.value = exact.no_rek;
+                    searchInput.setCustomValidity('');
+                    onRekeningSelectedByData(exact);
+                } else {
+                    hiddenRek.value = '';
+                    onRekeningSelectedByData(null);
+                }
+                doSearch(searchInput.value, false);
+            });
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.draft-rek-wrap')) {
+                    dropdown.classList.remove('open');
+                }
+            });
         }
 
         const currentJenis = document.querySelector('input[name="jenis"]:checked')?.value || 'setoran';
@@ -283,7 +407,13 @@
         const btnText = document.getElementById('btn-submit-draft-text');
 
         if (form && btn) {
-            form.addEventListener('submit', function() {
+            form.addEventListener('submit', function(e) {
+                if (hiddenRek && !hiddenRek.value && searchInput) {
+                    e.preventDefault();
+                    searchInput.setCustomValidity('Pilih rekening nasabah aktif dari daftar.');
+                    searchInput.reportValidity();
+                    return;
+                }
                 btn.disabled = true;
                 btn.style.opacity = '0.75';
                 btn.style.cursor = 'not-allowed';
