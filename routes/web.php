@@ -9,7 +9,9 @@ use App\Http\Controllers\SiswaPraktik\DraftTransaksiController;
 use App\Http\Controllers\Teller\TellerTransactionController;
 use App\Http\Controllers\Teller\TellerVerificationController;
 use App\Http\Controllers\Teller\TellerInterestController;
+use App\Http\Controllers\Teller\TellerAccountController;
 use App\Http\Controllers\Teller\TellerCorrectionController;
+use App\Http\Controllers\Teller\TellerPrintController;
 use App\Http\Controllers\BendaharaMini\PinjamanBbmController;
 use App\Http\Controllers\BendaharaMini\AngsuranBbmController;
 use App\Http\Controllers\BendaharaMini\KartuPiutangBbmController;
@@ -106,6 +108,12 @@ Route::middleware(['auth', 'akun.aktif', 'no.cache'])->group(function () {
             Route::get('/bukti', [TellerTransactionController::class, 'bukti'])->name('bukti');
             Route::get('/bukti/{transaksi}', [TellerTransactionController::class, 'showBukti'])->name('bukti.show');
 
+            Route::prefix('cetak')->name('cetak.')->group(function () {
+                Route::get('/slip-setoran/{transaksi}', [TellerPrintController::class, 'slipSetoran'])->whereNumber('transaksi')->name('slip-setoran');
+                Route::get('/slip-pengambilan/{transaksi}', [TellerPrintController::class, 'slipPengambilan'])->whereNumber('transaksi')->name('slip-pengambilan');
+                Route::get('/buku-tabungan', [TellerPrintController::class, 'bukuTabungan'])->name('buku-tabungan');
+            });
+
             Route::get('/jasa', [TellerInterestController::class, 'index'])->name('jasa');
 
             Route::get('/saldo', [TellerTransactionController::class, 'saldo'])->name('saldo');
@@ -114,8 +122,17 @@ Route::middleware(['auth', 'akun.aktif', 'no.cache'])->group(function () {
             Route::get('/log-transaksi', [TellerTransactionController::class, 'logHarian'])->name('log-transaksi');
             Route::get('/log-transaksi/cetak', [TellerTransactionController::class, 'printLogHarian'])->name('log-transaksi.cetak');
 
-            Route::get('/koreksi', [TellerCorrectionController::class, 'index'])->name('koreksi');
+            Route::get('/koreksi', [TellerTransactionController::class, 'koreksi'])->name('koreksi');
             Route::post('/koreksi/{transaksi}', [TellerCorrectionController::class, 'correct'])->name('koreksi.process');
+
+            Route::prefix('kelola-akun')->name('kelola-akun')->group(function () {
+                Route::get('/', [TellerAccountController::class, 'index']);
+                Route::get('/{rekening}', [TellerAccountController::class, 'show'])->whereNumber('rekening')->name('.show');
+                Route::put('/{rekening}/profil', [TellerAccountController::class, 'updateProfil'])->whereNumber('rekening')->name('.profil');
+                Route::post('/{rekening}/reset-password', [TellerAccountController::class, 'resetPassword'])->whereNumber('rekening')->name('.reset-password');
+                Route::post('/{rekening}/tutup', [TellerAccountController::class, 'tutupRekening'])->whereNumber('rekening')->name('.tutup');
+                Route::get('/{rekening}/bukti-tutup', [TellerAccountController::class, 'buktiTutup'])->whereNumber('rekening')->name('.bukti-tutup');
+            });
         });
     });
 

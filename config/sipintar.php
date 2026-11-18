@@ -35,4 +35,31 @@ return [
         'pegawai' => 0.002,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Batas Minimal Setoran Teller
+    |--------------------------------------------------------------------------
+    */
+    'setoran' => [
+        'min_awal' => 20000,
+        'min_berikutnya' => 10000,
+        'min_tanpa_batas' => 1,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pemetaan Kode SANDI Buku Tabungan
+    |--------------------------------------------------------------------------
+    */
+    'sandi' => [
+        'setoran' => 'S1',
+        'penarikan' => 'S2',
+        'jasa_tabungan' => 'S3',
+        'koreksi' => 'K1',
+    ],
+
+    'nasabah' => [
+        'default_password' => env('NASABAH_DEFAULT_PASSWORD', 'sipintar123'),
+    ],
+
 ];

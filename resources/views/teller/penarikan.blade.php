@@ -16,9 +16,17 @@
                 <option value="{{ $rekening->no_rek }}" @selected(old('no_rek') === $rekening->no_rek)>{{ $rekening->no_rek }} - {{ $rekening->nasabah->nama_nasabah ?? '-' }} (Rp {{ number_format($rekening->saldo, 0, ',', '.') }})</option>
             @endforeach
         </select>
-        <label for="nominal" style="display:block; margin-top: 16px;">Nominal Penarikan</label>
-        <input id="nominal" name="nominal" class="form-input" type="number" min="1000" step="1000" value="{{ old('nominal') }}" required>
+        <label for="nominal_display" style="display:block; margin-top: 16px;">Nominal Penarikan (Rp)</label>
+        <input id="nominal_display" class="form-input" type="text" inputmode="numeric" placeholder="Contoh: 50.000" value="{{ old('nominal') ? number_format((float) old('nominal'), 0, ',', '.') : '' }}" required oninput="formatNominalPenarikan(this)">
+        <input type="hidden" id="nominal" name="nominal" value="{{ old('nominal') }}">
         <button class="btn-ui btn-ui-primary" type="submit" style="margin-top: 20px;">Simpan Penarikan</button>
     </form>
 </div></div>
+<script>
+function formatNominalPenarikan(el) {
+    const digits = el.value.replace(/\D/g, '');
+    document.getElementById('nominal').value = digits;
+    el.value = digits ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
+}
+</script>
 @endsection

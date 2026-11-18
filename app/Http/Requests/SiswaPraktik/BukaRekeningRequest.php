@@ -26,7 +26,9 @@ class BukaRekeningRequest extends FormRequest
             'jenis_nasabah' => ['required', 'in:siswa,pegawai'],
             'no_induk'      => ['required', 'string', 'max:30'],
             'kelas_unit'    => ['nullable', 'string', 'max:50'],
-            'no_hp'         => ['required', 'string', 'max:15', 'unique:tblNASABAH,no_hp'],
+            'no_hp'         => ['required', 'string', 'max:15', 'unique:tblNASABAH,no_hp', 'unique:tblUSER,no_hp'],
+            'email'         => ['nullable', 'email', 'max:100', 'unique:tblUSER,email'],
+            'password'      => ['required', 'string', 'min:6', 'max:100', 'confirmed'],
         ];
     }
 
@@ -45,7 +47,12 @@ class BukaRekeningRequest extends FormRequest
             'kelas_unit.max'         => 'Kelas/Unit kerja tidak boleh melebihi 50 karakter.',
             'no_hp.required'         => 'Nomor HP/WhatsApp wajib diisi.',
             'no_hp.max'              => 'Nomor HP tidak boleh melebihi 15 digit.',
-            'no_hp.unique'           => 'Nomor HP/WhatsApp ini sudah terdaftar sebagai nasabah.',
+            'no_hp.unique'           => 'Nomor HP/WhatsApp ini sudah terdaftar sebagai nasabah/pengguna.',
+            'email.email'            => 'Format email tidak valid.',
+            'email.unique'           => 'Email ini sudah terdaftar dalam sistem.',
+            'password.required'      => 'Password akun nasabah wajib diisi.',
+            'password.min'           => 'Password akun nasabah minimal 6 karakter.',
+            'password.confirmed'     => 'Konfirmasi password akun nasabah tidak cocok.',
         ];
     }
 }

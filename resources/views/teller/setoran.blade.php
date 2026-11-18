@@ -16,9 +16,26 @@
                 <option value="{{ $rekening->no_rek }}" @selected(old('no_rek') === $rekening->no_rek)>{{ $rekening->no_rek }} - {{ $rekening->nasabah->nama_nasabah ?? '-' }}</option>
             @endforeach
         </select>
-        <label for="nominal" style="display:block; margin-top: 16px;">Nominal Setoran</label>
-        <input id="nominal" name="nominal" class="form-input" type="number" min="1000" step="1000" value="{{ old('nominal') }}" required>
+        <label for="nominal_display" style="display:block; margin-top: 16px;">Nominal Setoran (Rp)</label>
+        <input id="nominal_display" class="form-input" type="text" inputmode="numeric" placeholder="Contoh: 50.000" value="{{ old('nominal') ? number_format((float) old('nominal'), 0, ',', '.') : '' }}" required oninput="formatNominalSetoran(this)">
+        <input type="hidden" id="nominal" name="nominal" value="{{ old('nominal') }}">
+        <label style="display:flex; align-items:center; gap:8px; margin-top:12px; font-size:13px; cursor:pointer;">
+            <input type="checkbox" id="toggleMinSetoran" checked onchange="toggleMinSetoranInput(this)">
+            <span>Terapkan minimal setoran berikutnya (Rp {{ number_format(config('sipintar.setoran.min_berikutnya', 10000), 0, ',', '.') }})</span>
+        </label>
+        <input type="hidden" name="abaikan_minimal" id="abaikanMinimalInput" value="0">
         <button class="btn-ui btn-ui-primary" type="submit" style="margin-top: 20px;">Simpan Setoran</button>
     </form>
 </div></div>
+<script>
+function formatNominalSetoran(el) {
+    const digits = el.value.replace(/\D/g, '');
+    document.getElementById('nominal').value = digits;
+    el.value = digits ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
+}
+function toggleMinSetoranInput(cb) {
+    const hidden = document.getElementById('abaikanMinimalInput');
+    hidden.value = cb.checked ? '0' : '1';
+}
+</script>
 @endsection
