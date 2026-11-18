@@ -14,7 +14,8 @@ class AuditLogService
         string $entitas,
         ?int $entitasId = null,
         ?array $dataLama = null,
-        ?array $dataBaru = null
+        ?array $dataBaru = null,
+        mixed $createdAt = null
     ): void {
         try {
             DB::table('tblAUDIT_LOG')->insert([
@@ -25,7 +26,7 @@ class AuditLogService
                 'data_lama'  => $dataLama ? json_encode($dataLama) : null,
                 'data_baru'  => $dataBaru ? json_encode($dataBaru) : null,
                 'ip_address' => request()->ip(),
-                'created_at' => now(),
+                'created_at' => $createdAt ?? now(),
             ]);
         } catch (\Throwable $e) {
             // Fail safe agar audit log tidak menggagalkan alur transaksi bila tabel belum siap

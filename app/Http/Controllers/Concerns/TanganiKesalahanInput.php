@@ -64,7 +64,9 @@ trait TanganiKesalahanInput
         Log::error("[{$ref}] Gagal {$aksi}: " . $e->getMessage(), [
             'user_id' => auth()->id(),
             'url'     => request()->fullUrl(),
-            'file'    => $e->getFile() . ':' . $e->getLine(),
+            'file'    => $e->getFile(),
+            'line'    => $e->getLine(),
+            'trace'   => $e->getTraceAsString(),
         ]);
 
         if ($e instanceof QueryException) {

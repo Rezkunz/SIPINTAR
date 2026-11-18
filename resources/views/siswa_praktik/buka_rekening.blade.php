@@ -134,6 +134,46 @@
                         <span class="profile-error-msg">{{ $message }}</span>
                     @enderror
                 </div>
+
+                {{-- Email Akun Nasabah (Opsional) --}}
+                <div class="profile-field-group full-width">
+                    <label for="email" class="profile-field-label">
+                        <span>Email Akun Nasabah</span>
+                        <span style="font-size: 10px; color: var(--text-muted); font-weight: normal;">(Opsional)</span>
+                    </label>
+                    <div class="profile-input-wrap">
+                        <svg class="profile-input-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        <input type="email" id="email" name="email" class="profile-input" value="{{ old('email') }}" placeholder="Contoh: nasabah@sipintar.sch.id" maxlength="100">
+                    </div>
+                    @error('email')
+                        <span class="profile-error-msg">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                {{-- Password Akun Nasabah (Wajib) --}}
+                <div class="profile-field-group">
+                    <label for="password" class="profile-field-label">
+                        <span>Password Akun Nasabah <span class="required-mark">*</span></span>
+                    </label>
+                    <div class="profile-input-wrap">
+                        <svg class="profile-input-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <input type="password" id="password" name="password" class="profile-input" placeholder="Minimal 6 karakter" required minlength="6" maxlength="100">
+                    </div>
+                    @error('password')
+                        <span class="profile-error-msg">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                {{-- Konfirmasi Password Akun Nasabah (Wajib) --}}
+                <div class="profile-field-group">
+                    <label for="password_confirmation" class="profile-field-label">
+                        <span>Konfirmasi Password <span class="required-mark">*</span></span>
+                    </label>
+                    <div class="profile-input-wrap">
+                        <svg class="profile-input-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <input type="password" id="password_confirmation" name="password_confirmation" class="profile-input" placeholder="Ulangi password" required minlength="6" maxlength="100">
+                    </div>
+                </div>
             </div>
 
             <div style="display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding-top: 16px; border-top: 1px solid var(--border-subtle);">
@@ -182,7 +222,7 @@
                 <div style="width: 28px; height: 28px; border-radius: 6px; background: #F1F5F9; color: var(--text-muted); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 700;">4</div>
                 <div>
                     <strong style="color: var(--text-heading);">Langkah Berikutnya</strong>
-                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Siswa Praktik menerima setoran awal minimal Rp10.000 lalu menyetujui rekening agar statusnya menjadi aktif.</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Siswa Praktik menerima setoran awal minimal Rp20.000 lalu menyetujui rekening agar statusnya menjadi aktif.</div>
                 </div>
             </div>
         </div>
@@ -194,7 +234,7 @@
     <div class="card-header-bar">
         <div>
             <h2 class="card-heading">Rekening Menunggu Setoran Awal</h2>
-            <div style="font-size: 12px; color: var(--text-muted);">Setoran minimal Rp10.000 mengaktifkan rekening dan dicatat sebagai transaksi awal.</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Setoran minimal Rp20.000 mengaktifkan rekening dan dicatat sebagai transaksi awal.</div>
         </div>
     </div>
     <div class="table-responsive">
@@ -219,7 +259,8 @@
                         <td style="text-align: right;">
                             <form method="POST" action="{{ route('tabungan.buka-rekening.approve', $pending) }}" style="display: inline-flex; gap: 8px; align-items: center;">
                                 @csrf
-                                <input type="number" name="setoran_awal" min="10000" step="1000" value="10000" required style="width: 130px;" class="form-input">
+                                <input type="text" inputmode="numeric" value="{{ number_format((float) config('sipintar.setoran.min_awal', 20000), 0, ',', '.') }}" required style="width: 130px; text-align:right;" class="form-input" oninput="syncSetoranAwal(this)">
+                                <input type="hidden" name="setoran_awal" value="{{ config('sipintar.setoran.min_awal', 20000) }}">
                                 <button type="submit" class="btn-ui btn-ui-primary btn-ui-sm">Setujui & Aktifkan</button>
                             </form>
                         </td>
@@ -237,6 +278,13 @@
 </div>
 
 <script>
+    function syncSetoranAwal(el) {
+        const digits = el.value.replace(/\D/g, '');
+        const hidden = el.parentElement.querySelector('input[name="setoran_awal"]');
+        if (hidden) hidden.value = digits;
+        el.value = digits ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
+    }
+
     // ── INTERAKTIF LABEL SESUAI KATEGORI NASABAH ──
     function toggleLabelNomorInduk(jenis) {
         const lblInduk = document.getElementById('label-nomor-induk');
@@ -276,7 +324,7 @@
         @if(session('success_rekening'))
             if (typeof window.showSuccessPopup === 'function') {
                 window.showSuccessPopup(
-                    "Pengajuan rekening {{ session('success_rekening') }} berhasil dicatat untuk nasabah {{ session('success_nama') }} dan menunggu setoran awal minimal Rp10.000.",
+                    "Pengajuan rekening {{ session('success_rekening') }} & akun login nasabah ({{ session('success_nama') }}) berhasil dibuat. Menunggu setoran awal minimal Rp20.000.",
                     "PENGAJUAN TERCATAT",
                     "SELESAI"
                 );

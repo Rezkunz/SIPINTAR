@@ -45,4 +45,6 @@ Thumbs.db
 # Figma Mockups (Local export only, not for GitHub)
 mockup-export
 ExportMockup.php
-
+.tools
+docs
+tests

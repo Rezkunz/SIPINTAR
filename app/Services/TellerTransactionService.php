@@ -22,6 +22,12 @@ class TellerTransactionService
                 ]);
             }
 
+            if (DB::table('tblTRANSAKSI')->where('draft_id', $draft->draft_id)->exists()) {
+                throw ValidationException::withMessages([
+                    'draft' => 'Draft ini sudah pernah dicatat transaksinya.',
+                ]);
+            }
+
             $rekening = DB::table('tblREKENING')
                 ->where('rekening_id', $draft->rekening_id)
                 ->lockForUpdate()
@@ -63,8 +69,14 @@ class TellerTransactionService
                 'saldo' => $saldoAkhir,
             ]);
 
-            $this->recordCashMutation($kas, $periode->periode_id, $tellerId, $transaksiId, $nominal, $jenis->nama_jenis);
-            $this->updateCashBalance($kas, $nominal, $jenis->nama_jenis);
+            $this->catatMutasiKasTunai(
+                periodeId: $periode->periode_id,
+                userId: $tellerId,
+                transaksiId: $transaksiId,
+                nominal: $nominal,
+                arah: $jenis->nama_jenis === 'setoran' ? 'masuk' : 'keluar',
+                uraian: ucfirst($jenis->nama_jenis) . ' Teller #' . $transaksiId
+            );
 
             DB::table('tblDRAFT')->where('draft_id', $draft->draft_id)->update([
                 'status_verifikasi' => 'disetujui',
@@ -88,6 +100,12 @@ class TellerTransactionService
                 ]);
             }
 
+            if (DB::table('tblTRANSAKSI')->where('draft_id', $draft->draft_id)->exists()) {
+                throw ValidationException::withMessages([
+                    'draft' => 'Draft ini sudah pernah dicatat transaksinya.',
+                ]);
+            }
+
             DB::table('tblDRAFT')->where('draft_id', $draftId)->update([
                 'status_verifikasi' => 'ditolak',
                 'teller_id' => $tellerId,
@@ -95,9 +113,9 @@ class TellerTransactionService
         });
     }
 
-    public function storeDirect(int $tellerId, string $noRek, float $nominal, string $jenis): array
+    public function storeDirect(int $tellerId, string $noRek, float $nominal, string $jenis, bool $enforceMinSetoran = true): array
     {
-        return DB::transaction(function () use ($tellerId, $noRek, $nominal, $jenis) {
+        return DB::transaction(function () use ($tellerId, $noRek, $nominal, $jenis, $enforceMinSetoran) {
             $rekening = DB::table('tblREKENING')
                 ->where('no_rek', $noRek)
                 ->lockForUpdate()
@@ -118,7 +136,7 @@ class TellerTransactionService
 
             $periode = PeriodeLockService::assertPeriodeTerbuka(now());
             $kas = $this->lockKas();
-            $saldoAkhir = $this->calculateBalance($jenis, (float) $rekening->saldo, $nominal, (float) $kas->saldo);
+            $saldoAkhir = $this->calculateBalance($jenis, (float) $rekening->saldo, $nominal, (float) $kas->saldo, $enforceMinSetoran);
 
             $transaksiId = $this->recordTransaction(
                 rekeningId: $rekening->rekening_id,
@@ -135,13 +153,81 @@ class TellerTransactionService
                 'saldo' => $saldoAkhir,
             ]);
 
-            $this->recordCashMutation($kas, $periode->periode_id, $tellerId, $transaksiId, $nominal, $jenis);
-            $this->updateCashBalance($kas, $nominal, $jenis);
+            $this->catatMutasiKasTunai(
+                periodeId: $periode->periode_id,
+                userId: $tellerId,
+                transaksiId: $transaksiId,
+                nominal: $nominal,
+                arah: $jenis === 'setoran' ? 'masuk' : 'keluar',
+                uraian: ucfirst($jenis) . ' Teller #' . $transaksiId
+            );
+
+            if ($jenis === 'setoran' && !$enforceMinSetoran) {
+                AuditLogService::log(
+                    aksi: 'BYPASS_MINIMAL_SETORAN',
+                    entitas: 'tblTRANSAKSI',
+                    entitasId: $transaksiId,
+                    dataBaru: [
+                        'no_rek' => $noRek,
+                        'nominal' => $nominal,
+                        'min_default' => (float) config('sipintar.setoran.min_berikutnya', 10000),
+                    ]
+                );
+            }
 
             $receiptId = $this->createReceipt($transaksiId, $tellerId);
 
             return ['transaksi_id' => $transaksiId, 'bukti_id' => $receiptId];
         });
+    }
+
+    /**
+     * Catat mutasi Kas Tunai dan perbarui saldo tblKAS secara atomik & idempoten.
+     */
+    public function catatMutasiKasTunai(
+        int $periodeId,
+        int $userId,
+        int $transaksiId,
+        float $nominal,
+        string $arah,
+        string $uraian
+    ): void {
+        if ($nominal <= 0) {
+            return;
+        }
+
+        // Cegah pencatatan ganda untuk transaksi yang sama (idempotensi)
+        if (DB::table('tblMUTASI_KAS')->where('transaksi_id', $transaksiId)->exists()) {
+            return;
+        }
+
+        $kas = $this->lockKas();
+
+        if ($arah === 'keluar' && (float) $kas->saldo < $nominal) {
+            throw ValidationException::withMessages([
+                'nominal' => 'Saldo kas tunai tidak mencukupi.',
+            ]);
+        }
+
+        DB::table('tblMUTASI_KAS')->insert([
+            'kas_id' => $kas->kas_id,
+            'periode_id' => $periodeId,
+            'user_id' => $userId,
+            'transaksi_id' => $transaksiId,
+            'angsuran_id' => null,
+            'pencairan_id' => null,
+            'tgl_mutasi' => now()->toDateString(),
+            'arah' => $arah,
+            'nominal' => $nominal,
+            'uraian' => $uraian,
+        ]);
+
+        $query = DB::table('tblKAS')->where('kas_id', $kas->kas_id);
+        if ($arah === 'masuk') {
+            $query->increment('saldo', $nominal);
+        } else {
+            $query->decrement('saldo', $nominal);
+        }
     }
 
     private function lockKas(): object
@@ -157,8 +243,22 @@ class TellerTransactionService
         return $kas;
     }
 
-    private function calculateBalance(string $jenis, float $saldo, float $nominal, float $saldoKas): float
+    private function calculateBalance(string $jenis, float $saldo, float $nominal, float $saldoKas, bool $enforceMinSetoran = true): float
     {
+        if ($jenis === 'setoran') {
+            $minSetoran = $enforceMinSetoran
+                ? (float) config('sipintar.setoran.min_berikutnya', 10000)
+                : (float) config('sipintar.setoran.min_tanpa_batas', 1);
+
+            if ($nominal < $minSetoran) {
+                throw ValidationException::withMessages([
+                    'nominal' => 'Nominal setoran minimal Rp ' . number_format($minSetoran, 0, ',', '.') . '.',
+                ]);
+            }
+
+            return $saldo + $nominal;
+        }
+
         if ($nominal < (float) config('sipintar.draft.min_nominal', 1000)) {
             throw ValidationException::withMessages([
                 'nominal' => 'Nominal transaksi berada di bawah batas minimum.',
@@ -205,32 +305,6 @@ class TellerTransactionService
             'saldo_akhir' => $saldoAkhir,
             'tgl_transaksi' => now(),
         ], 'transaksi_id');
-    }
-
-    private function recordCashMutation(object $kas, int $periodeId, int $tellerId, int $transaksiId, float $nominal, string $jenis): void
-    {
-        DB::table('tblMUTASI_KAS')->insert([
-            'kas_id' => $kas->kas_id,
-            'periode_id' => $periodeId,
-            'user_id' => $tellerId,
-            'transaksi_id' => $transaksiId,
-            'angsuran_id' => null,
-            'pencairan_id' => null,
-            'tgl_mutasi' => now()->toDateString(),
-            'arah' => $jenis === 'setoran' ? 'masuk' : 'keluar',
-            'nominal' => $nominal,
-            'uraian' => ucfirst($jenis) . ' Teller #' . $transaksiId,
-        ]);
-    }
-
-    private function updateCashBalance(object $kas, float $nominal, string $jenis): void
-    {
-        $query = DB::table('tblKAS')->where('kas_id', $kas->kas_id);
-        if ($jenis === 'setoran') {
-            $query->increment('saldo', $nominal);
-        } else {
-            $query->decrement('saldo', $nominal);
-        }
     }
 
     private function createReceipt(int $transaksiId, int $tellerId): int
