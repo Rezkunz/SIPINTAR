@@ -328,4 +328,12 @@ Route::middleware(['auth', 'akun.aktif', 'no.cache'])->group(function () {
         // ai=false: chatbot menampilkan saran pertanyaan dari FAQ, bukan pesan ini
         return response()->json(['reply' => 'Maaf, asisten AI sedang tidak tersedia. Silakan hubungi staf Bank Mini Sekolah untuk bantuan langsung.', 'ai' => false]);
     })->name('chatbot.ask');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pusat Notifikasi (Semua role terotentikasi)
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/notifikasi/baca-semua', [\App\Http\Controllers\NotificationController::class, 'markAllRead'])
+        ->name('notifikasi.baca-semua');
 });
