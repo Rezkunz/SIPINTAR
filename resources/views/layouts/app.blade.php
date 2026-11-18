@@ -624,11 +624,11 @@
     {{-- ── MAIN CONTENT ── --}}
     <main class="app-main">
         @yield('content')
-    </main>
 
-    <footer style="padding: 12px 24px 20px; text-align: center; font-size: 12px; color: #64748B;">
-        Operasional Loket Bank Mini Sekolah: Senin–Jumat pukul 08.00 s.d. 15.00 WIB
-    </footer>
+        <footer style="margin-top: 32px; padding: 14px 0 4px; border-top: 1px solid var(--border-subtle); text-align: center; font-size: 12px; color: #64748B;">
+            Operasional Loket Bank Mini Sekolah: Senin–Jumat pukul 08.00 s.d. 15.00 WIB
+        </footer>
+    </main>
 
     {{-- ── 3D POPUP NOTIFICATION MODAL (Image 2) ── --}}
     @include('partials.status_popup')
