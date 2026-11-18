@@ -123,6 +123,24 @@ class LaporanNeracaTest extends TestCase
         $this->assertEquals(56000.0, $kewajiban['jasa_terutang']);     // siswa 1.000 × 6 + guru 10.000 × 5
     }
 
+    public function test_laba_tahun_lalu_masuk_laba_ditahan_bukan_selisih(): void
+    {
+        $sebelum = $this->neraca()->viewData('ekuitas');
+        $this->assertEquals(0.0, $sebelum['laba_ditahan']);   // belum ada data tahun lalu
+
+        // Pendapatan lain-lain tahun 2025 (kas manual masuk) → laba 2025
+        DB::table('tblMUTASI_KAS')->insert([
+            'kas_id' => 1, 'periode_id' => 1, 'user_id' => $this->manager->user_id, 'tgl_mutasi' => '2025-12-15',
+            'arah' => 'masuk', 'nominal' => 200000, 'uraian' => 'Pendapatan lain tahun lalu',
+        ]);
+
+        $sesudah = $this->neraca()->viewData('ekuitas');
+        $this->assertEquals(200000.0, $sesudah['laba_ditahan']);
+        // Laba tahun lalu dijelaskan oleh Laba Ditahan, sehingga selisih berkurang sebesar itu
+        $this->assertEquals($sebelum['modal_selisih'] - 200000, $sesudah['modal_selisih']);
+        $this->assertEquals($sebelum['laba_berjalan'], $sesudah['laba_berjalan']);
+    }
+
     public function test_ekuitas_dan_neraca_seimbang(): void
     {
         $response = $this->neraca();
