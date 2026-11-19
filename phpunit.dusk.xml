@@ -15,8 +15,7 @@
             <directory prefix="TC_" suffix="Test.php">tests/Modul_Pinjaman/iterasi2</directory>
         </testsuite>
         <testsuite name="UAT Modul Dashboard">
-            <directory prefix="TC_" suffix="Test.php">tests/Modul_Dashboard</directory>
-            <exclude>tests/Modul_Dashboard/iterasi2</exclude>
+            <directory prefix="TC_" suffix="Test.php">tests/Modul_Dashboard/iterasi1</directory>
         </testsuite>
         <!-- Iterasi 2: validasi dashboard & laporan Manajer dari feedback UAT (Tabel IV-35) -->
         <testsuite name="UAT Modul Dashboard Iterasi 2">

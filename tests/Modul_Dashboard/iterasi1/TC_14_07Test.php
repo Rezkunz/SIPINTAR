@@ -1,7 +1,8 @@
 <?php
 
-namespace Tests\Modul_Dashboard;
+namespace Tests\Modul_Dashboard\iterasi1;
 
+use Tests\Modul_Dashboard\DashboardDuskTestCase;
 use Illuminate\Support\Facades\DB;
 use Laravel\Dusk\Browser;
 use PhpOffice\PhpSpreadsheet\IOFactory;

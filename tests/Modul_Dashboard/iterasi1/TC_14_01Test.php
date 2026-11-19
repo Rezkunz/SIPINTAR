@@ -1,7 +1,8 @@
 <?php
 
-namespace Tests\Modul_Dashboard;
+namespace Tests\Modul_Dashboard\iterasi1;
 
+use Tests\Modul_Dashboard\DashboardDuskTestCase;
 use Illuminate\Support\Facades\DB;
 use Laravel\Dusk\Browser;
 
@@ -35,7 +36,9 @@ class TC_14_01Test extends DashboardDuskTestCase
             $metrik = $this->nilaiMetrik($browser);
             $this->assertContains('Rp' . $this->rp($totalSimpanan), $metrik, 'Total simpanan');
             $this->assertContains('Rp' . $this->rp($totalPiutang), $metrik, 'Total pinjaman/piutang');
-            $this->assertContains('Rp' . $this->rp($kasTunai), $metrik, 'Saldo kas');
+            // Kartu "Total Kas Bank Mini" = kas tunai + kas bank; kas tunai tampil sebagai rincian kartu
+            $this->assertContains('Rp' . $this->rp($kasTunai + $this->saldoKas('bank')), $metrik, 'Total kas');
+            $browser->assertSeeIn('@dashboard-kas-tunai', 'Rp ' . $this->rp($kasTunai));
         });
     }
 }
