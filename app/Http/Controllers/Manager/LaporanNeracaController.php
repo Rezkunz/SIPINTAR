@@ -68,7 +68,10 @@ class LaporanNeracaController extends Controller
             fputcsv($output, ['KEWAJIBAN'], ';');
             fputcsv($output, ['Tabungan Siswa', $n['kewajiban']['tabungan_siswa']], ';');
             fputcsv($output, ['Tabungan Guru/Karyawan', $n['kewajiban']['tabungan_guru']], ';');
-            fputcsv($output, ['Jasa Tabungan Terutang (tahun berjalan)', $n['kewajiban']['jasa_terutang']], ';');
+            fputcsv($output, ['Jasa Tabungan Terutang (belum dibukukan)', $n['kewajiban']['jasa_terutang']], ';');
+            if ($n['kewajiban']['kelebihan_potongan'] > 0) {
+                fputcsv($output, ['Kelebihan Potongan Pegawai (wajib dikembalikan)', $n['kewajiban']['kelebihan_potongan']], ';');
+            }
             foreach ($n['posManual']['kewajiban'] as $p) {
                 fputcsv($output, [$p->nama_pos . ' (input manual)', (float) $p->nilai], ';');
             }
@@ -77,6 +80,7 @@ class LaporanNeracaController extends Controller
             foreach ($n['posManual']['ekuitas'] as $p) {
                 fputcsv($output, [$p->nama_pos . ' (input manual)', (float) $p->nilai], ';');
             }
+            fputcsv($output, ['Laba Ditahan (tahun-tahun sebelumnya)', $n['ekuitas']['laba_ditahan']], ';');
             fputcsv($output, ['Laba (Rugi) Tahun Berjalan', $n['ekuitas']['laba_berjalan']], ';');
             fputcsv($output, ['Selisih Belum Terjelaskan', $n['ekuitas']['modal_selisih']], ';');
             fputcsv($output, ['TOTAL EKUITAS', $n['totalEkuitas']], ';');
@@ -125,10 +129,14 @@ class LaporanNeracaController extends Controller
                             $baris(['   Tabungan Guru/Karyawan (Takar Payable)', $n['kewajiban']['tabungan_guru']]),
                             $baris(['   Jasa Tabungan Terutang (Interest Payable)', $n['kewajiban']['jasa_terutang']]),
                         ],
+                        $n['kewajiban']['kelebihan_potongan'] > 0
+                            ? [$baris(['   Kelebihan Potongan Pegawai (wajib dikembalikan)', $n['kewajiban']['kelebihan_potongan']])]
+                            : [],
                         $manual('kewajiban'),
                         [$baris(['Total Kewajiban', $n['totalKewajiban']], 'subtotal'), $baris(['EKUITAS', null], 'grup')],
                         $manual('ekuitas'),
                         [
+                            $baris(['   Laba Ditahan (tahun-tahun sebelumnya)', $n['ekuitas']['laba_ditahan']]),
                             $baris(['   Laba (Rugi) Tahun Berjalan', $n['ekuitas']['laba_berjalan']]),
                             $baris(['   Selisih Belum Terjelaskan', $n['ekuitas']['modal_selisih']]),
                             $baris(['Total Ekuitas', $n['totalEkuitas']], 'subtotal'),
@@ -143,9 +151,11 @@ class LaporanNeracaController extends Controller
 
     /**
      * Aktiva    = kas tunai + kas bank (dihitung mundur dari saldo kas saat ini) + sisa pokok piutang.
-     * Kewajiban = saldo tabungan siswa & guru + jasa tabungan tahun berjalan yang belum dibukukan.
+     * Kewajiban = saldo tabungan siswa & guru + jasa tabungan yang belum dibukukan (akumulatif sejak awal)
+     *             + kelebihan potong gaji yang wajib dikembalikan.
      * Pos manual (tblPOS_NERACA) menambah baris aktiva/kewajiban/ekuitas sesuai nilai yang berlaku.
-     * Ekuitas   = aktiva - kewajiban; sisanya setelah laba berjalan & pos ekuitas manual
+     * Ekuitas   = aktiva - kewajiban = laba ditahan (tahun-tahun lalu) + laba berjalan + pos ekuitas manual;
+     *             sisanya setelah laba ditahan, laba berjalan & pos ekuitas manual
      *             ditampilkan sebagai selisih belum terjelaskan.
      */
     private function susunNeraca(Request $request): array
@@ -171,13 +181,18 @@ class LaporanNeracaController extends Controller
         ];
 
         $labaRugi    = LabaRugiService::hitung($tanggalPosisi->year, $tanggalPosisi->month)['total'];
-        $jasaBeban   = $labaRugi['jasa_siswa'] + $labaRugi['jasa_guru'];
-        $jasaDibayar = JasaTabunganService::jasaDibukukan($tanggalPosisi->copy()->startOfYear(), $batas);
+        $tahunLalu   = $this->ringkasanTahunSebelum($tanggalPosisi->year);
+        // Jasa terutang akumulatif: seluruh beban jasa sejak tahun pertama dikurangi seluruh jasa yang
+        // sudah dibukukan, agar jasa tahun lalu yang belum dibukukan tidak hilang saat berganti tahun
+        $jasaBeban   = $labaRugi['jasa_siswa'] + $labaRugi['jasa_guru'] + $tahunLalu['jasa'];
+        $jasaDibayar = JasaTabunganService::jasaDibukukan(Carbon::create(2000, 1, 1), $batas);
 
         $kewajiban = [
             'tabungan_siswa' => JasaTabunganService::totalSaldo('siswa', $batas),
             'tabungan_guru'  => JasaTabunganService::totalSaldo('guru', $batas),
             'jasa_terutang'  => $jasaBeban - $jasaDibayar,
+            // Dana potong gaji yang diterima tetapi tidak menjadi angsuran: milik pegawai, wajib dikembalikan
+            'kelebihan_potongan' => $this->kelebihanPotonganPada($tanggalPosisi),
         ];
 
         $posManual = $this->posManualPada($tanggalPosisi);
@@ -186,10 +201,13 @@ class LaporanNeracaController extends Controller
         $totalKewajiban = array_sum($kewajiban) + (float) $posManual['kewajiban']->sum('nilai');
         $totalEkuitas   = $totalAktiva - $totalKewajiban;
 
+        $labaDitahan = $tahunLalu['laba'];
+
         $ekuitas = [
+            'laba_ditahan'  => $labaDitahan,
             'laba_berjalan' => $labaRugi['laba'],
-            // Selisih yang belum terjelaskan oleh laba berjalan maupun pos ekuitas manual (modal, hibah, dll)
-            'modal_selisih' => $totalEkuitas - $labaRugi['laba'] - (float) $posManual['ekuitas']->sum('nilai'),
+            // Selisih yang belum terjelaskan oleh laba (ditahan & berjalan) maupun pos ekuitas manual (modal, hibah, dll)
+            'modal_selisih' => $totalEkuitas - $labaDitahan - $labaRugi['laba'] - (float) $posManual['ekuitas']->sum('nilai'),
         ];
 
         $totalTabungan = $kewajiban['tabungan_siswa'] + $kewajiban['tabungan_guru'];
@@ -235,6 +253,65 @@ class LaporanNeracaController extends Controller
             'kewajiban' => $berlaku->where('kelompok', 'kewajiban')->values(),
             'ekuitas'   => $berlaku->where('kelompok', 'ekuitas')->values(),
         ];
+    }
+
+    /**
+     * Akumulasi seluruh tahun sebelum $tahun, per tahun penuh dengan rumus Laporan Tahunan:
+     * 'laba' = laba ditahan, 'jasa' = beban jasa tabungan. Dimulai dari tahun pertama yang punya
+     * data (mutasi kas, angsuran, atau transaksi tabungan).
+     *
+     * @return array{laba: float, jasa: float}
+     */
+    private function ringkasanTahunSebelum(int $tahun): array
+    {
+        $tahunPertama = collect([
+            DB::table('tblMUTASI_KAS')->min('tgl_mutasi'),
+            DB::table('tblANGSURAN')->min('tgl_bayar'),
+            DB::table('tblTRANSAKSI')->min('tgl_transaksi'),
+        ])->filter()->map(fn ($tgl) => Carbon::parse($tgl)->year)->min();
+
+        $hasil = ['laba' => 0.0, 'jasa' => 0.0];
+        if (!$tahunPertama || $tahunPertama >= $tahun) {
+            return $hasil;
+        }
+
+        for ($t = $tahunPertama; $t < $tahun; $t++) {
+            $total = LabaRugiService::hitung($t, 12)['total'];
+            $hasil['laba'] += $total['laba'];
+            $hasil['jasa'] += $total['jasa_siswa'] + $total['jasa_guru'];
+        }
+
+        return ['laba' => round($hasil['laba'], 2), 'jasa' => round($hasil['jasa'], 2)];
+    }
+
+    /**
+     * Kelebihan potong gaji s.d. tanggal: penerimaan paket potongan (mutasi kas masuk "#RP-{id}")
+     * dikurangi angsuran yang terbentuk dari paket tersebut. Sama dengan "Kelebihan potongan"
+     * di Buku Kas Bendahara.
+     */
+    private function kelebihanPotonganPada(Carbon $tanggal): float
+    {
+        $penerimaan = DB::table('tblMUTASI_KAS')
+            ->where('arah', 'masuk')
+            ->whereNull('angsuran_id')
+            ->whereNull('transaksi_id')
+            ->where('uraian', 'like', '%potongan gaji paket #RP-%')
+            ->whereDate('tgl_mutasi', '<=', $tanggal)
+            ->get(['nominal', 'uraian']);
+
+        $total = 0.0;
+        foreach ($penerimaan as $m) {
+            if (!preg_match('/#RP-(\d+)/i', (string) $m->uraian, $cocok)) {
+                continue;
+            }
+            $angsuran = (float) DB::table('tblANGSURAN as ang')
+                ->join('tblDETAIL_POTONGAN as dp', 'ang.detail_potongan_id', '=', 'dp.detail_potongan_id')
+                ->where('dp.rencana_potongan_id', (int) $cocok[1])
+                ->sum(DB::raw('ang.bayar_pokok + ang.bayar_bunga'));
+            $total += max(0.0, (float) $m->nominal - $angsuran);
+        }
+
+        return round($total, 2);
     }
 
     /**
