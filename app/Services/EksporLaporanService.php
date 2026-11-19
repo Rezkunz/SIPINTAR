@@ -9,6 +9,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -39,6 +40,7 @@ class EksporLaporanService
     public const NAMA_SEKOLAH = 'SMK NEGERI 1 LEMAHABANG';
     public const ALAMAT       = 'Jl. KH. Wahid Hasyim No. 76 Telp. (0231) 635308, Lemahabang, Kabupaten Cirebon';
     public const TEKS_KOSONG  = 'Tidak ada data pada periode ini.';
+    public const LOGO         = 'images/sipintar_logo.png';   // relatif terhadap public/
 
     private const WARNA_UTAMA  = '0D5C46';
     private const WARNA_MUDA   = 'ECFDF5';
@@ -89,6 +91,21 @@ class EksporLaporanService
         return is_numeric($nilai) ? number_format((float) $nilai, 0, ',', '.') : (string) $nilai;
     }
 
+    /**
+     * Logo Bank Mini sebagai data URI untuk kop PDF (dompdf tidak perlu mengakses file/URL luar).
+     */
+    public static function logoDataUri(): ?string
+    {
+        static $uri = false;
+
+        if ($uri === false) {
+            $path = public_path(self::LOGO);
+            $uri  = is_file($path) ? 'data:image/png;base64,' . base64_encode(file_get_contents($path)) : null;
+        }
+
+        return $uri;
+    }
+
     private static function lengkapi(array $dokumen): array
     {
         return array_merge([
@@ -124,6 +141,18 @@ class EksporLaporanService
             $baris++;
         }
         $baris++;
+
+        // Logo Bank Mini di pojok kiri kop
+        if (is_file(public_path(self::LOGO))) {
+            $logo = new Drawing();
+            $logo->setName('Logo Bank Mini')
+                ->setPath(public_path(self::LOGO))
+                ->setHeight(56)
+                ->setCoordinates('A1')
+                ->setOffsetX(4)
+                ->setOffsetY(2)
+                ->setWorksheet($sheet);
+        }
 
         foreach ($dok['bagian'] as $bagian) {
             $baris = self::tulisBagian($sheet, $bagian, $baris);

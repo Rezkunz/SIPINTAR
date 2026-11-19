@@ -10,6 +10,11 @@
         @page { margin: 18mm 12mm 16mm 12mm; }
         body { font-family: "DejaVu Sans", sans-serif; font-size: {{ $dok['ukuran_font'] }}pt; color: #0F172A; }
         .kop { text-align: center; border-bottom: 2.5px double #0D5C46; padding-bottom: 6px; margin-bottom: 12px; }
+        .kop table { width: 100%; border-collapse: collapse; }
+        .kop td { vertical-align: middle; padding: 0; }
+        .kop td.kop-logo { width: 60px; text-align: left; }
+        .kop td.kop-logo img { width: 52px; height: 52px; }
+        .kop td.kop-teks { text-align: center; }
         .kop .lembaga { font-size: 13pt; font-weight: bold; color: #0D5C46; letter-spacing: 0.5px; }
         .kop .sekolah { font-size: 10.5pt; font-weight: bold; }
         .kop .alamat { font-size: 7.5pt; color: #64748B; margin-top: 2px; }
@@ -38,9 +43,22 @@
     <div class="kaki-halaman">Dicetak dari SIPINTAR pada {{ $dok['dicetak']->translatedFormat('d F Y H:i') }}</div>
 
     <div class="kop">
-        <div class="lembaga">{{ Ekspor::NAMA_LEMBAGA }}</div>
-        <div class="sekolah">{{ Ekspor::NAMA_SEKOLAH }}</div>
-        <div class="alamat">{{ Ekspor::ALAMAT }}</div>
+        {{-- Logo kiri, teks kop tetap di tengah (kolom kanan kosong selebar kolom logo) --}}
+        <table>
+            <tr>
+                <td class="kop-logo">
+                    @if ($logo = Ekspor::logoDataUri())
+                        <img src="{{ $logo }}" alt="Logo Bank Mini">
+                    @endif
+                </td>
+                <td class="kop-teks">
+                    <div class="lembaga">{{ Ekspor::NAMA_LEMBAGA }}</div>
+                    <div class="sekolah">{{ Ekspor::NAMA_SEKOLAH }}</div>
+                    <div class="alamat">{{ Ekspor::ALAMAT }}</div>
+                </td>
+                <td class="kop-logo"></td>
+            </tr>
+        </table>
     </div>
 
     <div class="judul">
