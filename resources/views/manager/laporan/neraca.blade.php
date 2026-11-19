@@ -102,7 +102,7 @@
             <span class="metric-title">Rasio Kas terhadap Tabungan</span>
         </div>
         <div class="metric-value">{{ $rasioKas === null ? '-' : number_format($rasioKas, 2, ',', '.') }}<span style="font-size:16px;">{{ $rasioKas === null ? '' : '%' }}</span></div>
-        <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">Kemampuan kas menutup penarikan seluruh tabungan</div>
+        <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">(Kas tunai + kas bank) ÷ total tabungan. &ge; 100% berarti kas cukup menutup penarikan seluruh tabungan</div>
     </div>
 </div>
 
