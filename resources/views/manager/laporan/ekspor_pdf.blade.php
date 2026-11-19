@@ -12,8 +12,8 @@
         .kop { text-align: center; border-bottom: 2.5px double #0D5C46; padding-bottom: 6px; margin-bottom: 12px; }
         .kop table { width: 100%; border-collapse: collapse; }
         .kop td { vertical-align: middle; padding: 0; }
-        .kop td.kop-logo { width: 60px; text-align: left; }
-        .kop td.kop-logo img { width: 52px; height: 52px; }
+        .kop td.kop-logo { width: 64px; text-align: left; }
+        .kop td.kop-logo img { width: 58px; height: 58px; display: block; }
         .kop td.kop-teks { text-align: center; }
         .kop .lembaga { font-size: 13pt; font-weight: bold; color: #0D5C46; letter-spacing: 0.5px; }
         .kop .sekolah { font-size: 10.5pt; font-weight: bold; }

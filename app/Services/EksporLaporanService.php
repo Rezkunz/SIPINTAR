@@ -40,7 +40,7 @@ class EksporLaporanService
     public const NAMA_SEKOLAH = 'SMK NEGERI 1 LEMAHABANG';
     public const ALAMAT       = 'Jl. KH. Wahid Hasyim No. 76 Telp. (0231) 635308, Lemahabang, Kabupaten Cirebon';
     public const TEKS_KOSONG  = 'Tidak ada data pada periode ini.';
-    public const LOGO         = 'images/sipintar_logo.png';   // relatif terhadap public/
+    public const LOGO         = 'images/sipintar_mark.png';   // logo Bank Mini yang sama dengan sidebar/login; relatif terhadap public/
 
     private const WARNA_UTAMA  = '0D5C46';
     private const WARNA_MUDA   = 'ECFDF5';
@@ -128,29 +128,44 @@ class EksporLaporanService
         $jumlahKolom = max(array_map(fn ($b) => count($b['kolom']), $dok['bagian']));
         $kolomAkhir  = Coordinate::stringFromColumnIndex($jumlahKolom);
 
-        // Kop laporan
+        // Kop laporan (sama dengan kop PDF): nama lembaga, sekolah, alamat + garis ganda hijau,
+        // lalu judul & subjudul laporan. Format: [teks, ukuran, tebal, warna, tinggi baris (pt)]
+        $kop = [
+            [self::NAMA_LEMBAGA, 13, true, self::WARNA_UTAMA, 21],
+            [self::NAMA_SEKOLAH, 11, true, '0F172A', 17],
+            [self::ALAMAT, 8, false, '64748B', 15],
+            [null, 0, false, null, 6],                       // jarak di bawah garis kop
+            [$dok['judul'], 12, true, '0F172A', 19],
+            [$dok['subjudul'], 10, false, '334155', 16],
+        ];
         $baris = 1;
-        foreach ([self::NAMA_LEMBAGA, self::NAMA_SEKOLAH, $dok['judul'], $dok['subjudul']] as $i => $teks) {
-            if ($teks === null) {
+        foreach ($kop as $i => [$teks, $ukuran, $tebal, $warna, $tinggi]) {
+            if ($teks === null && $i !== 3) {
                 continue;
             }
-            $sheet->setCellValue("A{$baris}", $teks);
-            $sheet->mergeCells("A{$baris}:{$kolomAkhir}{$baris}");
-            $sheet->getStyle("A{$baris}")->getFont()->setBold($i !== 3)->setSize($i === 2 ? 13 : 11);
-            $sheet->getStyle("A{$baris}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getRowDimension($baris)->setRowHeight($tinggi);
+            if ($teks !== null) {
+                $sheet->setCellValue("A{$baris}", $teks);
+                $sheet->mergeCells("A{$baris}:{$kolomAkhir}{$baris}");
+                $gaya = $sheet->getStyle("A{$baris}");
+                $gaya->getFont()->setBold($tebal)->setSize($ukuran)->getColor()->setRGB($warna);
+                $gaya->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+            }
             $baris++;
         }
+        $sheet->getStyle("A3:{$kolomAkhir}3")->getBorders()->getBottom()
+            ->setBorderStyle(Border::BORDER_DOUBLE)->getColor()->setRGB(self::WARNA_UTAMA);
         $baris++;
 
-        // Logo Bank Mini di pojok kiri kop
+        // Logo Bank Mini di kiri kop, sejajar tiga baris kop (21 + 17 + 15 pt = 53 pt ≈ 71 px)
         if (is_file(public_path(self::LOGO))) {
-            $logo = new Drawing();
-            $logo->setName('Logo Bank Mini')
+            (new Drawing())
+                ->setName('Logo Bank Mini')
                 ->setPath(public_path(self::LOGO))
                 ->setHeight(56)
                 ->setCoordinates('A1')
-                ->setOffsetX(4)
-                ->setOffsetY(2)
+                ->setOffsetX(6)
+                ->setOffsetY(7)
                 ->setWorksheet($sheet);
         }
 
