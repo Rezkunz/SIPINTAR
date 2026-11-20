@@ -102,7 +102,7 @@
             <span class="metric-title">Rasio Kas terhadap Tabungan</span>
         </div>
         <div class="metric-value">{{ $rasioKas === null ? '-' : number_format($rasioKas, 2, ',', '.') }}<span style="font-size:16px;">{{ $rasioKas === null ? '' : '%' }}</span></div>
-        <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">Kemampuan kas menutup penarikan seluruh tabungan</div>
+        <div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">(Kas tunai + kas bank) ÷ total tabungan. &ge; 100% berarti kas cukup menutup penarikan seluruh tabungan</div>
     </div>
 </div>
 
@@ -165,9 +165,15 @@
                         <td class="lap-income-num">{{ $rp($kewajiban['tabungan_guru']) }}</td>
                     </tr>
                     <tr>
-                        <td class="lap-income-item">Jasa Tabungan Terutang <span class="lap-income-note">Interest Payable &bull; jasa tahun berjalan yang belum dibukukan ke rekening</span></td>
+                        <td class="lap-income-item">Jasa Tabungan Terutang <span class="lap-income-note">Interest Payable &bull; jasa yang sudah menjadi hak nasabah tetapi belum dibukukan ke rekening</span></td>
                         <td class="lap-income-num">{{ $rpAkuntansi($kewajiban['jasa_terutang']) }}</td>
                     </tr>
+                    @if ($kewajiban['kelebihan_potongan'] > 0)
+                        <tr dusk="kewajiban-kelebihan-potongan">
+                            <td class="lap-income-item">Kelebihan Potongan Pegawai <span class="lap-income-note">Refund Payable &bull; dana potong gaji yang tidak menjadi angsuran, wajib dikembalikan ke pegawai</span></td>
+                            <td class="lap-income-num">{{ $rp($kewajiban['kelebihan_potongan']) }}</td>
+                        </tr>
+                    @endif
                     @foreach ($posManual['kewajiban'] as $p)
                         <tr>
                             <td class="lap-income-item">{{ $p->nama_pos }} <span class="neraca-manual-tag">input manual</span><span class="lap-income-note">{{ $p->keterangan ?: 'Berlaku sejak ' . \Carbon\Carbon::parse($p->tgl_berlaku)->format('d/m/Y') }}</span></td>
@@ -186,14 +192,37 @@
                             <td class="lap-income-num">{{ $rpAkuntansi($p->nilai) }}</td>
                         </tr>
                     @endforeach
+                    <tr dusk="laba-ditahan">
+                        <td class="lap-income-item">Laba Ditahan <span class="lap-income-note">Retained Earnings &bull; akumulasi laba (rugi) tahun-tahun sebelum {{ $tanggalPosisi->year }}, sama dengan Laporan Tahunan</span></td>
+                        <td class="lap-income-num">{{ $rpAkuntansi($ekuitas['laba_ditahan']) }}</td>
+                    </tr>
                     <tr>
-                        <td class="lap-income-item">Laba (Rugi) Tahun Berjalan <span class="lap-income-note">Retained Earnings &bull; sama dengan Laporan Tahunan s.d. {{ $tanggalPosisi->translatedFormat('F Y') }}</span></td>
+                        <td class="lap-income-item">Laba (Rugi) Tahun Berjalan <span class="lap-income-note">Current Year Earnings &bull; sama dengan Laporan Tahunan s.d. {{ $tanggalPosisi->translatedFormat('F Y') }}</span></td>
                         <td class="lap-income-num">{{ $rpAkuntansi($ekuitas['laba_berjalan']) }}</td>
                     </tr>
                     <tr>
                         <td class="lap-income-item">Selisih Belum Terjelaskan <span class="lap-income-note">Penyeimbang &bull; mendekati nol bila seluruh pos manual (modal, deposito, peralatan, dll) sudah diinput</span></td>
                         <td class="lap-income-num">{{ $rpAkuntansi($ekuitas['modal_selisih']) }}</td>
                     </tr>
+                    @php
+                        // Pos bernama "modal" yang tercatat di luar kelompok Ekuitas (data lama sebelum validasi)
+                        $modalSalahKelompok = $posManual['aktiva']->concat($posManual['kewajiban'])
+                            ->filter(fn ($p) => preg_match('/\bmodal\b/i', $p->nama_pos));
+                    @endphp
+                    @if (round($ekuitas['modal_selisih']) != 0 || $modalSalahKelompok->isNotEmpty())
+                        <tr dusk="petunjuk-selisih">
+                            <td colspan="2" style="padding:8px 14px 12px;">
+                                <div style="font-size:12px; color:#92400E; background:#FFFBEB; border:1px solid #FDE68A; border-radius:8px; padding:8px 12px; line-height:1.6;">
+                                    @if (round($ekuitas['modal_selisih']) != 0)
+                                        <div>&bull; Masih ada selisih Rp {{ $rp(abs($ekuitas['modal_selisih'])) }}. Isi pos <strong>Modal</strong> di kelompok <strong>Ekuitas</strong> sebesar modal awal Bank Mini, serta pos lain yang belum tercatat (deposito, peralatan, dll) melalui Pos Neraca Manual di bawah.</div>
+                                    @endif
+                                    @foreach ($modalSalahKelompok as $p)
+                                        <div>&bull; Pos "{{ $p->nama_pos }}" (Rp {{ $rp($p->nilai) }}) tercatat di kelompok {{ ucfirst($p->kelompok) }}; modal seharusnya di kelompok Ekuitas. Ubah kelompoknya melalui Pos Neraca Manual.</div>
+                                    @endforeach
+                                </div>
+                            </td>
+                        </tr>
+                    @endif
                     <tr class="lap-income-subtotal">
                         <td>Total Ekuitas</td>
                         <td class="lap-income-num">{{ $rpAkuntansi($totalEkuitas) }}</td>

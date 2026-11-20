@@ -26,13 +26,13 @@ class TellerCorrectionController extends Controller
                 (int) auth()->id(),
                 $request->validated('alasan'),
                 (int) $request->validated('jenis_transaksi_id'),
-                (float) $request->validated('nominal')
+                (float) $request->validated('nominal'),
+                $request->validated('no_rek')
             );
 
-            return redirect()->route('tabungan.mutasi', [
+            return redirect()->route('tabungan.koreksi', array_filter([
                 'no_rek' => $request->input('no_rek'),
-                'mode' => 'koreksi',
-            ])->with('success', 'Transaksi berhasil dikoreksi melalui transaksi baru dan pembalik.');
+            ]))->with('success', 'Transaksi berhasil dikoreksi melalui transaksi baru dan pembalik.');
         } catch (Throwable $e) {
             return $this->gagalProses($e, 'memproses koreksi transaksi');
         }

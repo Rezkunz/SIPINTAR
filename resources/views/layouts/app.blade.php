@@ -142,17 +142,17 @@
                     <svg class="nav-svg-icon" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
                     <span>Hitung Jasa</span>
                 </a>
-                <a href="{{ route('tabungan.saldo') }}" class="nav-link {{ request()->routeIs('tabungan.saldo') ? 'active' : '' }}">
-                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
-                    <span>Saldo & Mutasi</span>
+                <a href="{{ route('tabungan.mutasi') }}" class="nav-link {{ request()->routeIs('tabungan.mutasi*', 'tabungan.saldo*', 'tabungan.log-transaksi*') ? 'active' : '' }}">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M8 11h8M8 15h5"/></svg>
+                    <span>Log & Mutasi Rekening</span>
                 </a>
-                <a href="{{ route('tabungan.log-transaksi') }}" class="nav-link {{ request()->routeIs('tabungan.log-transaksi*') ? 'active' : '' }}">
-                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
-                    <span>Log Transaksi</span>
-                </a>
-                <a href="{{ route('tabungan.koreksi') }}" class="nav-link {{ request()->routeIs('tabungan.koreksi') ? 'active' : '' }}">
+                <a href="{{ route('tabungan.koreksi') }}" class="nav-link {{ request()->routeIs('tabungan.koreksi*') ? 'active' : '' }}">
                     <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
                     <span>Koreksi Transaksi</span>
+                </a>
+                <a href="{{ route('tabungan.kelola-akun') }}" class="nav-link {{ request()->routeIs('tabungan.kelola-akun*') ? 'active' : '' }}">
+                    <svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span>Kelola Akun Nasabah</span>
                 </a>
             @endif
 
@@ -341,9 +341,8 @@
 
             {{-- ── GLOBAL NOTIFICATION CENTER DROPDOWN (ALL ROLES) ── --}}
             @php
-                // Modul pinjaman: notifikasi "tugas tertunda" dihitung dari data (null = peran lain, tampilan lama)
-                $notifPinjaman = auth()->check() ? \App\Services\NotifikasiPinjamanService::untuk(auth()->user()) : null;
-                $jumlahNotif = is_array($notifPinjaman) ? count($notifPinjaman) : 3;
+                $notifikasiList = auth()->check() ? \App\Services\NotificationService::untuk(auth()->user()) : [];
+                $jumlahNotif = \App\Services\NotificationService::countActionUnread($notifikasiList);
             @endphp
             <div class="topbar-notif-container" id="topbar-notif-container">
                 <button type="button" class="topbar-notif-btn" id="topbar-notif-btn" onclick="toggleAppNotification(event)" aria-label="Notifikasi Sistem" title="Pusat Pemberitahuan Sistem">
@@ -362,90 +361,35 @@
                         <div class="notif-dropdown-title">
                             <div class="notif-header-dot"></div>
                             <span>Pusat Notifikasi</span>
-                            <span class="notif-count-badge" id="notif-count-badge">{{ $jumlahNotif }} Baru</span>
+                            <span class="notif-count-badge" id="notif-count-badge" style="{{ $jumlahNotif === 0 ? 'background:#F1F5F9;color:#64748B;' : '' }}">{{ $jumlahNotif > 0 ? $jumlahNotif . ' Perlu Tindakan' : 'Tidak Ada Tugas' }}</span>
                         </div>
                         <button type="button" class="notif-mark-read-btn" onclick="markAllNotifsRead(event)">Tandai Dibaca</button>
                     </div>
 
                     <div class="notif-dropdown-body">
-                        @if (is_array($notifPinjaman))
-                            @forelse ($notifPinjaman as $notif)
-                                <a href="{{ $notif['url'] }}" class="notif-card-item unread" data-notif="{{ $notif['kode'] }}" style="text-decoration:none;">
-                                    <div class="notif-card-icon {{ $notif['warna'] }}">
-                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                                    </div>
-                                    <div class="notif-card-content">
-                                        <div class="notif-card-head">
-                                            <span class="notif-source" style="font-weight:700;">{{ $notif['judul'] }}</span>
-                                            <span class="notif-time">{{ $notif['label'] }}</span>
-                                        </div>
-                                        <p class="notif-msg">{!! $notif['pesan'] !!}</p>
-                                    </div>
-                                </a>
-                            @empty
-                                <div class="notif-empty" id="notif-kosong">Tidak ada tugas tertunda. Semua pekerjaan sudah beres.</div>
-                            @endforelse
-                        @else
-                        @if (auth()->check() && (auth()->user()->role === 'bendahara_mini' || auth()->user()->role_id == 3))
+                        @forelse ($notifikasiList as $notif)
                             @php
-                                $notifPaketCount = \Illuminate\Support\Facades\DB::table('tblRENCANA_POTONGAN')->where('status_potongan', 'menunggu_verifikasi')->count();
-                                $notifPaketTotal = \Illuminate\Support\Facades\DB::table('tblRENCANA_POTONGAN')->where('status_potongan', 'menunggu_verifikasi')->sum('total_realisasi');
+                                $iconColor = ($notif['warna'] ?? 'blue') === 'green' ? 'emerald' : ($notif['warna'] ?? 'blue');
                             @endphp
-                            @if ($notifPaketCount > 0)
-                                <a href="{{ route('bbm.angsuran.potongan') }}" class="notif-card-item unread" style="text-decoration:none; background:#FFFBEB; border-left:3px solid #D97706;">
-                                    <div class="notif-card-icon amber">
-                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            <a href="{{ $notif['link'] }}" class="notif-card-item {{ !empty($notif['dibaca']) ? '' : 'unread' }}" data-notif="{{ $notif['id'] }}" data-jenis="{{ $notif['jenis'] }}" style="text-decoration:none;">
+                                <div class="notif-card-icon {{ $iconColor }}">
+                                    @if (($notif['jenis'] ?? 'info') === 'action')
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    @else
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                    @endif
+                                </div>
+                                <div class="notif-card-content">
+                                    <div class="notif-card-head">
+                                        <span class="notif-source" style="font-weight:700;">{{ $notif['judul'] }}</span>
+                                        <span class="notif-time">{{ $notif['label'] }}</span>
                                     </div>
-                                    <div class="notif-card-content">
-                                        <div class="notif-card-head">
-                                            <span class="notif-source" style="color:#B45309; font-weight:700;">Serah Terima Potongan Payroll</span>
-                                            <span class="notif-time" style="color:#B45309; font-weight:700;">Siap Terima</span>
-                                        </div>
-                                        <p class="notif-msg" style="color:#78350F;">Terdapat <strong>{{ $notifPaketCount }} paket potongan</strong> (Rp {{ number_format($notifPaketTotal, 0, ',', '.') }}) menunggu verifikasi fisik/transfer & pembukuan kas.</p>
-                                    </div>
-                                </a>
-                            @endif
-                        @endif
-
-                        <div class="notif-card-item unread">
-                            <div class="notif-card-icon emerald">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                            </div>
-                            <div class="notif-card-content">
-                                <div class="notif-card-head">
-                                    <span class="notif-source">Sistem Transaksi</span>
-                                    <span class="notif-time">Aktif</span>
+                                    <p class="notif-msg">{{ $notif['teks'] }}</p>
                                 </div>
-                                <p class="notif-msg">Seluruh modul transaksi Bank Mini Sekolah (tabungan, kasir, pinjaman) berjalan normal dan sinkron.</p>
-                            </div>
-                        </div>
-
-                        <div class="notif-card-item unread">
-                            <div class="notif-card-icon blue">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            </div>
-                            <div class="notif-card-content">
-                                <div class="notif-card-head">
-                                    <span class="notif-source">Keamanan Akun</span>
-                                    <span class="notif-time">Aman</span>
-                                </div>
-                                <p class="notif-msg">Sesi login Anda terenkripsi TLS 256-Bit. Terakhir login dari browser aktif.</p>
-                            </div>
-                        </div>
-
-                        <div class="notif-card-item">
-                            <div class="notif-card-icon amber">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                            </div>
-                            <div class="notif-card-content">
-                                <div class="notif-card-head">
-                                    <span class="notif-source">Jadwal Operasional</span>
-                                    <span class="notif-time">Hari Ini</span>
-                                </div>
-                                <p class="notif-msg">Operasional loket Bank Mini Sekolah hari Senin-Jumat pukul 08:00 s.d 15:00 WIB.</p>
-                            </div>
-                        </div>
-                        @endif
+                            </a>
+                        @empty
+                            <div class="notif-empty" id="notif-kosong">Tidak ada notifikasi saat ini. Semua aman terkendali.</div>
+                        @endforelse
                     </div>
 
                     <div class="notif-dropdown-footer">
@@ -680,6 +624,10 @@
     {{-- ── MAIN CONTENT ── --}}
     <main class="app-main">
         @yield('content')
+
+        <footer style="margin-top: 32px; padding: 14px 0 4px; border-top: 1px solid var(--border-subtle); text-align: center; font-size: 12px; color: #64748B;">
+            Operasional Loket Bank Mini Sekolah: Senin–Jumat pukul 08.00 s.d. 15.00 WIB
+        </footer>
     </main>
 
     {{-- ── 3D POPUP NOTIFICATION MODAL (Image 2) ── --}}
@@ -737,6 +685,15 @@
                 countBadge.style.background = '#F1F5F9';
                 countBadge.style.color = '#64748B';
             }
+
+            fetch('{{ route('notifikasi.baca-semua') }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).catch(() => {});
         }
 
         document.addEventListener('click', (e) => {

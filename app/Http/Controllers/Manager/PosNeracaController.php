@@ -109,6 +109,14 @@ class PosNeracaController extends Controller
 
         $data['nama_pos'] = trim($data['nama_pos']);
 
+        // Modal (setoran modal, modal awal, modal hibah) adalah ekuitas, bukan aktiva/kewajiban
+        if (preg_match('/\bmodal\b/i', $data['nama_pos']) && $data['kelompok'] !== 'ekuitas') {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'kelompok' => 'Pos "' . $data['nama_pos'] . '" adalah modal, jadi harus dimasukkan ke kelompok Ekuitas, bukan '
+                    . ucfirst($data['kelompok']) . '.',
+            ]);
+        }
+
         return $data;
     }
 

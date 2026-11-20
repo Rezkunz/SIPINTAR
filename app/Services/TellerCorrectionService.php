@@ -7,9 +7,9 @@ use Illuminate\Validation\ValidationException;
 
 class TellerCorrectionService
 {
-    public function correct(int $transactionId, int $tellerId, string $reason, int $correctedTypeId, float $correctedNominal): int
+    public function correct(int $transactionId, int $tellerId, string $reason, int $correctedTypeId, float $correctedNominal, ?string $expectedNoRek = null): int
     {
-        return DB::transaction(function () use ($transactionId, $tellerId, $reason, $correctedTypeId, $correctedNominal) {
+        return DB::transaction(function () use ($transactionId, $tellerId, $reason, $correctedTypeId, $correctedNominal, $expectedNoRek) {
             $original = DB::table('tblTRANSAKSI')
                 ->where('transaksi_id', $transactionId)
                 ->lockForUpdate()
@@ -34,8 +34,21 @@ class TellerCorrectionService
                 )
                 ->exists();
 
-            if ($alreadyCorrected || $isReversal) {
+            $isCorrectedChild = DB::table('tblAUDIT_LOG')
+                ->where('aksi', 'KOREKSI_TRANSAKSI')
+                ->where('entitas', 'tblTRANSAKSI')
+                ->whereRaw(
+                    DB::getDriverName() === 'pgsql' ? 'CAST(data_baru AS TEXT) LIKE ?' : 'data_baru LIKE ?',
+                    ['%"corrected_id":' . $transactionId . '%']
+                )
+                ->exists();
+
+            if ($alreadyCorrected) {
                 throw ValidationException::withMessages(['transaksi' => 'Transaksi ini sudah pernah dikoreksi.']);
+            }
+
+            if ($isReversal || $isCorrectedChild) {
+                throw ValidationException::withMessages(['transaksi' => 'Transaksi hasil koreksi tidak dapat dikoreksi kembali.']);
             }
 
             if ($correctedNominal <= 0) {
@@ -54,6 +67,9 @@ class TellerCorrectionService
             $rekening = DB::table('tblREKENING')->where('rekening_id', $original->rekening_id)->lockForUpdate()->first();
             if (!$rekening || $rekening->status_rekening !== 'aktif') {
                 throw ValidationException::withMessages(['transaksi' => 'Rekening tidak aktif.']);
+            }
+            if ($expectedNoRek !== null && $expectedNoRek !== '' && $rekening->no_rek !== $expectedNoRek) {
+                throw ValidationException::withMessages(['transaksi' => 'Transaksi tidak termasuk pada rekening yang dipilih.']);
             }
 
             $debit = (float) $original->debit;
@@ -83,6 +99,10 @@ class TellerCorrectionService
             $correctedKredit = in_array($correctedType->nama_jenis, ['setoran', 'jasa_tabungan'], true) ? $correctedNominal : 0;
             $saldoAkhir = $saldoSetelahReversal + $correctedKredit - $correctedDebit;
 
+            if ($saldoAkhir < 0) {
+                throw ValidationException::withMessages(['nominal' => 'Saldo rekening setelah koreksi tidak boleh negatif.']);
+            }
+
             if ($correctedType->nama_jenis === 'penarikan' && $saldoAkhir < 10000) {
                 throw ValidationException::withMessages(['nominal' => 'Saldo setelah koreksi harus menyisakan minimal Rp 10.000.']);
             }
@@ -99,6 +119,11 @@ class TellerCorrectionService
                 throw ValidationException::withMessages(['transaksi' => 'Saldo kas tidak cukup untuk koreksi ini.']);
             }
 
+            $waktuKoreksi = now();
+            $labelPembatalan = $debit > 0 ? 'Koreksi - Pembatalan Penarikan' : 'Koreksi - Pembatalan Setoran';
+            $labelPengganti = 'Koreksi - ' . ucfirst(str_replace('_', ' ', $correctedType->nama_jenis));
+
+            // 1. Transaksi PEMBATALAN (reversal) dengan saldo berurutan (transaksi asli tidak diubah)
             $reversalId = DB::table('tblTRANSAKSI')->insertGetId([
                 'rekening_id' => $original->rekening_id,
                 'jenis_transaksi_id' => $original->jenis_transaksi_id,
@@ -107,18 +132,17 @@ class TellerCorrectionService
                 'user_id' => $tellerId,
                 'debit' => $kredit,
                 'kredit' => $debit,
-                'saldo_akhir' => $saldoAkhir,
-                'tgl_transaksi' => now(),
+                'saldo_akhir' => $saldoSetelahReversal,
+                'tgl_transaksi' => $waktuKoreksi,
             ], 'transaksi_id');
-
-            DB::table('tblREKENING')->where('rekening_id', $rekening->rekening_id)->update(['saldo' => $saldoAkhir]);
 
             if ($originalIsCash) {
                 $nominal = $debit > 0 ? $debit : $kredit;
                 $isReversalIn = $debit > 0;
-                $this->recordCashMutation($kas->kas_id, $periode->periode_id, $tellerId, $reversalId, $nominal, $isReversalIn ? 'masuk' : 'keluar', 'Pembalik transaksi #' . $transactionId);
+                $this->recordCashMutation($kas->kas_id, $periode->periode_id, $tellerId, $reversalId, $nominal, $isReversalIn ? 'masuk' : 'keluar', $labelPembatalan . ' #' . $transactionId, $waktuKoreksi->toDateString());
             }
 
+            // 2. Transaksi PENGGANTI dengan saldo lanjutan dari hasil pembatalan
             $correctedId = DB::table('tblTRANSAKSI')->insertGetId([
                 'rekening_id' => $original->rekening_id,
                 'jenis_transaksi_id' => $correctedTypeId,
@@ -128,8 +152,10 @@ class TellerCorrectionService
                 'debit' => $correctedDebit,
                 'kredit' => $correctedKredit,
                 'saldo_akhir' => $saldoAkhir,
-                'tgl_transaksi' => now(),
+                'tgl_transaksi' => $waktuKoreksi,
             ], 'transaksi_id');
+
+            DB::table('tblREKENING')->where('rekening_id', $rekening->rekening_id)->update(['saldo' => $saldoAkhir]);
 
             if ($correctedIsCash) {
                 $this->recordCashMutation(
@@ -139,7 +165,8 @@ class TellerCorrectionService
                     $correctedId,
                     $correctedNominal,
                     $correctedType->nama_jenis === 'setoran' ? 'masuk' : 'keluar',
-                    'Transaksi hasil koreksi #' . $transactionId
+                    'Transaksi hasil koreksi #' . $transactionId,
+                    $waktuKoreksi->toDateString()
                 );
             }
 
@@ -152,8 +179,8 @@ class TellerCorrectionService
             DB::table('tblBUKTI')->insert([
                 'transaksi_id' => $correctedId,
                 'user_id' => $tellerId,
-                'no_bukti' => 'CORR-' . now()->format('Ymd') . '-' . str_pad((string) $correctedId, 8, '0', STR_PAD_LEFT),
-                'tgl_cetak' => now(),
+                'no_bukti' => 'CORR-' . $waktuKoreksi->format('Ymd') . '-' . str_pad((string) $correctedId, 8, '0', STR_PAD_LEFT),
+                'tgl_cetak' => $waktuKoreksi,
             ]);
 
             AuditLogService::log(
@@ -164,18 +191,21 @@ class TellerCorrectionService
                 dataBaru: [
                     'reversal_id' => $reversalId,
                     'corrected_id' => $correctedId,
+                    'reversal_label' => $labelPembatalan,
+                    'corrected_label' => $labelPengganti,
                     'jenis_transaksi_id' => $correctedTypeId,
                     'nominal' => $correctedNominal,
                     'alasan' => $reason,
                     'saldo_akhir' => $saldoAkhir,
-                ]
+                ],
+                createdAt: $waktuKoreksi
             );
 
             return $correctedId;
         });
     }
 
-    private function recordCashMutation(int $kasId, int $periodeId, int $tellerId, int $transaksiId, float $nominal, string $arah, string $uraian): void
+    private function recordCashMutation(int $kasId, int $periodeId, int $tellerId, int $transaksiId, float $nominal, string $arah, string $uraian, ?string $tglMutasi = null): void
     {
         DB::table('tblMUTASI_KAS')->insert([
             'kas_id' => $kasId,
@@ -184,7 +214,7 @@ class TellerCorrectionService
             'transaksi_id' => $transaksiId,
             'angsuran_id' => null,
             'pencairan_id' => null,
-            'tgl_mutasi' => now()->toDateString(),
+            'tgl_mutasi' => $tglMutasi ?? now()->toDateString(),
             'arah' => $arah,
             'nominal' => $nominal,
             'uraian' => $uraian,

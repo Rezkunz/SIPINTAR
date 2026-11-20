@@ -41,7 +41,7 @@ class BukaRekeningController extends Controller
             return redirect()->route('tabungan.buka-rekening')->with([
                 'success_rekening' => $rekening->no_rek,
                 'success_nama'     => $rekening->nasabah->nama_nasabah,
-                'status'           => "Rekening {$rekening->no_rek} menunggu setoran awal minimal Rp 10.000 untuk diaktifkan.",
+                'status'           => "Rekening {$rekening->no_rek} dan akun login nasabah berhasil dibuat. Menunggu setoran awal minimal Rp 20.000 untuk diaktifkan.",
             ]);
         } catch (Throwable $e) {
             return $this->gagalProses($e, 'membuka rekening nasabah');
