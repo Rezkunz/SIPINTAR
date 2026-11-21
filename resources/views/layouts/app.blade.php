@@ -1659,8 +1659,10 @@
     </div>
 
     {{-- ── SMART AUTO-SYNC SAAT BERALIH TAB / JENDELA ── --}}
+    @unless(app()->environment('testing'))
     <script>
     (function() {
+        if (navigator.webdriver) return;
         let lastBlurTime = 0;
         window.addEventListener('blur', function() {
             lastBlurTime = Date.now();
@@ -1691,5 +1693,6 @@
         });
     })();
     </script>
+    @endunless
 </body>
 </html>

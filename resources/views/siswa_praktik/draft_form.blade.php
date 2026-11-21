@@ -156,7 +156,7 @@
                 <label for="nominal_display" class="profile-field-label">
                     <span>Nominal Transaksi (Rupiah) <span class="required-mark">*</span></span>
                     <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">
-                        Min. Rp {{ number_format(config('sipintar.draft.min_nominal', 1000), 0, ',', '.') }} &mdash; 
+                        Min. Rp {{ number_format(config('sipintar.draft.min_nominal', 10000), 0, ',', '.') }} &mdash; 
                         Maks. Rp {{ number_format(config('sipintar.draft.max_nominal', 5000000), 0, ',', '.') }}
                     </span>
                 </label>
@@ -210,7 +210,7 @@
                 <div style="width: 28px; height: 28px; border-radius: 6px; background: #ECFDF5; color: #059669; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 700;">2</div>
                 <div>
                     <strong style="color: var(--text-heading);">Batas Nominal Input</strong>
-                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Minimal nominal adalah Rp {{ number_format(config('sipintar.draft.min_nominal', 1000), 0, ',', '.') }} dan maksimal per draft Rp {{ number_format(config('sipintar.draft.max_nominal', 5000000), 0, ',', '.') }}.</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Minimal nominal adalah Rp {{ number_format(config('sipintar.draft.min_nominal', 10000), 0, ',', '.') }} dan maksimal per draft Rp {{ number_format(config('sipintar.draft.max_nominal', 5000000), 0, ',', '.') }}.</div>
                 </div>
             </div>
 

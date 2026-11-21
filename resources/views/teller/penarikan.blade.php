@@ -4,7 +4,7 @@
 @section('breadcrumb', 'Penarikan')
 
 @section('content')
-<div class="page-header"><h1 class="page-title">Penarikan Tunai</h1><p class="page-subtitle">Saldo rekening harus menyisakan minimal Rp 10.000.</p></div>
+<div class="page-header"><h1 class="page-title">Penarikan Tunai</h1><p class="page-subtitle">Nominal penarikan minimal Rp {{ number_format(config('sipintar.penarikan.min_nominal', 10000), 0, ',', '.') }} dan saldo rekening harus menyisakan minimal Rp 10.000.</p></div>
 @if ($errors->any())<div class="content-card" style="padding: 14px; color: #991B1B; background: #FEF2F2;">{{ $errors->first() }}</div>@endif
 <div class="content-card"><div class="card-body-content">
     <form method="POST" action="{{ route('tabungan.penarikan.store') }}">
@@ -16,7 +16,7 @@
                 <option value="{{ $rekening->no_rek }}" @selected(old('no_rek') === $rekening->no_rek)>{{ $rekening->no_rek }} - {{ $rekening->nasabah->nama_nasabah ?? '-' }} (Rp {{ number_format($rekening->saldo, 0, ',', '.') }})</option>
             @endforeach
         </select>
-        <label for="nominal_display" style="display:block; margin-top: 16px;">Nominal Penarikan (Rp)</label>
+        <label for="nominal_display" style="display:block; margin-top: 16px;">Nominal Penarikan (Rp) <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">(Min. Rp {{ number_format(config('sipintar.penarikan.min_nominal', 10000), 0, ',', '.') }})</span></label>
         <input id="nominal_display" class="form-input" type="text" inputmode="numeric" placeholder="Contoh: 50.000" value="{{ old('nominal') ? number_format((float) old('nominal'), 0, ',', '.') : '' }}" required oninput="formatNominalPenarikan(this)">
         <input type="hidden" id="nominal" name="nominal" value="{{ old('nominal') }}">
         <button class="btn-ui btn-ui-primary" type="submit" style="margin-top: 20px;">Simpan Penarikan</button>

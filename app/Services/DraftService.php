@@ -47,7 +47,7 @@ class DraftService
         }
 
         // 3. Validasi nominal min/max dari konfigurasi
-        $min = (float) config('sipintar.draft.min_nominal', 1000);
+        $min = (float) config('sipintar.draft.min_nominal', 10000);
         $max = (float) config('sipintar.draft.max_nominal', 5000000);
         $nominal = (float) ($data['nominal'] ?? 0);
 

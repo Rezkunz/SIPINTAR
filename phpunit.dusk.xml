@@ -21,6 +21,12 @@
         <testsuite name="UAT Modul Dashboard Iterasi 2">
             <directory prefix="TC_" suffix="Test.php">tests/Modul_Dashboard/iterasi2</directory>
         </testsuite>
+        <testsuite name="UAT Modul Tabungan Iterasi 1">
+            <directory prefix="Uc" suffix="Test.php">tests/Modul_Tabungan_Iterasi 1</directory>
+        </testsuite>
+        <testsuite name="UAT Modul Tabungan Iterasi 2">
+            <directory prefix="Uc" suffix="Test.php">tests/Modul_Tabungan_Iterasi_2</directory>
+        </testsuite>
     </testsuites>
     <php>
         <!-- Muat .env.uat (database sipintar_dusk) tanpa menukar .env milik aplikasi pengembangan -->

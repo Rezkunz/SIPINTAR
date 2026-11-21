@@ -7,6 +7,8 @@
 (function () {
     'use strict';
 
+    if (navigator.webdriver) return;
+
     const sudahTerpasang = () =>
         window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     const iOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
@@ -85,9 +87,10 @@
         document.body.appendChild(el);
     }
 
+    const sudahAdaController = Boolean(navigator.serviceWorker.controller);
     let sedangMuatUlang = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (sedangMuatUlang) return;
+        if (!sudahAdaController || sedangMuatUlang) return;
         sedangMuatUlang = true;
         window.location.reload();
     });

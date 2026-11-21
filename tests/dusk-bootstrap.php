@@ -20,3 +20,4 @@ if (is_file($fileUat)) {
 }
 
 require __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/Modul_Tabungan_Iterasi 1/TabunganDuskTestCase.php';
