@@ -259,13 +259,14 @@ class TellerTransactionService
             return $saldo + $nominal;
         }
 
-        if ($nominal < (float) config('sipintar.draft.min_nominal', 1000)) {
-            throw ValidationException::withMessages([
-                'nominal' => 'Nominal transaksi berada di bawah batas minimum.',
-            ]);
-        }
-
         if ($jenis === 'penarikan') {
+            $minPenarikan = (float) config('sipintar.penarikan.min_nominal', 10000);
+            if ($nominal < $minPenarikan) {
+                throw ValidationException::withMessages([
+                    'nominal' => 'Nominal penarikan minimal Rp ' . number_format($minPenarikan, 0, ',', '.') . '.',
+                ]);
+            }
+
             if ($saldo - $nominal < self::MINIMUM_REMAINING_BALANCE) {
                 throw ValidationException::withMessages([
                     'nominal' => 'Saldo rekening harus menyisakan minimal Rp 10.000.',
@@ -279,6 +280,12 @@ class TellerTransactionService
             }
 
             return $saldo - $nominal;
+        }
+
+        if ($nominal < (float) config('sipintar.draft.min_nominal', 10000)) {
+            throw ValidationException::withMessages([
+                'nominal' => 'Nominal transaksi berada di bawah batas minimum.',
+            ]);
         }
 
         return $saldo + $nominal;

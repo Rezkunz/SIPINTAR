@@ -8,7 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('icons/icon-192.png') }}">
 <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.png') }}">
+@unless(app()->environment('testing'))
 <script src="{{ asset('js/pwa.js') }}?v={{ filemtime(public_path('js/pwa.js')) }}" defer></script>
+@endunless
 <style>
     [data-pwa-install][hidden] { display: none !important; }
     .auth-btn-install {

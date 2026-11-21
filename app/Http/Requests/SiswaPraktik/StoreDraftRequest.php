@@ -35,7 +35,7 @@ class StoreDraftRequest extends FormRequest
      */
     public function rules(): array
     {
-        $min = config('sipintar.draft.min_nominal', 1000);
+        $min = config('sipintar.draft.min_nominal', 10000);
         $max = config('sipintar.draft.max_nominal', 5000000);
 
         return [
@@ -50,7 +50,7 @@ class StoreDraftRequest extends FormRequest
      */
     public function messages(): array
     {
-        $minFormatted = number_format(config('sipintar.draft.min_nominal', 1000), 0, ',', '.');
+        $minFormatted = number_format(config('sipintar.draft.min_nominal', 10000), 0, ',', '.');
         $maxFormatted = number_format(config('sipintar.draft.max_nominal', 5000000), 0, ',', '.');
 
         return [
