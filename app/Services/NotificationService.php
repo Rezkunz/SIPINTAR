@@ -282,9 +282,9 @@ class NotificationService
                 ->where('a.entitas', 'tblTRANSAKSI')
                 ->where('r.nasabah_id', $user->nasabah_id)
                 ->where('a.created_at', '>=', now()->subDays(14))
-                ->orderByDesc('a.log_id')
+                ->orderByDesc('a.audit_log_id')
                 ->limit(5)
-                ->select('a.log_id', 'a.data_baru', 'a.created_at', 'r.no_rek')
+                ->select('a.audit_log_id', 'a.data_baru', 'a.created_at', 'r.no_rek')
                 ->get();
 
             $excludedTrxIds = [];
@@ -302,7 +302,7 @@ class NotificationService
                 $nominal = number_format((float) ($payload['nominal'] ?? 0), 0, ',', '.');
 
                 $items[] = self::makeItem(
-                    id: "nasabah_koreksi_{$log->log_id}",
+                    id: "nasabah_koreksi_{$log->audit_log_id}",
                     jenis: 'info',
                     judul: 'Transaksi Dikoreksi Teller',
                     teks: "Rekening {$log->no_rek}: {$reversalLabel} & {$correctedLabel} menjadi Rp {$nominal}.",
