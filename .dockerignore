@@ -53,3 +53,15 @@ Thumbs.db
 
 # Local mockups
 /mockups_export_figma/
+
+# Jangan ikut ke image: kredensial, data sekolah, artefak lokal
+/.envsupabase
+/.env?*
+!/.env.example
+/data_contoh/
+/c.txt
+/UAT*.xlsx
+/page.html
+/.agents/
+/design-system/
+/tests/Browser/screenshots/

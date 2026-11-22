@@ -47,3 +47,19 @@ mockup-export
 ExportMockup.php
 .tools
 docs
+
+# Jangan dipublikasikan: kredensial & data sekolah
+/.envsupabase
+/.env?*
+!/.env.example
+/data_contoh/
+/c.txt
+cookies.txt
+/UAT*.xlsx
+
+# Alat bantu & artefak lokal (bukan bagian aplikasi)
+/page.html
+/.agents/
+/mockups_export_figma/
+/design-system/
+/tests/Browser/screenshots/*.png
